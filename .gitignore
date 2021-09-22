@@ -14,7 +14,7 @@ software/*/*
 
 !software/firmware/firmware.c
 !software/firmware/firmware.S
-!software/firmware/pc_crypto/*
+!software/firmware/pc_crypto
 
 !software/console/console.c
 !software/console/console.h
