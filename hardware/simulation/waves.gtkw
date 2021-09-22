@@ -1,24 +1,28 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Feb 12 03:28:18 2021
+[*] Thu Aug 12 17:43:07 2021
 [*]
-[dumpfile] "(null)"
-[savefile] "/home/jsousa/sandbox/iob-soc/hardware/simulation/waves.gtkw"
-[timestart] 13966554000
-[size] 1918 1031
+[dumpfile] "/home/ruben/ecomp/iob-soc-eth/hardware/simulation/icarus/system.vcd"
+[dumpfile_mtime] "Thu Aug 12 17:36:06 2021"
+[dumpfile_size] 462652799
+[savefile] "/home/ruben/ecomp/iob-soc-eth/hardware/simulation/waves.gtkw"
+[timestart] 876432400000
+[size] 1366 713
 [pos] -1 -1
-*-20.371645 13971110000 14260000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-25.371643 876474000000 14260000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] system_tb.
 [treeopen] system_tb.uut.
 [treeopen] system_tb.uut.cpu.picorv32_core.
 [treeopen] system_tb.uut.cpu.picorv32_core.genblk1.
 [treeopen] system_tb.uut.cpu.picorv32_core.genblk5.
-[treeopen] system_tb.uut.int_mem0.
-[treeopen] system_tb.uut.int_mem0.int_sram.
+[treeopen] system_tb.uut.eth.
+[treeopen] system_tb.uut.eth.dma.
+[treeopen] system_tb.uut.eth.dma.dma.
+[treeopen] system_tb.uut.ila.
 [sst_width] 324
 [signals_width] 358
 [sst_expanded] 1
-[sst_vpaned_height] 440
+[sst_vpaned_height] 273
 @200
 -INT MEM
 @22
@@ -44,7 +48,7 @@ system_tb.uut.int_mem0.int_sram.d_addr[13:0]
 system_tb.uut.int_mem0.int_sram.d_wdata[31:0]
 system_tb.uut.int_mem0.int_sram.d_wstrb[3:0]
 system_tb.uut.int_mem0.int_sram.d_rdata[31:0]
-@29
+@28
 system_tb.uut.int_mem0.int_sram.d_ready
 @200
 -SYSTEM
@@ -91,8 +95,6 @@ system_tb.uut.cpu.picorv32_core.trap
 @28
 system_tb.uut.uart.txd
 system_tb.uut.uart.rxd
-system_tb.uut.uart.tx_ready
-system_tb.uut.uart.rx_ready
 system_tb.uut.uart.valid
 @24
 system_tb.uut.uart.address[2:0]
@@ -109,5 +111,326 @@ system_tb.uart_tb.valid
 system_tb.uart_tb.address[2:0]
 system_tb.uart_tb.rxd
 system_tb.uart_tb.txd
+@200
+-ETH
+@28
+system_tb.uut.eth.RX_CLK
+@22
+system_tb.uut.eth.RX_DATA[3:0]
+@28
+system_tb.uut.eth.RX_DV
+system_tb.uut.eth.TX_CLK
+@22
+system_tb.uut.eth.TX_DATA[3:0]
+@28
+system_tb.uut.eth.TX_EN
+@22
+system_tb.uut.eth.addr[11:0]
+@28
+system_tb.uut.eth.clk
+@22
+system_tb.uut.eth.crc_value[31:0]
+system_tb.uut.eth.data_in[31:0]
+system_tb.uut.eth.data_out[31:0]
+@28
+system_tb.uut.eth.delayed_tx_sel[1:0]
+@22
+system_tb.uut.eth.dma_address_reg[23:0]
+@28
+system_tb.uut.eth.dma_address_reg_en
+system_tb.uut.eth.dma_len_en
+system_tb.uut.eth.dma_out_run
+system_tb.uut.eth.dma_out_run_en
+system_tb.uut.eth.dma_read_from_not_write
+system_tb.uut.eth.dma_ready
+system_tb.uut.eth.do_tx_wr
+system_tb.uut.eth.rcv_ack
+system_tb.uut.eth.rcv_ack_en
+system_tb.uut.eth.rcv_ack_en_sync
+system_tb.uut.eth.rcv_ack_sync[2:0]
+system_tb.uut.eth.ready
+system_tb.uut.eth.rst
+system_tb.uut.eth.rst_int
+system_tb.uut.eth.rst_soft
+system_tb.uut.eth.rst_soft_en
+@22
+system_tb.uut.eth.rx_address[8:0]
+@28
+system_tb.uut.eth.rx_data_rcvd[1:0]
+system_tb.uut.eth.rx_data_rcvd_int
+@22
+system_tb.uut.eth.rx_nbytes_reg[10:0]
+@28
+system_tb.uut.eth.rx_nbytes_reg_en
+@22
+system_tb.uut.eth.rx_rd_data[31:0]
+@28
+system_tb.uut.eth.rx_rst[1:0]
+system_tb.uut.eth.rx_wr
+@22
+system_tb.uut.eth.rx_wr_addr[10:0]
+system_tb.uut.eth.rx_wr_data[7:0]
+@28
+system_tb.uut.eth.send
+system_tb.uut.eth.send_en
+system_tb.uut.eth.send_en_sync
+system_tb.uut.eth.send_sync[2:0]
+@22
+system_tb.uut.eth.stored_rx_addr[8:0]
+system_tb.uut.eth.stored_rx_data[31:0]
+@28
+system_tb.uut.eth.stored_rx_wr
+@22
+system_tb.uut.eth.tx_address[8:0]
+@28
+system_tb.uut.eth.tx_clk_pll_locked[1:0]
+@22
+system_tb.uut.eth.tx_in_data[7:0]
+system_tb.uut.eth.tx_nbytes_reg[10:0]
+@28
+system_tb.uut.eth.tx_nbytes_reg_en
+@22
+system_tb.uut.eth.tx_out_addr[10:0]
+@25
+system_tb.uut.eth.tx_rd_addr[8:0]
+@22
+system_tb.uut.eth.tx_rd_data[31:0]
+@28
+system_tb.uut.eth.tx_ready[1:0]
+system_tb.uut.eth.tx_ready_int
+system_tb.uut.eth.do_tx_wr
+system_tb.uut.eth.tx_wr
+@22
+system_tb.uut.eth.tx_wr_data[31:0]
+@28
+system_tb.uut.eth.valid
+@c00022
+system_tb.uut.eth.wstrb[3:0]
+@28
+(0)system_tb.uut.eth.wstrb[3:0]
+(1)system_tb.uut.eth.wstrb[3:0]
+(2)system_tb.uut.eth.wstrb[3:0]
+(3)system_tb.uut.eth.wstrb[3:0]
+@1401200
+-group_end
+@28
+system_tb.uut.eth.dma_out_run
+@200
+-DMA_TRANSFER
+@22
+system_tb.uut.eth.dma.addr[31:0]
+system_tb.uut.eth.dma.address[31:0]
+@28
+system_tb.uut.eth.dma.clk
+@22
+system_tb.uut.eth.dma.data_in[31:0]
+system_tb.uut.eth.dma.data_out[31:0]
+system_tb.uut.eth.dma.dma_len[7:0]
+@28
+system_tb.uut.eth.dma.dma_ready
+@22
+system_tb.uut.eth.dma.length[31:0]
+@28
+system_tb.uut.eth.dma.offset[1:0]
+@22
+system_tb.uut.eth.dma.rdata[31:0]
+@28
+system_tb.uut.eth.dma.readNotWrite
+system_tb.uut.eth.dma.ready
+system_tb.uut.eth.dma.ready_in
+system_tb.uut.eth.dma.ready_out
+system_tb.uut.eth.dma.rst
+system_tb.uut.eth.dma.start
+@22
+system_tb.uut.eth.dma.stored_len[31:0]
+@28
+system_tb.uut.eth.dma.valid
+system_tb.uut.eth.dma.valid_in
+system_tb.uut.eth.dma.valid_out
+system_tb.uut.eth.dma.w_valid
+@22
+system_tb.uut.eth.dma.wdata[31:0]
+system_tb.uut.eth.dma.wstrb[3:0]
+@200
+-BURST_ALIGN
+@22
+system_tb.uut.eth.dma.align.data_in[31:0]
+system_tb.uut.eth.dma.align.data_out[31:0]
+@28
+system_tb.uut.eth.dma.align.offset[1:0]
+system_tb.uut.eth.dma.align.rst
+@22
+system_tb.uut.eth.dma.align.stored_data[31:0]
+@28
+system_tb.uut.eth.dma.align.valid_in
+system_tb.uut.eth.dma.align.valid_out
+@200
+-BURST_OUT
+@22
+system_tb.uut.eth.burst_out.addr[8:0]
+@28
+system_tb.uut.eth.burst_out.clk
+@22
+system_tb.uut.eth.burst_out.data_in[31:0]
+system_tb.uut.eth.burst_out.data_out[31:0]
+@28
+system_tb.uut.eth.burst_out.init
+system_tb.uut.eth.burst_out.ready
+system_tb.uut.eth.burst_out.rst
+system_tb.uut.eth.burst_out.start
+@22
+system_tb.uut.eth.burst_out.start_addr[8:0]
+@28
+system_tb.uut.eth.burst_out.stored
+@22
+system_tb.uut.eth.burst_out.storedData[31:0]
+@28
+system_tb.uut.eth.burst_out.valid
+@200
+-BURST_SPLIT
+@28
+system_tb.uut.eth.dma.split.clk
+@22
+system_tb.uut.eth.dma.split.data_in[31:0]
+system_tb.uut.eth.dma.split.data_out[31:0]
+@28
+system_tb.uut.eth.dma.split.offset[1:0]
+system_tb.uut.eth.dma.split.ready_in
+system_tb.uut.eth.dma.split.ready_out
+system_tb.uut.eth.dma.split.rst
+@22
+system_tb.uut.eth.dma.split.stored_data[23:0]
+@28
+system_tb.uut.eth.dma.split.valid_in
+system_tb.uut.eth.dma.split.valid_out
+@200
+-DMA_R
+@22
+system_tb.uut.eth.dma.dma.dma_r.addr[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.clk
+@22
+system_tb.uut.eth.dma.dma.dma_r.counter_int[7:0]
+system_tb.uut.eth.dma.dma.dma_r.counter_int_nxt[7:0]
+system_tb.uut.eth.dma.dma.dma_r.dma_len[7:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.dma_ready
+system_tb.uut.eth.dma.dma.dma_r.dma_ready_nxt
+system_tb.uut.eth.dma.dma.dma_r.error
+system_tb.uut.eth.dma.dma.dma_r.error_int
+system_tb.uut.eth.dma.dma.dma_r.error_nxt
+@22
+system_tb.uut.eth.dma.dma.dma_r.len_r[7:0]
+system_tb.uut.eth.dma.dma.dma_r.m_axi_araddr[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arburst[1:0]
+@22
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arcache[3:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arid
+@22
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arlen[7:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arlock
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arprot[2:0]
+@22
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arqos[3:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arready
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arsize[2:0]
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arvalid
+system_tb.uut.eth.dma.dma.dma_r.m_axi_arvalid_int
+@22
+system_tb.uut.eth.dma.dma.dma_r.m_axi_rdata[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.m_axi_rlast
+system_tb.uut.eth.dma.dma.dma_r.m_axi_rready
+system_tb.uut.eth.dma.dma.dma_r.m_axi_rresp[1:0]
+system_tb.uut.eth.dma.dma.dma_r.m_axi_rvalid
+@22
+system_tb.uut.eth.dma.dma.dma_r.rdata[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_r.ready
+system_tb.uut.eth.dma.dma.dma_r.rst
+system_tb.uut.eth.dma.dma.dma_r.state
+system_tb.uut.eth.dma.dma.dma_r.state_nxt
+system_tb.uut.eth.dma.dma.dma_r.valid
+@200
+-DMA_W
+@22
+system_tb.uut.eth.dma.dma.dma_w.addr[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.clk
+@22
+system_tb.uut.eth.dma.dma.dma_w.counter_int[8:0]
+system_tb.uut.eth.dma.dma.dma_w.counter_int_nxt[8:0]
+system_tb.uut.eth.dma.dma.dma_w.dma_len[7:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.dma_ready
+system_tb.uut.eth.dma.dma.dma_w.dma_ready_nxt
+system_tb.uut.eth.dma.dma.dma_w.error
+system_tb.uut.eth.dma.dma.dma_w.error_int
+system_tb.uut.eth.dma.dma.dma_w.error_nxt
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awaddr[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awburst[1:0]
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awcache[3:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awid
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awlen[7:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awlock
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awprot[2:0]
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awqos[3:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awready
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awsize[2:0]
+system_tb.uut.eth.dma.dma.dma_w.m_axi_awvalid
+system_tb.uut.eth.dma.dma.dma_w.m_axi_bready
+system_tb.uut.eth.dma.dma.dma_w.m_axi_bresp[1:0]
+system_tb.uut.eth.dma.dma.dma_w.m_axi_bvalid
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wdata[31:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wlast
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wlast_int
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wready
+@22
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wstrb[3:0]
+@28
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wvalid
+system_tb.uut.eth.dma.dma.dma_w.m_axi_wvalid_int
+system_tb.uut.eth.dma.dma.dma_w.ready
+system_tb.uut.eth.dma.dma.dma_w.ready_int
+system_tb.uut.eth.dma.dma.dma_w.ready_r
+system_tb.uut.eth.dma.dma.dma_w.rst
+system_tb.uut.eth.dma.dma.dma_w.state[1:0]
+system_tb.uut.eth.dma.dma.dma_w.state_nxt[1:0]
+system_tb.uut.eth.dma.dma.dma_w.valid
+@22
+system_tb.uut.eth.dma.dma.dma_w.wdata[31:0]
+system_tb.uut.eth.dma.dma.dma_w.wstrb[3:0]
+@200
+-BURST_IN
+@22
+system_tb.uut.eth.burst_in.addr[8:0]
+@28
+system_tb.uut.eth.burst_in.clk
+@22
+system_tb.uut.eth.burst_in.data[31:0]
+system_tb.uut.eth.burst_in.data_in[31:0]
+@28
+system_tb.uut.eth.burst_in.increment_addr
+system_tb.uut.eth.burst_in.rst
+system_tb.uut.eth.burst_in.start
+@22
+system_tb.uut.eth.burst_in.start_addr[8:0]
+@28
+system_tb.uut.eth.burst_in.valid
+system_tb.uut.eth.burst_in.write
 [pattern_trace] 1
 [pattern_trace] 0

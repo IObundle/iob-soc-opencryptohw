@@ -1,3 +1,4 @@
+SHELL := /bin/bash
 ROOT_DIR:=../..
 include $(ROOT_DIR)/system.mk
 
@@ -14,19 +15,24 @@ ifeq ($(INIT_MEM),0)
 	CONSOLE_CMD+=-f
 endif
 
-$(FIRM_DIR)/firmware.bin: $(FIRM_DIR)/firmware.c
-	$(eval CONSOLE_CMD+=-f)
+run: console firmware.bin
+	@buser=`pgrep console | xargs -r ps -o uname= -p`;\
+	if [ "$$buser" = "$(USER)" ]; then kill -9 `pgrep console`;\
+	elif [ "$$buser" ]; then echo "Board being used by $$buser; waiting 30s for release..."; sleep 30; busy=1; fi;\
+	buser=`pgrep console | xargs -r ps -o uname= -p`;\
+	if [ "$$buser" ]; then echo "Board locked after 30s by user $$buser"; exit 1;\
+	elif [ $$busy ]; then make -C $(BOARD_DIR) load; fi
+	$(CONSOLE_CMD) $(LOG)
 
-firmware.bin: $(FIRM_DIR)/firmware.bin
-	cp $(FIRM_DIR)/firmware.bin .
 
-run: firmware.bin build 
-	$(CONSOLE_CMD) $(TEST_LOG)
 
-build: $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) $(SRC) -o console
+./firmware.bin: $(FIRM_DIR)/firmware.bin
+	cp $(FIRM_DIR)/firmware.bin $@
+
+console: $(SRC)
+	$(CC) $(CFLAGS) $(INCLUDE) $(SRC) -o $@
 
 clean:
-	rm -f *# *~ console *.bin
+	@rm -f *# *~ console *.bin *.log
 
-.PHONY: run build clean
+.PHONY: run clean
