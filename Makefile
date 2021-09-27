@@ -5,6 +5,13 @@ ROOT_DIR:=.
 include ./system.mk
 
 #
+# SOFTWARE
+#
+
+sw:
+	make -C $(BOARD_DIR) sw
+
+#
 # SIMULATE RTL
 #
 
@@ -28,8 +35,12 @@ pc-emul-clean:
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
 
-fpga-run:
+fpga-all:
 	make -C $(BOARD_DIR) all TEST_LOG="$(TEST_LOG)"
+
+fpga-run:
+	make -C $(BOARD_DIR) sw
+	make -C $(BOARD_DIR) run
 
 fpga-build:
 	make -C $(BOARD_DIR) build

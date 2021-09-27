@@ -9,14 +9,14 @@
 #
 
 #FIRMWARE SIZE (LOG2)
-FIRM_ADDR_W ?=15
+FIRM_ADDR_W ?=16
 
 #SRAM SIZE (LOG2)
-SRAM_ADDR_W ?=15
+SRAM_ADDR_W ?=16
 
 #DDR
-USE_DDR ?=0
-RUN_EXTMEM ?=0
+USE_DDR ?=1
+RUN_EXTMEM ?=1
 
 #DATA CACHE ADDRESS WIDTH (tag + index + offset)
 DCACHE_ADDR_W:=24
@@ -25,7 +25,7 @@ DCACHE_ADDR_W:=24
 BOOTROM_ADDR_W:=12
 
 #PRE-INIT MEMORY WITH PROGRAM AND DATA
-INIT_MEM ?=1
+INIT_MEM ?=0
 
 #PERIPHERAL LIST
 #must match respective submodule or folder name in the submodules directory
@@ -37,7 +37,7 @@ PERIPHERALS ?=UART
 USE_COMPRESSED ?=1
 
 #ROOT DIR ON REMOTE MACHINES
-REMOTE_ROOT_DIR ?=sandbox/iob-soc
+REMOTE_ROOT_DIR ?=sandbox/iob-soc-sha
 
 
 #SIMULATION
@@ -48,7 +48,7 @@ SIMULATOR ?=icarus
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in hardware/fpga/$(BOARD) for specific settings
-BOARD ?=CYCLONEV-GT-DK
+BOARD ?=AES-KU040-DB-G
 
 #ASIC COMPILATION
 #default asic node  running locally or remotely
