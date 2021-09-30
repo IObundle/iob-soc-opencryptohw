@@ -21,6 +21,7 @@ HDR+=periphs.h
 
 #SOURCES
 SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
+SRC+= $(FIRM_DIR)/crypto/*.c
 
 #RULES
 
