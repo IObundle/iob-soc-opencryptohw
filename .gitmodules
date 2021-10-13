@@ -9,4 +9,4 @@
 	url = git@github.com:IObundle/iob-cache.git
 [submodule "submodules/VERSAT"]
 	path = submodules/VERSAT
-	url = git@github.com:zettasticks/iob-versat.git
+	url = git@github.com:IObundle/iob-versat.git
