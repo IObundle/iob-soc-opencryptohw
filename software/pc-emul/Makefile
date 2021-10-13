@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-Os -Wl,--strip-debug
+CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
