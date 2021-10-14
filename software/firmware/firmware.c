@@ -6,7 +6,7 @@
 
 #include "crypto/sha2.h"
 
-#include "short_msg_test.h"
+#include "test_vectors.h"
 
 #define HASH_SIZE (256/8)
 
@@ -35,7 +35,7 @@ char* GetHexadecimal(const char* text, int str_size){
     buffer[i*2+1] = GetHexadecimalChar(ch % 16);
   }
 
-  buffer[(i+1)*2] = '\0';
+  buffer[(i)*2] = '\0';
 
   return buffer;
 }
@@ -50,12 +50,15 @@ int main()
   //init uart
   uart_init(UART_BASE,FREQ/BAUD);   
 
+  printf("[L = %d]\n", HASH_SIZE);
+
   //Message test loop
   for(i=0; i< NUM_MSGS; i++){
     sha256(digest,msg_array[i],msg_len[i]);
     printf("\nLen = %d\n", msg_len[i]*8);
-    printf("Msg = \n");
-    printf("MD = %s\n\n",GetHexadecimal(digest, HASH_SIZE));
+    printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
+    printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
   }
+  printf("\n");
   uart_finish();
 }
