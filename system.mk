@@ -62,7 +62,7 @@ DOC ?= pb
 
 # REGRESSION TESTING
 #simulators used in regression testing
-SIM_LIST ?=icarus xcelium
+SIM_LIST ?=icarus
 #boards used for regression testing
 BOARD_LIST ?=CYCLONEV-GT-DK AES-KU040-DB-G
 #documents used for regression testing
