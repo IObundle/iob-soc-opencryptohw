@@ -31,7 +31,7 @@ INIT_MEM ?=0
 #must match respective submodule or folder name in the submodules directory
 #and CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART VERSAT
+PERIPHERALS ?=UART
 
 #RISC-V COMPRESSED INSTRUCTIONS
 USE_COMPRESSED ?=1

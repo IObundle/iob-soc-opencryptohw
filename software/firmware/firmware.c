@@ -2,7 +2,6 @@
 #include "periphs.h"
 #include "iob-uart.h"
 #include "printf.h"
-#include "versat.h"
 
 #include "crypto/sha2.h"
 
