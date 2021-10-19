@@ -91,13 +91,7 @@ test-pc-emul:
 test-simulator:
 	@make -C $(SIM_DIR) clean-testlog;\
 	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log";\
-	if [ "`diff -q $(SIM_DIR)/test.log $(SIM_DIR)/test.expected`" ]; then \
-	echo SIMULATOR $(SIMULATOR) TEST FAILED; else \
-	echo SIMULATOR $(SIMULATOR) TEST PASSED; fi >> test_report.log
+	make -C $(SIM_DIR) test-validate TEST_LOG=">> test.log"
 
 test-all-simulators:
 	$(foreach s, $(SIM_LIST), make test-simulator SIMULATOR=$s;)
