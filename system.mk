@@ -31,7 +31,7 @@ INIT_MEM ?=0
 #must match respective submodule or folder name in the submodules directory
 #and CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART VERSAT
+PERIPHERALS ?=UART
 
 #RISC-V COMPRESSED INSTRUCTIONS
 USE_COMPRESSED ?=1
@@ -62,7 +62,7 @@ DOC ?= pb
 
 # REGRESSION TESTING
 #simulators used in regression testing
-SIM_LIST ?=icarus xcelium
+SIM_LIST ?=icarus
 #boards used for regression testing
 BOARD_LIST ?=CYCLONEV-GT-DK AES-KU040-DB-G
 #documents used for regression testing

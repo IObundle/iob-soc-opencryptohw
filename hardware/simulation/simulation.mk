@@ -39,6 +39,12 @@ VSRC+=$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_ram.v
 #testbench
 VSRC+=system_tb.v
 
+#TEST VECTOR
+SIM_LOG:=$(lastword $(TEST_LOG))
+SIM_PARSED_LOG:=$(SIM_LOG)_parsed.log
+TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
+VALIDATION_LOG:=validation.log
+
 #RULES
 all: clean sw
 ifeq ($(SIM_SERVER),)
@@ -75,9 +81,20 @@ kill-remote-sim:
 	@echo "INFO: Remote simulator $(SIMULATOR) will be killed"
 	ssh $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC)'
 
+#post run target: analyze sim.log
+test-validate: parse-log 
+	if cmp --silent $(VALIDATION_LOG) $(SIM_PARSED_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+	@rm -rf $(VALIDATION_LOG)
+
+parse-log: test.log
+	sed -n -e '/\[L = /,$$p' $(SIM_LOG) | tac | sed -n -e '/MD =/,$$p' | tac > $(SIM_PARSED_LOG)
+	echo "" >> $(SIM_PARSED_LOG) # add final newline
+	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
+	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
+
 #clean target common to all simulators
 clean-remote: hw-clean 
-	@rm -f system.vcd
+	@rm -f system.vcd $(SIM_PARSED_LOG) $(VALIDATION_LOG)
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_USER)@$(SIM_SERVER) 'if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi'
 	rsync -avz --delete --exclude .git $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)

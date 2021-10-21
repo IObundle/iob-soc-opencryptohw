@@ -15,11 +15,15 @@ endif
 $(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/embedded/embedded.mk))
 
 #HEADERS
-HDR+=periphs.h
+HDR+=periphs.h test_vectors.h
 
 #SOURCES
 SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
+
+#TEST VECTOR
+TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
+VALIDATION_LOG:=validation.log
 
 #RULES
 run: firmware.elf
@@ -36,7 +40,12 @@ periphs.h: periphs_tmp.h
 periphs_tmp.h:
 	$(foreach p, $(PERIPHERALS), $(shell echo "#define $p_BASE (1<<$P) |($p<<($P-N_SLAVES_W))" >> $@) )
 
-clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex ../periphs.h
+#SHA256 test vectors
+test_vectors.h:
+	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
-.PHONY: run clean subs periphs_tmp.h
+clean: gen-clean 
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex ../periphs.h \
+		test_vectors.h periphs.h *sw_reg.h
+
+.PHONY: run clean subs periphs_tmp.h 
