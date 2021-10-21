@@ -1,5 +1,7 @@
 # iob-soc-sha
-SoC to run the program in software with or without acceleration using VERSAT2.0
+SoC to run the SHA256 program on a RISC-V processor, with or without
+acceleration using the VERSAT2.0 Coarse Grained Reconfigurable Array as a
+hardware accelerator.
 
 # Setup
 Clone the repository and the submodules with:
