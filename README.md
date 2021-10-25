@@ -45,14 +45,8 @@ PC emulation program requires:
 The iob-soc-sha system can be emulated using a verilog simulator like icarus 
 with:
 ```
-make test-simulator
+make test-sim
 ```
-- The `INIT_MEM=1` option skips the process of executing the bootloader and 
-loading the firmware program into memory via UART.
-- The `USE_DDR=0` option configures the system to only use internal memory.
-- The `TEST_LOG="> test.log"` option indicates the log file for the simulation
-output. This file is used to validate the simulation results, like the `pc-emul`
-test.
 
 The simulation output can be checked manually in 
 `hardware/simulation/icarus/test.log_parsed.log`
@@ -60,7 +54,7 @@ The simulation output can be checked manually in
 ### Clean environment
 To clean the workspace after the RISCV emulation:
 ```
-make sim-clean TEST_LOG=test.log
+make test-sim-clean
 ```
 
 ### Requirements/Setup
