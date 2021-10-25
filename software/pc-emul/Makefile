@@ -32,6 +32,9 @@ VALIDATION_LOG:=validation.log
 #RULES
 
 all: build run
+
+build: firmware.out
+
 run: firmware.out
 	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
@@ -39,16 +42,19 @@ run: firmware.out
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
 
-build: firmware.out
-
 firmware.out: $(HDR) $(SRC)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
+
+test:
+	make all TEST_LOG="> test.log"
+	diff -q $(PC_DIR)/test.log $(PC_DIR)/test.expected
 
 #SHA256 test vectors
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean:
-	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG)
+	@rm -rf firmware.out periphs.h test.log *sw_reg.h \
+		test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG)
 
-.PHONY: all build run clean subs periphs_tmp.h
+.PHONY: all build run clean subs periphs_tmp.h test

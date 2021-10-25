@@ -15,8 +15,8 @@ FIRM_ADDR_W ?=16
 SRAM_ADDR_W ?=16
 
 #DDR
-USE_DDR ?=1
-RUN_EXTMEM ?=1
+USE_DDR ?=0
+RUN_EXTMEM ?=0
 
 #DATA CACHE ADDRESS WIDTH (tag + index + offset)
 DCACHE_ADDR_W:=24
@@ -25,7 +25,7 @@ DCACHE_ADDR_W:=24
 BOOTROM_ADDR_W:=12
 
 #PRE-INIT MEMORY WITH PROGRAM AND DATA
-INIT_MEM ?=0
+INIT_MEM ?=1
 
 #PERIPHERAL LIST
 #must match respective submodule or folder name in the submodules directory
@@ -59,16 +59,6 @@ ASIC_NODE ?=umc130
 #DOCUMENTATION
 #default document
 DOC ?= pb
-
-# REGRESSION TESTING
-#simulators used in regression testing
-SIM_LIST ?=icarus
-#boards used for regression testing
-BOARD_LIST ?=CYCLONEV-GT-DK AES-KU040-DB-G
-#documents used for regression testing
-DOC_LIST ?=pb presentation
-
-
 
 ####################################################################
 # DERIVED FROM PRIMARY PARAMETERS: DO NOT CHANGE BELOW THIS POINT
@@ -142,6 +132,6 @@ $(foreach p, $(PERIPHERALS), $(eval DEFINE+=$(defmacro)$p=$($p)))
 
 #RULES
 gen-clean:
-	@rm -f *# *~ test_report.log
+	@rm -f *# *~
 
 .PHONY: gen-clean

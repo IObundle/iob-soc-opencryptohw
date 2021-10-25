@@ -1,3 +1,5 @@
+#include "stdlib.h"
+#include <stdio.h>
 #include "system.h"
 #include "periphs.h"
 #include "iob-uart.h"
