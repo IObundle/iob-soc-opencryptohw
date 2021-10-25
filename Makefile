@@ -18,7 +18,7 @@ sim:
 	make -C $(SIM_DIR) all
 
 sim-test:
-	make -C $(SIM_DIR) test TEST_LOG=$(TEST_LOG)
+	make -C $(SIM_DIR) test TEST_LOG="$(TEST_LOG)"
 
 sim-clean:
 	make -C $(SIM_DIR) clean clean-testlog

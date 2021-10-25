@@ -88,7 +88,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: sim-shortmsg parse-log 
 
 sim-shortmsg:
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=$(TEST_LOG);\
+	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
 
 parse-log: $(SIM_LOG)
 	sed -n -e '/\[L = /,$$p' $(SIM_LOG) | tac | sed -n -e '/MD =/,$$p' | tac > $(SIM_PARSED_LOG)
