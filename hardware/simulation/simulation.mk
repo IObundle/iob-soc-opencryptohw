@@ -98,7 +98,7 @@ parse-log: $(SIM_LOG)
 
 #clean target common to all simulators
 clean-remote: hw-clean 
-	@rm -f system.vcd
+	@rm -f system.vcd *.log
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_USER)@$(SIM_SERVER) 'if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi'
 	rsync -avz --delete --exclude .git $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)

@@ -94,6 +94,6 @@ sw-clean:
 
 #clean general hardware files
 hw-clean: sw-clean gen-clean
-	@rm -f *.v *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
+	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
 
 .PHONY: sw sw-clean hw-clean
