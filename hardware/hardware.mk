@@ -59,6 +59,10 @@ VSRC+=$(SRC_DIR)/sram.v
 endif
 VSRC+=system.v
 
+VSRC+=$(SRC_DIR)/versat_instance.v
+VSRC+=$(SRC_DIR)/xunitF.v
+VSRC+=$(SRC_DIR)/xunitM.v
+
 IMAGES=boot.hex firmware.hex
 
 # make system.v with peripherals
