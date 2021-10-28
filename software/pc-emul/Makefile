@@ -28,7 +28,11 @@ SRC+=$(UART_DIR)/software/printf.c
 
 all: build run
 run: firmware.out
-	./firmware.out $(TEST_LOG)
+	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
+	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
+	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
+	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+	@rm -rf $(VALIDATION_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
 

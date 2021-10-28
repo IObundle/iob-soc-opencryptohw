@@ -403,6 +403,9 @@ int main()
 
    printf("Connected units\n");
 
+   char digest[256];
+   int i = 0;
+
    printf("[L = %d]\n", HASH_SIZE);
 
    //Message test loop
@@ -413,7 +416,7 @@ int main()
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
    }
    printf("\n");
-   
+
    uart_finish();
 
    OutputMemoryMap(versat);
