@@ -8,6 +8,10 @@
 
 //#include "crypto/sha2.h"
 
+#include "test_vectors.h"
+
+#define HASH_SIZE (256/8)
+
 void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen);
 
 static void store_bigendian_32(uint8_t *x, uint64_t u) {
@@ -399,15 +403,18 @@ int main()
 
    printf("Connected units\n");
 
-   char* testStr = "012345678901234274193791238915880578124487349182739812748903468028748237489068027481258901784901875809237480875678901234567891231312312012345678901234274193791238915880578124487349182739812748903468028748237489068027481258901784901875809237480875678901234567891231312312";
-   int testSize = 200;
+   printf("[L = %d]\n", HASH_SIZE);
 
-   versat_sha256(digest,testStr,testSize);
-
-   printf("Done versat\n");
-   printf("\n%s\n",GetHexadecimal(digest,(256 / 8)));
-
+   //Message test loop
+   for(i=0; i< NUM_MSGS; i++){
+      versat_sha256(digest,msg_array[i],msg_len[i]);
+      printf("\nLen = %d\n", msg_len[i]*8);
+      printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
+      printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
+   }
    printf("\n");
+   
+   uart_finish();
 
    OutputMemoryMap(versat);
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
