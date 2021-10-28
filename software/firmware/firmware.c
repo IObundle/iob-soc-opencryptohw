@@ -6,7 +6,7 @@
 #include "FU_Defs.h"
 #include "string.h"
 
-//#include "crypto/sha2.h"
+#include "crypto/sha2.h"
 
 #include "test_vectors.h"
 
@@ -185,10 +185,6 @@ int32_t* UnitMUpdateFunction(FUInstance* instance){
    return &result;
 }
 
-#include "test_vectors.h"
-
-#define HASH_SIZE (256/8)
-
 char GetHexadecimalChar(int value){
   if(value < 10){
     return '0' + value;
@@ -316,7 +312,6 @@ int main()
                                     UnitMStartFunction,
                                     UnitMUpdateFunction);
 
-   printf("Create Accel\n");
    accel = CreateAccelerator(versat);
   
    FUInstance* unitF[4];
@@ -404,8 +399,6 @@ int main()
       ConnectUnits(versat,kMem[i],0,unitF[i],9);
    }
 
-   printf("Connected units\n");
-
    char digest[256];
    int i = 0;
 
@@ -413,14 +406,13 @@ int main()
 
    //Message test loop
    for(i=0; i< NUM_MSGS; i++){
-      versat_sha256(digest,msg_array[i],msg_len[i]);
+      sha256(digest,msg_array[i],msg_len[i]);
       printf("\nLen = %d\n", msg_len[i]*8);
       printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
    }
    printf("\n");
   
-   OutputMemoryMap(versat);
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
    uart_finish();
