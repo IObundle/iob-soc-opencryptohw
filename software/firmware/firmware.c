@@ -30,10 +30,6 @@ int32_t* MemTerminateFunction(FUInstance* inst){
 
 #define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
-static int aluliteBits[] = {4};
-static int memBits[] = {10,10,10,10,1,1,1,10,10,10,10,10,10,10,10,10,10,10,1,1,1,10,10,10,10,10,10,10};
-static int muladdBits[] = {5,10,10,10,1};
-
 #define SHR(x, c) ((x) >> (c))
 #define ROTR_32(x, c) (((x) >> (c)) | ((x) << (32 - (c))))
 #define ROTR_64(x, c) (((x) >> (c)) | ((x) << (64 - (c))))
@@ -215,53 +211,6 @@ char* GetHexadecimal(const char* text, int str_size){
   return buffer;
 }
 
-static unsigned char testBuffer[10000];
-
-static int regBits[] = {32,10};
-static int regStates[] = {32};
-static int unitFBits[] = {8};
-
-typedef struct{
-   int initialValue,writeDelay;
-} RegConfig;
-
-int32_t* RegStartFunction(FUInstance* inst){
-   static int32_t startValue;
-
-   RegConfig* config = (RegConfig*) inst->config;
-   int32_t* view = (int32_t*) inst->extraData;
-
-   view[0] = config->writeDelay;
-   
-   startValue = inst->outputs[0]; // Kinda sketchy
-
-   if(!view[1]){
-      startValue = config->initialValue;
-      inst->state[0] = startValue;
-      view[1] = 1;
-   }
-
-   return &startValue;
-}
-
-int32_t* RegUpdateFunction(FUInstance* inst){
-   static int32_t out;
-
-   out = inst->outputs[0]; // By default, keep same output
-   int32_t* delayView = (int32_t*) inst->extraData;
-
-   if((*delayView) > 0){
-      if(*delayView == 1){
-         out = GetInputValue(inst,0);
-      }
-      *delayView -= 1;
-   }
-
-   inst->state[0] = out;
-
-   return &out;
-}
-
 int32_t* TerminateFunction(FUInstance* inst){
    static int delay = 80;
 
@@ -276,13 +225,7 @@ int32_t* TerminateFunction(FUInstance* inst){
    }
 }
 
-int32_t* AddFunction(FUInstance* inst){
-   static int32_t out;
-
-   out = (GetInputValue(inst,0)) + (GetInputValue(inst,1));
-
-   return &out;
-}
+static int unitFBits[] = {8};
 
 // GLOBALS
 Versat* versat;
