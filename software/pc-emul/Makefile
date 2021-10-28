@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
+CFLAGS=-g -Os
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -22,8 +22,9 @@ $(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/pc-emu
 HDR+=periphs.h test_vectors.h
 
 #SOURCES
-SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
+SRC+= $(FIRM_DIR)/firmware.c
 SRC+= $(FIRM_DIR)/crypto/*.c
+SRC+=$(UART_DIR)/software/printf.c
 
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
@@ -38,11 +39,13 @@ run: firmware.out
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
+	mv versat_instance.v $(HW_DIR)/src/
+	mv versat_defs.vh $(HW_DIR)/include/
 
 build: firmware.out
 
 firmware.out: $(HDR) $(SRC)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc -lncurses
 
 #SHA256 test vectors
 test_vectors.h:
