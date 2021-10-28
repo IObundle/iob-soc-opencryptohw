@@ -185,11 +185,15 @@ int32_t* UnitMUpdateFunction(FUInstance* instance){
    return &result;
 }
 
+#include "test_vectors.h"
+
+#define HASH_SIZE (256/8)
+
 char GetHexadecimalChar(int value){
   if(value < 10){
     return '0' + value;
   } else{
-    return 'A' + (value - 10);
+    return 'a' + (value - 10);
   }
 }
 
@@ -239,7 +243,6 @@ FUInstance* stateReg[8];
 
 int main()
 {
-   unsigned char digest[256];
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
 
@@ -416,9 +419,7 @@ int main()
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
    }
    printf("\n");
-
-   uart_finish();
-
+  
    OutputMemoryMap(versat);
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
