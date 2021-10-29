@@ -25,7 +25,9 @@ software/*/*
 #HARDWARE
 #sources
 hardware/src/system.v
+hardware/src/versat_instance.v
 hardware/testbench/system_tb.v
+hardware/include/versat_defs.vh
 
 #simulation
 hardware/simulation/*/*

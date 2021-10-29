@@ -33,14 +33,20 @@ VALIDATION_LOG:=validation.log
 #RULES
 
 all: build run
+
+ifeq ($(AUTOMATIC_TEST),1)
 run: firmware.out
 	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
+else
+run: firmware.out
+	./firmware.out $(TEST_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
+endif
 
 build: firmware.out
 
@@ -54,4 +60,4 @@ test_vectors.h:
 clean:
 	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG)
 
-.PHONY: all build run clean subs periphs_tmp.h
+.PHONY: all build run clean subs periphs_tmp.h firmware.out

@@ -399,6 +399,7 @@ int main()
       ConnectUnits(versat,kMem[i],0,unitF[i],9);
    }
 
+#ifdef AUTOMATIC_TEST
    char digest[256];
    int i = 0;
 
@@ -412,7 +413,10 @@ int main()
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
    }
    printf("\n");
-  
+#else
+   OutputMemoryMap(versat);
+#endif
+
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
    uart_finish();
