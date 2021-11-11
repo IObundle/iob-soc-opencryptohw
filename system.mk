@@ -8,6 +8,8 @@
 # PRIMARY PARAMETERS: CAN BE CHANGED BY USERS OR OVERRIDEN BY ENV VARS
 #
 
+AUTOMATIC_TEST ?= 1
+
 #FIRMWARE SIZE (LOG2)
 FIRM_ADDR_W ?=16
 
@@ -68,11 +70,16 @@ BOARD_LIST ?=CYCLONEV-GT-DK AES-KU040-DB-G
 #documents used for regression testing
 DOC_LIST ?=pb presentation
 
-
+ifeq ($(AUTOMATIC_TEST),1)
+DEFINE += $(defmacro)AUTOMATIC_TEST
+endif
 
 ####################################################################
 # DERIVED FROM PRIMARY PARAMETERS: DO NOT CHANGE BELOW THIS POINT
 ####################################################################
+
+#MIG Bus
+MIG_BUS_W:=32
 
 ifeq ($(RUN_EXTMEM),1)
 DEFINE+=$(defmacro)RUN_EXTMEM
@@ -82,6 +89,7 @@ endif
 
 ifeq ($(USE_DDR),1)
 DEFINE+=$(defmacro)USE_DDR
+DEFINE+=$(defmacro)MIG_BUS_W=$(MIG_BUS_W)
 endif
 
 ifeq ($(INIT_MEM),1)
