@@ -8,7 +8,7 @@
 
 #include "crypto/sha2.h"
 
-#include "test_vectors.h"
+#include "../test_vectors.h"
 #include "unitVerilogWrappers.h"
 
 #define HASH_SIZE (256/8)
