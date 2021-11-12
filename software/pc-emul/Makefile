@@ -27,7 +27,7 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+=$(UART_DIR)/software/printf.c
 
 #OBJECTS
-OBJ += verilated.o
+OBJ += ./build/verilated.o
 
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
@@ -56,16 +56,17 @@ build: firmware.out
 firmware.out: $(HDR) $(SRC) $(OBJ)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(OBJ) -lstdc++ -lm -lgcc -lc -lncurses
 
-verilated.o:
+./build/verilated.o:
+	mkdir -p ./build;
 	g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVL_PRINTF=printf \
 	-DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow -c -o ./verilated.o /usr/local/share/verilator/include/verilated.cpp
+	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow -c -o ./build/verilated.o /usr/local/share/verilator/include/verilated.cpp
 
 #SHA256 test vectors
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean:
-	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG)
+	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG) build headers versat_instance.v versat_defs.vh versat_instance_template.h UARTsw_reg.h
 
 .PHONY: all build run clean subs periphs_tmp.h firmware.out
