@@ -35,7 +35,10 @@ endif
 endif
 
 #ddr memory
-VSRC+=$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_ram.v
+VSRC+=$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_ram.v \
+$(CACHE_DIR)/submodules/AXIMEM/rtl/arbiter.v \
+$(CACHE_DIR)/submodules/AXIMEM/rtl/priority_encoder.v \
+$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_interconnect.v
 #testbench
 VSRC+=system_tb.v
 

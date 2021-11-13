@@ -8,7 +8,8 @@
 
 //#include "crypto/sha2.h"
 
-#include "test_vectors.h"
+#include "../test_vectors.h"
+#include "unitVerilogWrappers.h"
 
 #define HASH_SIZE (256/8)
 
@@ -32,8 +33,22 @@ int32_t* MemTerminateFunction(FUInstance* inst){
    return (int32_t*) 0;
 }
 
+int32_t* CycleTerminateFunction(FUInstance* inst){
+   static int cycles = 60;
+
+   cycles -= 1;
+
+   if(cycles == 0){
+      cycles = 60;
+      return (int32_t*) 1;
+   }
+
+   return (int32_t*) 0;
+}
+
 #define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
+#if 1
 #define SHR(x, c) ((x) >> (c))
 #define ROTR_32(x, c) (((x) >> (c)) | ((x) << (32 - (c))))
 #define ROTR_64(x, c) (((x) >> (c)) | ((x) << (64 - (c))))
@@ -184,10 +199,7 @@ int32_t* UnitMUpdateFunction(FUInstance* instance){
 
    return &result;
 }
-
-#include "test_vectors.h"
-
-#define HASH_SIZE (256/8)
+#endif 
 
 char GetHexadecimalChar(int value){
   if(value < 10){
@@ -233,7 +245,19 @@ int32_t* TerminateFunction(FUInstance* inst){
    }
 }
 
+#ifdef PC
+#define SI 400000
+#else
+#define SI 32
+#endif
+
 static int unitFBits[] = {8};
+static int readMemory_[64];
+static int* readMemory;
+static int writeMemory_[SI];
+static int* writeMemory;
+
+static Wire unitConfigWires[] = {{"configDelay",8}};
 
 // GLOBALS
 Versat* versat;
@@ -241,15 +265,36 @@ Accelerator* accel;
 FUInstance* wMem;
 FUInstance* stateReg[8];
 
+void ClearCache(){
+   int count = 0;
+
+   for(int i = 0; i < 1024; i += 16){
+      count += writeMemory[i];
+   }
+
+   printf("Clear cache: %d [ignore]\n\n",count);
+}
+
 int main()
 {
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
 
+   readMemory = readMemory_;
+   writeMemory = writeMemory_;
+
+   while((((int)readMemory) & (16 * sizeof(int) - 1)) != 0)
+      readMemory += 1;
+
+   while((((int)writeMemory) & (16 * sizeof(int) - 1)) != 0)
+      writeMemory += 1;
+
    Versat versatInstance = {};
    versat = &versatInstance;
 
    InitVersat(versat,VERSAT_BASE);
+
+   versat->useShadowRegisters = 0;
 
    FU_Type ADD = RegisterFU(versat,"xadd",
                                     2, // n inputs
@@ -260,69 +305,232 @@ int main()
                                     NULL,
                                     0, // MemoryMapped
                                     false, // IO
-                                    0, // Extra memory
-                                    NULL,
-                                    AddFunction);
+                                    AddExtraSize(), // Extra memory
+                                    AddInitializeFunction,
+                                    AddStartFunction,
+                                    AddUpdateFunction);
 
+   #if 1
    FU_Type REG = RegisterFU(versat,"xreg",
                                     1, // n inputs
                                     1, // n outputs
-                                    ARRAY_SIZE(regBits), // Config
-                                    regBits,
-                                    ARRAY_SIZE(regStates), // State
-                                    regStates,
+                                    ARRAY_SIZE(regConfigWires), // Config
+                                    regConfigWires,
+                                    ARRAY_SIZE(regStateWires), // State
+                                    regStateWires,
                                     0, // MemoryMapped
                                     false, // IO
                                     sizeof(int32_t) * 2, // Extra memory
-                                    RegStartFunction,
-                                    RegUpdateFunction);
+                                    NULL,
+                                    NULL, //RegStartFunction,
+                                    NULL); //RegUpdateFunction);
+   #endif
+
+   FU_Type VREAD = RegisterFU(versat,"vread",
+                                    0, // n inputs
+                                    1, // n outputs
+                                    ARRAY_SIZE(vreadConfigWires), // Config
+                                    vreadConfigWires, 
+                                    0, // State
+                                    NULL,
+                                    0, // MemoryMapped
+                                    true, // IO
+                                    sizeof(VReadExtra), // Extra memory
+                                    NULL,
+                                    NULL, //VReadStartFunction,
+                                    NULL);//VReadUpdateFunction);
+
+   FU_Type VWRITE = RegisterFU(versat,"vwrite",
+                                    1, // n inputs
+                                    0, // n outputs
+                                    ARRAY_SIZE(vwriteConfigWires), // Config
+                                    vwriteConfigWires, 
+                                    0, // State
+                                    NULL,
+                                    0, // MemoryMapped
+                                    true, // IO
+                                    sizeof(VWriteExtra), // Extra memory
+                                    NULL,
+                                    NULL, //VWriteStartFunction,
+                                    NULL);//VWriteUpdateFunction);
 
    FU_Type MEM = RegisterFU(versat,"xmem #(.ADDR_W(10))",
                                     2, // n inputs
                                     2, // n outputs
-                                    ARRAY_SIZE(memBits), // Config
-                                    memBits, 
+                                    ARRAY_SIZE(memConfigWires), // Config
+                                    memConfigWires, 
                                     0, // State
                                     NULL,
                                     1024 * 4, // MemoryMapped
                                     false, // IO
                                     sizeof(MemExtra), // Extra memory
-                                    MemStartFunction,
-                                    MemUpdateFunction);
+                                    NULL,
+                                    NULL,//MemStartFunction,
+                                    NULL);//MemUpdateFunction);
 
+   #if 1
    FU_Type UNIT_F = RegisterFU(versat,"xunitF",
                                     10, // n inputs
                                     8, // n outputs
-                                    ARRAY_SIZE(unitFBits), // Config
-                                    unitFBits,
+                                    ARRAY_SIZE(unitConfigWires), // Config
+                                    unitConfigWires,
                                     0, // State
                                     NULL,
                                     0, // MemoryMapped
                                     false, // IO
                                     sizeof(UnitFExtra), // Extra memory
+                                    NULL,
                                     UnitFStartFunction,
                                     UnitFUpdateFunction);
 
    FU_Type UNIT_M = RegisterFU(versat,"xunitM",
                                     1, // n inputs
                                     1, // n outputs
-                                    ARRAY_SIZE(unitFBits), // Config
-                                    unitFBits,
+                                    ARRAY_SIZE(unitConfigWires), // Config
+                                    unitConfigWires,
                                     0, // State
                                     NULL,
                                     0, // MemoryMapped
                                     false, // IO
                                     sizeof(UnitMExtra), // Extra memory
+                                    NULL,
                                     UnitMStartFunction,
                                     UnitMUpdateFunction);
+   #endif
 
-   printf("Create Accel\n");
    accel = CreateAccelerator(versat);
-  
+
+   #if 0   
+   //FUInstance* mem = CreateFUInstance(accel,MEM);
+   FUInstance* read = CreateFUInstance(accel,VREAD);
+   FUInstance* write = CreateFUInstance(accel,VWRITE);
+
+   union {
+      void* ptr;
+      int arr[2];
+   } val;
+
+   union {
+      void* ptr;
+      int arr[2];
+   } val2;
+
+   val.ptr = (void*) readMemory;
+   val2.ptr = (void*) writeMemory;
+
+   printf("Read:%x Write:%x\n",val.arr[0],val2.arr[0]);
+
+   #if 0
+   for(int i = 0; i < 32; i++){
+      readMemory[i] = i + 1;
+   }
+   #endif
+
+   {
+      volatile MemConfig* c = (volatile MemConfig*) mem->config;
+
+      c->A.iter = 1;
+      c->A.incr = 1;
+      c->A.delay = 0;
+      c->A.per = 16 + 16; // Add a few more cycles due to terminate function
+      c->A.duty = 16 + 16;
+
+      // Initialize memory to known value
+      for(int i = 0; i < 32; i++){
+         mem->memMapped[i] = i + 1;
+      }
+   }
+
+   {
+      volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+      read->state = readMemory; // Temporary hack
+      val.ptr = (void*) readMemory;
+
+      // Versat side
+      c->B.iter = 1;
+      c->B.incr = 1;
+      c->B.per = 8;
+      c->B.duty = 8;
+
+      // Memory side
+      c->incrA = 1;
+      c->iterA = 1;
+      c->perA = 8;
+      c->dutyA = 8;
+      c->size = 8;
+      c->int_addr = 0;
+      c->ext_addr = val.arr[0];
+   }
+
+   {
+      volatile VWriteConfig* c = (volatile VWriteConfig*) write->config;
+      write->state = writeMemory; // Temporary hack
+      val.ptr = (void*) writeMemory;
+
+      // Versat side
+      c->B.iter = 1;
+      c->B.incr = 1;
+      c->B.per = 16;
+      c->B.duty = 16;
+      c->B.delay = 1;
+
+      // Memory side
+      c->incrA = 1;
+      c->iterA = 1;
+      c->perA = 16;
+      c->dutyA = 16;
+      c->size = 16;
+      c->int_addr = 0;
+      c->ext_addr = val.arr[0];
+   }
+
+   ConnectUnits(versat,read,0,write,0);
+
+   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
+
+   ClearCache();
+
+   for(int i = 0; i < 20; i++){
+      printf("%d ",writeMemory[i]);
+   }
+   printf("\n");
+
+   ClearCache();
+
+   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
+   
+   ClearCache();
+
+   for(int i = 0; i < 20; i++){
+      printf("%d ",writeMemory[i]);
+   }
+   printf("\n");
+
+   ClearCache();
+
+   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
+ 
+   ClearCache();
+
+   for(int i = 0; i < 20; i++){
+      printf("%d ",writeMemory[i]);
+   }
+   printf("\n");
+
+   ClearCache();
+
+   //OutputMemoryMap(versat);
+
+   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
+
+   uart_finish();
+
+   return 0;
+   #endif
+
    FUInstance* unitF[4];
    for(int i = 0; i < 4; i++){
       unitF[i] = CreateFUInstance(accel,UNIT_F);
-   
       volatile UnitFConfig* c = (volatile UnitFConfig*) unitF[i]->config;
 
       c->delay = 3 + (i * 17);
@@ -338,11 +546,11 @@ int main()
    {
       volatile MemConfig* c = (volatile MemConfig*) wMem->config;
       
-      c->A.iter = 1;
-      c->A.incr = 1;
-      c->A.delay = 0;
-      c->A.per = 16;
-      c->A.duty = 16;
+      c->iterA = 1;
+      c->incrA = 1;
+      c->delayA = 0;
+      c->perA = 16;
+      c->dutyA = 16;
    }
 
    FUInstance* kMem[4]; // Could be done by using 1 memory, change later 
@@ -350,11 +558,11 @@ int main()
       kMem[i] = CreateFUInstance(accel,MEM);
       volatile MemConfig* c = (volatile MemConfig*) kMem[i]->config;
       
-      c->A.iter = 1;
-      c->A.incr = 1;
-      c->A.delay = (17*i);
-      c->A.per = 16;
-      c->A.duty = 16;
+      c->iterA = 1;
+      c->incrA = 1;
+      c->delayA = (17*i);
+      c->perA = 16;
+      c->dutyA = 16;
 
       for (int ii = 0; ii < 16; ii++)
       {
@@ -404,9 +612,9 @@ int main()
       ConnectUnits(versat,kMem[i],0,unitF[i],9);
    }
 
-   printf("Connected units\n");
-
    char digest[256];
+
+#ifdef AUTOMATIC_TEST
    int i = 0;
 
    printf("[L = %d]\n", HASH_SIZE);
@@ -419,8 +627,11 @@ int main()
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
    }
    printf("\n");
-  
-   OutputMemoryMap(versat);
+#else
+   //versat_sha256(digest,"",0);
+   printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
+#endif
+
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
    uart_finish();
@@ -521,3 +732,21 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
         store_bigendian_32(&out[i*4],val);
     }
 }
+
+/*
+
+Things to do:
+
+Move non specific versat_instance code upwards
+Implement delay as a standard unit connection
+Implement done as a standard unit connection
+Implement valid data time computation
+   - Need to provide a range of valid data (Meaning that, after delay, the unit will produce a constant stream of valid data for N cycles)
+   - Need to differenciate between units that produce data, process data and consume data (produce and consume have a range of time values, the process do not)
+   - This does not take into account IO operations.
+
+Cleanup the versat value computations and code generation
+   - Add the versat computation function to embedded as well
+   - Refactor the code generation portion into something that is easier to see what it is producing.
+
+*/

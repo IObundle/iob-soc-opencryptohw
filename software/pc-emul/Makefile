@@ -26,6 +26,9 @@ SRC+= $(FIRM_DIR)/firmware.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+=$(UART_DIR)/software/printf.c
 
+#OBJECTS
+OBJ += ./build/verilated.o
+
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
@@ -33,25 +36,37 @@ VALIDATION_LOG:=validation.log
 #RULES
 
 all: build run
+
+ifeq ($(AUTOMATIC_TEST),1)
 run: firmware.out
 	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
+else
+run: firmware.out
+	./firmware.out $(TEST_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
+endif
 
 build: firmware.out
 
-firmware.out: $(HDR) $(SRC)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc -lncurses
+firmware.out: $(HDR) $(SRC) $(OBJ)
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(OBJ) -lstdc++ -lm -lgcc -lc -lncurses
+
+./build/verilated.o:
+	mkdir -p ./build;
+	g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVL_PRINTF=printf \
+	-DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable \
+	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow -c -o ./build/verilated.o /usr/local/share/verilator/include/verilated.cpp
 
 #SHA256 test vectors
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean:
-	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG)
+	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG) build headers versat_instance.v versat_defs.vh versat_instance_template.h UARTsw_reg.h
 
-.PHONY: all build run clean subs periphs_tmp.h
+.PHONY: all build run clean subs periphs_tmp.h firmware.out

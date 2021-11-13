@@ -1,17 +1,6 @@
-Create Accel
-Connected units
-Done versat
 
-87B0AA2EEFC1A296A09A145C7EDB44DF6A0D693082B107827C235693E675E59B
 
-Memory mapped: 20480
-Units mapped: 5
-Configuration registers: 163
-Configuration bits needed: 1522
-State registers: 8
-State bits needed: 256
-Number units: 28
+ShortMessage Test PASSED
 
-Mem/Config bit size:14
-Unit Selection bit size:15
+
 
