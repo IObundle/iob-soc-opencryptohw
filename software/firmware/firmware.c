@@ -6,9 +6,9 @@
 #include "FU_Defs.h"
 #include "string.h"
 
-#include "crypto/sha2.h"
+//#include "crypto/sha2.h"
 
-#include "test_vectors.h"
+#include "../test_vectors.h"
 #include "unitVerilogWrappers.h"
 
 #define HASH_SIZE (256/8)
@@ -294,7 +294,7 @@ int main()
 
    InitVersat(versat,VERSAT_BASE);
 
-   versat->useShadowRegisters = 1;
+   versat->useShadowRegisters = 0;
 
    FU_Type ADD = RegisterFU(versat,"xadd",
                                     2, // n inputs
@@ -621,7 +621,7 @@ int main()
 
    //Message test loop
    for(i=0; i< NUM_MSGS; i++){
-      sha256(digest,msg_array[i],msg_len[i]);
+      versat_sha256(digest,msg_array[i],msg_len[i]);
       printf("\nLen = %d\n", msg_len[i]*8);
       printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
       printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
