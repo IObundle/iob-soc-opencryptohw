@@ -91,12 +91,10 @@ test-sim-clean:
 	make sim-clean SIMULATOR=icarus
 
 test-fpga:
-	make fpga-test BOARD=CYCLONEV-GT-DK
-	make fpga-test BOARD=AES-KU040-DB-G
+	make fpga-test BOARD=AES-KU040-DB-G TEST_LOG=">> test.log"
 
 test-fpga-clean:
-	make fpga-clean BOARD=CYCLONEV-GT-DK
-	make fpga-clean BOARD=AES-KU040-DB-G
+	make fpga-clean BOARD=AES-KU040-DB-G TEST_LOG=">> test.log"
 
 test-doc:
 	make doc-test DOC=pb
