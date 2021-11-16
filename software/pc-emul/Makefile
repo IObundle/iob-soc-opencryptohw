@@ -26,12 +26,13 @@ SRC+= $(FIRM_DIR)/firmware.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+=$(UART_DIR)/software/printf.c
 
-#OBJECTS
-OBJ += ./build/verilated.o
-
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
+
+#UNITS TO VERILATE
+VERILATE_UNIT += xunitF
+VERILATE_UNIT += xunitM
 
 #RULES
 
@@ -56,12 +57,13 @@ build: firmware.out
 firmware.out: $(HDR) $(SRC) $(OBJ)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(OBJ) -lstdc++ -lm -lgcc -lc -lncurses
 
-./build/verilated.o:
-	mkdir -p ./build;
-	g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVL_PRINTF=printf \
-	-DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow -c -o ./build/verilated.o /usr/local/share/verilator/include/verilated.cpp
-
+./build/%.o: $(HW_DIR)/src/units/%.v
+	verilator $(INCLUDE_VERILATOR) -cc -Mdir ./obj $<;
+	cd ./obj && make -f V$*.mk;
+	mkdir -p ./build; mv ./obj/V$*__ALL.o ./build/$*.o;
+	mv ./obj/V$*.h ./build/$*.h
+	rm -r -f ./obj
+	
 #SHA256 test vectors
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@

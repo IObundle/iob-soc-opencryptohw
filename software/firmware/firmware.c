@@ -2,9 +2,9 @@
 #include "periphs.h"
 #include "iob-uart.h"
 #include "printf.h"
-#include "versat.h"
-#include "FU_Defs.h"
 #include "string.h"
+
+#include "versat.h"
 
 //#include "crypto/sha2.h"
 
@@ -26,9 +26,9 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
 }
 
 int32_t* MemTerminateFunction(FUInstance* inst){
-   MemExtra* e = (MemExtra*) inst->extraData;
-   if(e->done)
-      return (int32_t*) 1;
+//   MemExtra* e = (MemExtra*) inst->extraData;
+//   if(e->done)
+//      return (int32_t*) 1;
 
    return (int32_t*) 0;
 }
@@ -46,7 +46,6 @@ int32_t* CycleTerminateFunction(FUInstance* inst){
    return (int32_t*) 0;
 }
 
-#define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
 #if 1
 #define SHR(x, c) ((x) >> (c))
@@ -296,79 +295,16 @@ int main()
 
    versat->useShadowRegisters = 0;
 
-   FU_Type ADD = RegisterFU(versat,"xadd",
-                                    2, // n inputs
-                                    1, // n outputs
-                                    0, // Config
-                                    NULL,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    AddExtraSize(), // Extra memory
-                                    AddInitializeFunction,
-                                    AddStartFunction,
-                                    AddUpdateFunction);
+   // Versat specific units
+   FU_Type ADD = RegisterAdd(versat);
+   FU_Type REG = RegisterReg(versat);
+   FU_Type VREAD = RegisterVRead(versat);
+   FU_Type VWRITE = RegisterVWrite(versat);
+   FU_Type MEM = RegisterMem(versat,10);
 
-   #if 1
-   FU_Type REG = RegisterFU(versat,"xreg",
-                                    1, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(regConfigWires), // Config
-                                    regConfigWires,
-                                    ARRAY_SIZE(regStateWires), // State
-                                    regStateWires,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(int32_t) * 2, // Extra memory
-                                    NULL,
-                                    NULL, //RegStartFunction,
-                                    NULL); //RegUpdateFunction);
-   #endif
+   FU_Type UNIT_F,UNIT_M;
 
-   FU_Type VREAD = RegisterFU(versat,"vread",
-                                    0, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(vreadConfigWires), // Config
-                                    vreadConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    true, // IO
-                                    sizeof(VReadExtra), // Extra memory
-                                    NULL,
-                                    NULL, //VReadStartFunction,
-                                    NULL);//VReadUpdateFunction);
-
-   FU_Type VWRITE = RegisterFU(versat,"vwrite",
-                                    1, // n inputs
-                                    0, // n outputs
-                                    ARRAY_SIZE(vwriteConfigWires), // Config
-                                    vwriteConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    true, // IO
-                                    sizeof(VWriteExtra), // Extra memory
-                                    NULL,
-                                    NULL, //VWriteStartFunction,
-                                    NULL);//VWriteUpdateFunction);
-
-   FU_Type MEM = RegisterFU(versat,"xmem #(.ADDR_W(10))",
-                                    2, // n inputs
-                                    2, // n outputs
-                                    ARRAY_SIZE(memConfigWires), // Config
-                                    memConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    1024 * 4, // MemoryMapped
-                                    false, // IO
-                                    sizeof(MemExtra), // Extra memory
-                                    NULL,
-                                    NULL,//MemStartFunction,
-                                    NULL);//MemUpdateFunction);
-
-   #if 1
+   #if 0
    FU_Type UNIT_F = RegisterFU(versat,"xunitF",
                                     10, // n inputs
                                     8, // n outputs
