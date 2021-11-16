@@ -96,7 +96,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: run-shortmsg parse-log
 
 run-shortmsg:
-	make all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
+	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
 
 parse-log: $(FPGA_LOG)
 	sed -n -e '/\[L = /,$$p' $(FPGA_LOG) | tac | sed -n -e '/MD =/,$$p' | tac > $(FPGA_PARSED_LOG)
