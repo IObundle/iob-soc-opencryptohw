@@ -67,3 +67,35 @@ RISCV emulation requires:
     export PATH=$RISCV:$PATH
     ```
 - Verilog simulator (for example icarus verilog)
+
+# FPGA Execution
+The system can be tested on FPGA with:
+```
+make test-fpga
+```
+
+The results can be manually checked in 
+`hardware/fpga/<tool>/<board>/test.log_parsed.log`, where `<tool>` is the 
+tool used for synthesis and `<board>` is the board directory name.
+
+The system has been tested with the `AES-KU040-DB-G` board from Xilinx. In that
+case the results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
+
+### Clean environment
+To clean the workspace after the FPGA execution:
+```
+make test-fpga-clean
+```
+
+### Requirements/Setup
+FPGA execution requires:
+- Supported FPGA board
+- Setup environment for FPGA execution
+    - Add the executable paths and license servers in `$HOME/.bashrc`:
+    ```
+    export VIVADOPATH=/path/to/vivado
+    ...
+    export LM_LICENSE_FILE=port@licenseserver.myorg.com;lic_or_dat_file
+    ```
+    - Follow [IOb-soc's README](https://github.com/IObundle/iob-soc#readme) for
+    more installation details.

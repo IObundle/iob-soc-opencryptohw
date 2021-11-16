@@ -82,7 +82,7 @@ kill-remote-sim:
 	ssh $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC)'
 
 test: clean-testlog test-shortmsg
-	if cmp --silent $(VALIDATION_LOG) $(SIM_PARSED_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+	if cmp --silent $(VALIDATION_LOG) $(SIM_PARSED_LOG); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
 
 test-shortmsg: sim-shortmsg parse-log 
