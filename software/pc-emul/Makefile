@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-g -Os
+CFLAGS=-g -Os -mx32
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -34,6 +34,8 @@ VALIDATION_LOG:=validation.log
 VERILATE_UNIT += xunitF
 VERILATE_UNIT += xunitM
 
+OBJ += ./build/unitWrapper.o
+
 #RULES
 
 all: build run
@@ -55,13 +57,16 @@ endif
 build: firmware.out
 
 firmware.out: $(HDR) $(SRC) $(OBJ)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(OBJ) -lstdc++ -lm -lgcc -lc -lncurses
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
+
+./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp
+	g++ -g -c -o ./build/unitWrapper.o -mx32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
 ./build/%.o: $(HW_DIR)/src/units/%.v
-	verilator $(INCLUDE_VERILATOR) -cc -Mdir ./obj $<;
+	verilator -CFLAGS "-g -mx32" $(INCLUDE_VERILATOR) --trace -cc -Mdir ./obj $<;
 	cd ./obj && make -f V$*.mk;
-	mkdir -p ./build; mv ./obj/V$*__ALL.o ./build/$*.o;
-	mv ./obj/V$*.h ./build/$*.h
+	mkdir -p ./build; mv ./obj/*.o ./build/;
+	mv ./obj/*.h ./build/
 	rm -r -f ./obj
 	
 #SHA256 test vectors

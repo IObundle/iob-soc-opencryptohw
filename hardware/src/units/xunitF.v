@@ -22,6 +22,7 @@ module xunitF #(
     input [DATA_W-1:0]  in5,
     input [DATA_W-1:0]  in6,
     input [DATA_W-1:0]  in7,
+
     input [DATA_W-1:0]  in8,
     input [DATA_W-1:0]  in9,
 
