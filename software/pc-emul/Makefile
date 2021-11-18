@@ -31,10 +31,10 @@ TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
 
 #UNITS TO VERILATE
-VERILATE_UNIT += xunitF
-VERILATE_UNIT += xunitM
+VERILATE_UNIT = xunitF xunitM
 
-OBJ += ./build/unitWrapper.o
+UNIT_OBJ+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj)__ALLcls.o)
+OBJ+=./build/unitWrapper.o
 
 #RULES
 
@@ -56,15 +56,15 @@ endif
 
 build: firmware.out
 
-firmware.out: $(HDR) $(SRC) $(OBJ)
+firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
 
-./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp
+./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
 	g++ -g -c -o ./build/unitWrapper.o -mx32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
-./build/%.o: $(HW_DIR)/src/units/%.v
-	verilator -CFLAGS "-g -mx32" $(INCLUDE_VERILATOR) --trace -cc -Mdir ./obj $<;
-	cd ./obj && make -f V$*.mk;
+./build/V%__ALLcls.o: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "-g -mx32" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;
 	mv ./obj/*.h ./build/
 	rm -r -f ./obj
