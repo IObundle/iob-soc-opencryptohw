@@ -121,8 +121,6 @@ int main()
 
    InitVersat(versat,VERSAT_BASE);
 
-   versat->useShadowRegisters = 0;
-
    // Versat specific units
    FU_Type ADD = RegisterAdd(versat);
    FU_Type REG = RegisterReg(versat);
@@ -131,13 +129,13 @@ int main()
    FU_Type MEM = RegisterMem(versat,10);
    FU_Type DEBUG = RegisterDebug(versat);
 
+   // Sha specific units
    FU_Type UNIT_F = RegisterUnitF(versat);
    FU_Type UNIT_M = RegisterUnitM(versat);
 
    accel = CreateAccelerator(versat);
 
    read = CreateFUInstance(accel,VREAD);
-   //ConnectUnits(versat,read,0,CreateFUInstance(accel,DEBUG),0);
 
    {
       volatile VReadConfig* c = (volatile VReadConfig*) read->config;
@@ -173,20 +171,6 @@ int main()
          }
       }
    }
-   
-   #if 0
-   wMem = CreateFUInstance(accel,MEM);   
-   {
-      volatile MemConfig* c = (volatile MemConfig*) wMem->config;
-      
-      c->iterA = 1;
-      c->incrA = 1;
-      c->delayA = 0;
-      c->perA = 16;
-      c->dutyA = 16;
-   }
-   //ConnectUnits(versat,wMem,0,CreateFUInstance(accel,DEBUG),0);
-   #endif
 
    FUInstance* kMem[4]; // Could be done by using 1 memory, change later 
    for(int i = 0; i < 4; i++){
@@ -226,7 +210,6 @@ int main()
       ConnectUnits(versat,add,0,stateReg[i],0);
    }
 
-   //ConnectUnits(versat,wMem,0,unitF[0],8);
    ConnectUnits(versat,read,0,unitF[0],8);
 
    FUInstance* unitM[3];
@@ -235,20 +218,22 @@ int main()
 
       volatile UnitMConfig* c = (volatile UnitMConfig*) unitM[i]->config;
 
-      c->configDelay = 3 + 16 * (i+1) + i;
+      c->configDelay = 3 + 16 * (i+1) + i; // No pc-emul, acede a uma estrutura , no embedded acede a unidade no versat
 
       ConnectUnits(versat,unitM[i],0,unitF[i+1],8);
       if(i != 0){
          ConnectUnits(versat,unitM[i-1],0,unitM[i],0);
       }
    }
-   //ConnectUnits(versat,wMem,0,unitM[0],0);
    ConnectUnits(versat,read,0,unitM[0],0);
 
    for(int i = 0; i < 4; i++){
       ConnectUnits(versat,kMem[i],0,unitF[i],9);
    }
    #endif
+
+   // Gera o versat.
+   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
    char digest[256];
 
@@ -274,10 +259,9 @@ int main()
    versat_sha256(digest,"123",3);
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
 
-   //OutputMemoryMap(versat);
+   OutputMemoryMap(versat);
 #endif
-   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
-
+   
    uart_finish();
 
    return 0;
@@ -375,13 +359,8 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
         versat_crypto_hashblocks_sha256(padded, 128);
     }
     
-    // Does the last work
-    #if 0
-    AcceleratorRun(versat,accel,NULL,TerminateFunction);
-    #endif
-
     for (size_t i = 0; i < 8; ++i) {
-        uint32_t val = stateReg[i]->state[0];
+        uint32_t val = *stateReg[i]->state;
 
         store_bigendian_32(&out[i*4],val);
     }
