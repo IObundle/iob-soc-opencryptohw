@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-g -Os
+CFLAGS=-g -Os -mx32
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -26,12 +26,15 @@ SRC+= $(FIRM_DIR)/firmware.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+=$(UART_DIR)/software/printf.c
 
-#OBJECTS
-OBJ += ./build/verilated.o
-
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
+
+#UNITS TO VERILATE
+VERILATE_UNIT = xunitF xunitM
+
+UNIT_OBJ+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj)__ALLcls.o)
+OBJ+=./build/unitWrapper.o
 
 #RULES
 
@@ -53,15 +56,19 @@ endif
 
 build: firmware.out
 
-firmware.out: $(HDR) $(SRC) $(OBJ)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(OBJ) -lstdc++ -lm -lgcc -lc -lncurses
+firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
 
-./build/verilated.o:
-	mkdir -p ./build;
-	g++  -I.  -MMD -I/usr/local/share/verilator/include -I/usr/local/share/verilator/include/vltstd -DVL_PRINTF=printf \
-	-DVM_COVERAGE=0 -DVM_SC=0 -DVM_TRACE=0 -Wno-sign-compare -Wno-uninitialized -Wno-unused-but-set-variable \
-	-Wno-unused-parameter -Wno-unused-variable -Wno-shadow -c -o ./build/verilated.o /usr/local/share/verilator/include/verilated.cpp
+./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
+	g++ -g -c -o ./build/unitWrapper.o -mx32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
+./build/V%__ALLcls.o: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "-g -mx32" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
+	mkdir -p ./build; mv ./obj/*.o ./build/;
+	mv ./obj/*.h ./build/
+	rm -r -f ./obj
+	
 #SHA256 test vectors
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@

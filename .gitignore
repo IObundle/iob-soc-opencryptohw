@@ -13,7 +13,9 @@ software/*/*
 !software/bootloader/boot.c
 !software/bootloader/boot.S
 
-!software/firmware/firmware.c
+!software/firmware/*.c
+!software/firmware/*.h
+!software/firmware/*.cpp
 !software/firmware/firmware.S
 !software/firmware/crypto/
 

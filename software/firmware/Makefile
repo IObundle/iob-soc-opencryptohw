@@ -20,6 +20,7 @@ HDR+=periphs.h
 #SOURCES
 SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
+SRC+= $(FIRM_DIR)/unitWrapper.c
 
 #RULES
 run: firmware.elf

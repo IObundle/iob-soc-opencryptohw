@@ -60,8 +60,8 @@ endif
 VSRC+=system.v
 
 VSRC+=$(SRC_DIR)/versat_instance.v
-VSRC+=$(SRC_DIR)/xunitF.v
-VSRC+=$(SRC_DIR)/xunitM.v
+VSRC+=$(SRC_DIR)/units/xunitF.v
+VSRC+=$(SRC_DIR)/units/xunitM.v
 
 IMAGES=boot.hex firmware.hex
 

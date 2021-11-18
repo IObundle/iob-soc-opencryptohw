@@ -2,13 +2,14 @@
 #include "periphs.h"
 #include "iob-uart.h"
 #include "printf.h"
-#include "versat.h"
-#include "FU_Defs.h"
 #include "string.h"
 
-//#include "crypto/sha2.h"
+#include "versat.h"
+
+#include "crypto/sha2.h"
 
 #include "../test_vectors.h"
+#include "unitWrapper.h"
 #include "unitVerilogWrappers.h"
 
 #define HASH_SIZE (256/8)
@@ -25,74 +26,6 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
     x[0] = (uint8_t) u;
 }
 
-int32_t* MemTerminateFunction(FUInstance* inst){
-   MemExtra* e = (MemExtra*) inst->extraData;
-   if(e->done)
-      return (int32_t*) 1;
-
-   return (int32_t*) 0;
-}
-
-int32_t* CycleTerminateFunction(FUInstance* inst){
-   static int cycles = 60;
-
-   cycles -= 1;
-
-   if(cycles == 0){
-      cycles = 60;
-      return (int32_t*) 1;
-   }
-
-   return (int32_t*) 0;
-}
-
-#define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
-
-#if 1
-#define SHR(x, c) ((x) >> (c))
-#define ROTR_32(x, c) (((x) >> (c)) | ((x) << (32 - (c))))
-#define ROTR_64(x, c) (((x) >> (c)) | ((x) << (64 - (c))))
-
-#define Ch(x, y, z) (((x) & (y)) ^ (~(x) & (z)))
-#define Maj(x, y, z) (((x) & (y)) ^ ((x) & (z)) ^ ((y) & (z)))
-
-#define Sigma0_32(x) (ROTR_32(x, 2) ^ ROTR_32(x,13) ^ ROTR_32(x,22))
-#define Sigma1_32(x) (ROTR_32(x, 6) ^ ROTR_32(x,11) ^ ROTR_32(x,25))
-#define sigma0_32(x) (ROTR_32(x, 7) ^ ROTR_32(x,18) ^ SHR(x, 3))
-#define sigma1_32(x) (ROTR_32(x,17) ^ ROTR_32(x,19) ^ SHR(x,10))
-
-#define M_32(w0, w14, w9, w1) w0 = sigma1_32(w14) + (w9) + sigma0_32(w1) + (w0);
-
-#define F_32(w, k)                                   \
-    T1 = h + Sigma1_32(e) + Ch(e, f, g) + (k) + (w); \
-    T2 = Sigma0_32(a) + Maj(a, b, c);                \
-    h = g;                                           \
-    g = f;                                           \
-    f = e;                                           \
-    e = d + T1;                                      \
-    d = c;                                           \
-    c = b;                                           \
-    b = a;                                           \
-    a = T1 + T2;
-
-typedef struct {
-   int delay;
-} UnitFConfig;
-
-typedef struct {
-   uint32_t a,b,c,d,e,f,g,h;
-   uint32_t delay;
-} UnitFExtra;
-
-int32_t* UnitFStartFunction(FUInstance* instance){
-   UnitFConfig* config = (UnitFConfig*) instance->config;
-   UnitFExtra* extra = (UnitFExtra*) instance->extraData;   
-
-   extra->delay = config->delay;
-
-   return NULL;
-}
-
 static uint32_t initialStateValues[] = {0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19};
 static uint32_t kConstants0[] = {0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
 static uint32_t kConstants1[] = {0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967};
@@ -100,106 +33,6 @@ static uint32_t kConstants2[] = {0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x6
 static uint32_t kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
 
 static uint32_t* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
-
-int32_t* UnitFUpdateFunction(FUInstance* instance){
-   static int32_t results[8];
-
-   UnitFConfig* config = (UnitFConfig*) instance->config;
-   UnitFExtra* extra = (UnitFExtra*) instance->extraData;
-
-   memset(results,0,sizeof(int32_t) * 8);
-
-   if(extra->delay == 1){
-      extra->a = (uint32_t) GetInputValue(instance,0);
-      extra->b = (uint32_t) GetInputValue(instance,1);
-      extra->c = (uint32_t) GetInputValue(instance,2);
-      extra->d = (uint32_t) GetInputValue(instance,3);
-      extra->e = (uint32_t) GetInputValue(instance,4);
-      extra->f = (uint32_t) GetInputValue(instance,5);
-      extra->g = (uint32_t) GetInputValue(instance,6);
-      extra->h = (uint32_t) GetInputValue(instance,7);
-      
-      extra->delay = 0;
-
-      return results;
-   } else if(extra->delay > 0){
-      extra->delay -= 1;
-      return results;
-   }
-
-   uint32_t a = (uint32_t) extra->a;
-   uint32_t b = (uint32_t) extra->b;
-   uint32_t c = (uint32_t) extra->c;
-   uint32_t d = (uint32_t) extra->d;
-   uint32_t e = (uint32_t) extra->e;
-   uint32_t f = (uint32_t) extra->f;
-   uint32_t g = (uint32_t) extra->g;
-   uint32_t h = (uint32_t) extra->h;
-
-   uint32_t w = (uint32_t) GetInputValue(instance,8);
-   uint32_t k = (uint32_t) GetInputValue(instance,9);
-
-   uint32_t T1,T2;
-
-   F_32(w,k)
-
-   extra->a = results[0] = a;
-   extra->b = results[1] = b;
-   extra->c = results[2] = c;
-   extra->d = results[3] = d;
-   extra->e = results[4] = e;
-   extra->f = results[5] = f;
-   extra->g = results[6] = g;
-   extra->h = results[7] = h;
-
-   return results;
-}
-
-typedef struct{
-   int delay;
-} UnitMConfig;
-
-
-typedef struct{
-   uint32_t w[16];
-   int delay;
-} UnitMExtra;
-
-int32_t* UnitMStartFunction(FUInstance* instance){
-   UnitMConfig* config = (UnitMConfig*) instance->config;
-   UnitMExtra* extra = (UnitMExtra*) instance->extraData;   
-
-   extra->delay = config->delay;
-
-   return NULL;
-}
-
-int32_t* UnitMUpdateFunction(FUInstance* instance){
-   static int32_t result;
-
-   UnitMConfig* config = (UnitMConfig*) instance->config;
-   UnitMExtra* extra = (UnitMExtra*) instance->extraData;
-
-   uint32_t w0 = extra->w[0];
-
-   M_32(w0,extra->w[14],extra->w[9],extra->w[1])
-
-   for(int i = 0; i < (16-1); i++){
-      extra->w[i] = extra->w[i+1];
-   }
-
-   result = w0;
-
-   if(extra->delay > 0){      
-      extra->w[15] = GetInputValue(instance,0);
-      extra->delay -= 1;
-   } else {
-      extra->w[15] = result;
-   }
-
-   return &result;
-}
-#endif 
 
 char GetHexadecimalChar(int value){
   if(value < 10){
@@ -245,25 +78,19 @@ int32_t* TerminateFunction(FUInstance* inst){
    }
 }
 
-#ifdef PC
-#define SI 400000
-#else
-#define SI 32
-#endif
-
 static int unitFBits[] = {8};
 static int readMemory_[64];
 static int* readMemory;
-static int writeMemory_[SI];
+static int writeMemory_[64];
 static int* writeMemory;
-
-static Wire unitConfigWires[] = {{"configDelay",8}};
 
 // GLOBALS
 Versat* versat;
 Accelerator* accel;
 FUInstance* wMem;
+FUInstance* read;
 FUInstance* stateReg[8];
+bool initVersat = false;
 
 void ClearCache(){
    int count = 0;
@@ -280,9 +107,9 @@ int main()
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
 
+   // Force alignment on a 64 byte boundary
    readMemory = readMemory_;
    writeMemory = writeMemory_;
-
    while((((int)readMemory) & (16 * sizeof(int) - 1)) != 0)
       readMemory += 1;
 
@@ -294,263 +121,55 @@ int main()
 
    InitVersat(versat,VERSAT_BASE);
 
-   versat->useShadowRegisters = 0;
+   // Versat specific units
+   FU_Type ADD = RegisterAdd(versat);
+   FU_Type REG = RegisterReg(versat);
+   FU_Type VREAD = RegisterVRead(versat);
+   FU_Type VWRITE = RegisterVWrite(versat);
+   FU_Type MEM = RegisterMem(versat,10);
+   FU_Type DEBUG = RegisterDebug(versat);
 
-   FU_Type ADD = RegisterFU(versat,"xadd",
-                                    2, // n inputs
-                                    1, // n outputs
-                                    0, // Config
-                                    NULL,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    AddExtraSize(), // Extra memory
-                                    AddInitializeFunction,
-                                    AddStartFunction,
-                                    AddUpdateFunction);
-
-   #if 1
-   FU_Type REG = RegisterFU(versat,"xreg",
-                                    1, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(regConfigWires), // Config
-                                    regConfigWires,
-                                    ARRAY_SIZE(regStateWires), // State
-                                    regStateWires,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(int32_t) * 2, // Extra memory
-                                    NULL,
-                                    NULL, //RegStartFunction,
-                                    NULL); //RegUpdateFunction);
-   #endif
-
-   FU_Type VREAD = RegisterFU(versat,"vread",
-                                    0, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(vreadConfigWires), // Config
-                                    vreadConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    true, // IO
-                                    sizeof(VReadExtra), // Extra memory
-                                    NULL,
-                                    NULL, //VReadStartFunction,
-                                    NULL);//VReadUpdateFunction);
-
-   FU_Type VWRITE = RegisterFU(versat,"vwrite",
-                                    1, // n inputs
-                                    0, // n outputs
-                                    ARRAY_SIZE(vwriteConfigWires), // Config
-                                    vwriteConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    true, // IO
-                                    sizeof(VWriteExtra), // Extra memory
-                                    NULL,
-                                    NULL, //VWriteStartFunction,
-                                    NULL);//VWriteUpdateFunction);
-
-   FU_Type MEM = RegisterFU(versat,"xmem #(.ADDR_W(10))",
-                                    2, // n inputs
-                                    2, // n outputs
-                                    ARRAY_SIZE(memConfigWires), // Config
-                                    memConfigWires, 
-                                    0, // State
-                                    NULL,
-                                    1024 * 4, // MemoryMapped
-                                    false, // IO
-                                    sizeof(MemExtra), // Extra memory
-                                    NULL,
-                                    NULL,//MemStartFunction,
-                                    NULL);//MemUpdateFunction);
-
-   #if 1
-   FU_Type UNIT_F = RegisterFU(versat,"xunitF",
-                                    10, // n inputs
-                                    8, // n outputs
-                                    ARRAY_SIZE(unitConfigWires), // Config
-                                    unitConfigWires,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(UnitFExtra), // Extra memory
-                                    NULL,
-                                    UnitFStartFunction,
-                                    UnitFUpdateFunction);
-
-   FU_Type UNIT_M = RegisterFU(versat,"xunitM",
-                                    1, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(unitConfigWires), // Config
-                                    unitConfigWires,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(UnitMExtra), // Extra memory
-                                    NULL,
-                                    UnitMStartFunction,
-                                    UnitMUpdateFunction);
-   #endif
+   // Sha specific units
+   FU_Type UNIT_F = RegisterUnitF(versat);
+   FU_Type UNIT_M = RegisterUnitM(versat);
 
    accel = CreateAccelerator(versat);
 
-   #if 0   
-   //FUInstance* mem = CreateFUInstance(accel,MEM);
-   FUInstance* read = CreateFUInstance(accel,VREAD);
-   FUInstance* write = CreateFUInstance(accel,VWRITE);
-
-   union {
-      void* ptr;
-      int arr[2];
-   } val;
-
-   union {
-      void* ptr;
-      int arr[2];
-   } val2;
-
-   val.ptr = (void*) readMemory;
-   val2.ptr = (void*) writeMemory;
-
-   printf("Read:%x Write:%x\n",val.arr[0],val2.arr[0]);
-
-   #if 0
-   for(int i = 0; i < 32; i++){
-      readMemory[i] = i + 1;
-   }
-   #endif
-
-   {
-      volatile MemConfig* c = (volatile MemConfig*) mem->config;
-
-      c->A.iter = 1;
-      c->A.incr = 1;
-      c->A.delay = 0;
-      c->A.per = 16 + 16; // Add a few more cycles due to terminate function
-      c->A.duty = 16 + 16;
-
-      // Initialize memory to known value
-      for(int i = 0; i < 32; i++){
-         mem->memMapped[i] = i + 1;
-      }
-   }
+   read = CreateFUInstance(accel,VREAD);
 
    {
       volatile VReadConfig* c = (volatile VReadConfig*) read->config;
-      read->state = readMemory; // Temporary hack
-      val.ptr = (void*) readMemory;
 
       // Versat side
-      c->B.iter = 1;
-      c->B.incr = 1;
-      c->B.per = 8;
-      c->B.duty = 8;
-
-      // Memory side
-      c->incrA = 1;
-      c->iterA = 1;
-      c->perA = 8;
-      c->dutyA = 8;
-      c->size = 8;
-      c->int_addr = 0;
-      c->ext_addr = val.arr[0];
-   }
-
-   {
-      volatile VWriteConfig* c = (volatile VWriteConfig*) write->config;
-      write->state = writeMemory; // Temporary hack
-      val.ptr = (void*) writeMemory;
-
-      // Versat side
-      c->B.iter = 1;
-      c->B.incr = 1;
-      c->B.per = 16;
-      c->B.duty = 16;
-      c->B.delay = 1;
+      c->iterB = 1;
+      c->incrB = 1;
+      c->perB = 16;
+      c->dutyB = 16;
+      c->delayB = 2;
 
       // Memory side
       c->incrA = 1;
       c->iterA = 1;
       c->perA = 16;
       c->dutyA = 16;
-      c->size = 16;
+      c->size = 8;
       c->int_addr = 0;
-      c->ext_addr = val.arr[0];
+      c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
    }
 
-   ConnectUnits(versat,read,0,write,0);
-
-   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
-
-   ClearCache();
-
-   for(int i = 0; i < 20; i++){
-      printf("%d ",writeMemory[i]);
-   }
-   printf("\n");
-
-   ClearCache();
-
-   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
-   
-   ClearCache();
-
-   for(int i = 0; i < 20; i++){
-      printf("%d ",writeMemory[i]);
-   }
-   printf("\n");
-
-   ClearCache();
-
-   AcceleratorRun(versat,accel,NULL,CycleTerminateFunction);
- 
-   ClearCache();
-
-   for(int i = 0; i < 20; i++){
-      printf("%d ",writeMemory[i]);
-   }
-   printf("\n");
-
-   ClearCache();
-
-   //OutputMemoryMap(versat);
-
-   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
-
-   uart_finish();
-
-   return 0;
-   #endif
-
+   #if 1
    FUInstance* unitF[4];
    for(int i = 0; i < 4; i++){
       unitF[i] = CreateFUInstance(accel,UNIT_F);
       volatile UnitFConfig* c = (volatile UnitFConfig*) unitF[i]->config;
 
-      c->delay = 3 + (i * 17);
+      c->configDelay = 3 + (i * 17);
 
       if(i > 0){
          for(int ii = 0; ii < 8; ii++){
             ConnectUnits(versat,unitF[i-1],ii,unitF[i],ii);
          }
       }
-   }
-   
-   wMem = CreateFUInstance(accel,MEM);   
-   {
-      volatile MemConfig* c = (volatile MemConfig*) wMem->config;
-      
-      c->iterA = 1;
-      c->incrA = 1;
-      c->delayA = 0;
-      c->perA = 16;
-      c->dutyA = 16;
    }
 
    FUInstance* kMem[4]; // Could be done by using 1 memory, change later 
@@ -566,10 +185,10 @@ int main()
 
       for (int ii = 0; ii < 16; ii++)
       {
-         kMem[i]->memMapped[ii] = kConstants[i][ii];
+         VersatUnitWrite(versat,kMem[i],ii,kConstants[i][ii]);
       }
    }
-
+   
    for(int i = 0; i < 8; i++){
       stateReg[i] = CreateFUInstance(accel,REG);
 
@@ -577,7 +196,7 @@ int main()
          volatile RegConfig* config = (volatile RegConfig*) stateReg[i]->config; 
 
          config->writeDelay = 3 + (16*4) + 5;
-         config->initialValue = (int32_t) initialStateValues[i];
+         VersatUnitWrite(versat,stateReg[i],0,initialStateValues[i]);
       }
 
       ConnectUnits(versat,stateReg[i],0,unitF[0],i);
@@ -591,7 +210,7 @@ int main()
       ConnectUnits(versat,add,0,stateReg[i],0);
    }
 
-   ConnectUnits(versat,wMem,0,unitF[0],8);
+   ConnectUnits(versat,read,0,unitF[0],8);
 
    FUInstance* unitM[3];
    for(int i = 0; i < 3; i++){
@@ -599,20 +218,28 @@ int main()
 
       volatile UnitMConfig* c = (volatile UnitMConfig*) unitM[i]->config;
 
-      c->delay = 3 + 16 * (i+1) + i;
+      c->configDelay = 3 + 16 * (i+1) + i; // No pc-emul, acede a uma estrutura , no embedded acede a unidade no versat
 
       ConnectUnits(versat,unitM[i],0,unitF[i+1],8);
       if(i != 0){
          ConnectUnits(versat,unitM[i-1],0,unitM[i],0);
       }
    }
-   ConnectUnits(versat,wMem,0,unitM[0],0);
+   ConnectUnits(versat,read,0,unitM[0],0);
 
    for(int i = 0; i < 4; i++){
       ConnectUnits(versat,kMem[i],0,unitF[i],9);
    }
+   #endif
+
+   // Gera o versat.
+   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
 
    char digest[256];
+
+   for(int i = 0; i < 256; i++){
+      digest[i] = 0;
+   }
 
 #ifdef AUTOMATIC_TEST
    int i = 0;
@@ -628,12 +255,13 @@ int main()
    }
    printf("\n");
 #else
-   //versat_sha256(digest,"",0);
+   printf("a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3\n");
+   versat_sha256(digest,"123",3);
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
+
+   OutputMemoryMap(versat);
 #endif
-
-   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
-
+   
    uart_finish();
 
    return 0;
@@ -644,41 +272,46 @@ static uint32_t load_bigendian_32(const uint8_t *x) {
            (((uint32_t)(x[1])) << 16) | (((uint32_t)(x[0])) << 24);
 }
 
-
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
     uint32_t w[16];
 
+   {
+      volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+      c->ext_addr = (int) w;
+   }
+
     while (inlen >= 64) {
-        w[0]  = load_bigendian_32(in + 0);
-        w[1]  = load_bigendian_32(in + 4);
-        w[2]  = load_bigendian_32(in + 8);
-        w[3]  = load_bigendian_32(in + 12);
-        w[4]  = load_bigendian_32(in + 16);
-        w[5]  = load_bigendian_32(in + 20);
-        w[6]  = load_bigendian_32(in + 24);
-        w[7]  = load_bigendian_32(in + 28);
-        w[8]  = load_bigendian_32(in + 32);
-        w[9]  = load_bigendian_32(in + 36);
-        w[10] = load_bigendian_32(in + 40);
-        w[11] = load_bigendian_32(in + 44);
-        w[12] = load_bigendian_32(in + 48);
-        w[13] = load_bigendian_32(in + 52);
-        w[14] = load_bigendian_32(in + 56);
-        w[15] = load_bigendian_32(in + 60);
+         w[0]  = load_bigendian_32(in + 0);
+         w[1]  = load_bigendian_32(in + 4);
+         w[2]  = load_bigendian_32(in + 8);
+         w[3]  = load_bigendian_32(in + 12);
+         w[4]  = load_bigendian_32(in + 16);
+         w[5]  = load_bigendian_32(in + 20);
+         w[6]  = load_bigendian_32(in + 24);
+         w[7]  = load_bigendian_32(in + 28);
+         w[8]  = load_bigendian_32(in + 32);
+         w[9]  = load_bigendian_32(in + 36);
+         w[10] = load_bigendian_32(in + 40);
+         w[11] = load_bigendian_32(in + 44);
+         w[12] = load_bigendian_32(in + 48);
+         w[13] = load_bigendian_32(in + 52);
+         w[14] = load_bigendian_32(in + 56);
+         w[15] = load_bigendian_32(in + 60);
 
-        {
-            volatile MemConfig* c = (volatile MemConfig*) wMem->config;
-            
-            for (int i = 0; i < 16; i++)
-            {
-               wMem->memMapped[i] = w[i];
+         // Loads data + performs work 
+         AcceleratorRun(versat,accel,NULL,TerminateFunction);
+
+         #if 1
+         if(!initVersat){
+            for(int i = 0; i < 8; i++){
+               VersatUnitWrite(versat,stateReg[i],0,initialStateValues[i]);
             }
-        }
+            initVersat = true;
+         }
+         #endif
 
-        AcceleratorRun(versat,accel,NULL,TerminateFunction);
-
-        in += 64;
-        inlen -= 64;
+         in += 64;
+         inlen -= 64;
     }
 
     return inlen;
@@ -725,9 +358,9 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
         padded[127] = (uint8_t) (bytes << 3);
         versat_crypto_hashblocks_sha256(padded, 128);
     }
-
+    
     for (size_t i = 0; i < 8; ++i) {
-        uint32_t val = stateReg[i]->state[0];
+        uint32_t val = *stateReg[i]->state;
 
         store_bigendian_32(&out[i*4],val);
     }
