@@ -178,110 +178,43 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         uint32_t w14 = load_bigendian_32(in + 56);
         uint32_t w15 = load_bigendian_32(in + 60);
 
-#define PRINT_W \
-        printf("w0 : %x\n",w0); \
-        printf("w1 : %x\n",w1); \
-        printf("w2 : %x\n",w2); \
-        printf("w3 : %x\n",w3); \
-        printf("w4 : %x\n",w4); \
-        printf("w5 : %x\n",w5); \
-        printf("w6 : %x\n",w6); \
-        printf("w7 : %x\n",w7); \
-        printf("w8 : %x\n",w8); \
-        printf("w9 : %x\n",w9); \
-        printf("w10: %x\n",w10); \
-        printf("w11: %x\n",w11); \
-        printf("w12: %x\n",w12); \
-        printf("w13: %x\n",w13); \
-        printf("w14: %x\n",w14); \
-        printf("w15: %x\n\n",w15);
-
-#define PRINT_S \
-        printf("a: %x\n",a); \
-        printf("b: %x\n",b); \
-        printf("c: %x\n",c); \
-        printf("d: %x\n",d); \
-        printf("e: %x\n",e); \
-        printf("f: %x\n",f); \
-        printf("g: %x\n",g); \
-        printf("h: %x\n\n",h);
-
-        PRINT_S
-        PRINT_W
-
         F_32(w0, 0x428a2f98)
-        PRINT_S
         F_32(w1, 0x71374491)
-        PRINT_S
         F_32(w2, 0xb5c0fbcf)
-        PRINT_S
         F_32(w3, 0xe9b5dba5)
-        PRINT_S
         F_32(w4, 0x3956c25b)
-        PRINT_S
         F_32(w5, 0x59f111f1)
-        PRINT_S
         F_32(w6, 0x923f82a4)
-        PRINT_S
         F_32(w7, 0xab1c5ed5)
-        PRINT_S
         F_32(w8, 0xd807aa98)
-        PRINT_S
         F_32(w9, 0x12835b01)
-        PRINT_S
         F_32(w10, 0x243185be)
-        PRINT_S
         F_32(w11, 0x550c7dc3)
-        PRINT_S
         F_32(w12, 0x72be5d74)
-        PRINT_S
         F_32(w13, 0x80deb1fe)
-        PRINT_S
         F_32(w14, 0x9bdc06a7)
-        PRINT_S
         F_32(w15, 0xc19bf174)
 
-        PRINT_S
         EXPAND_32
-        PRINT_W
-        PRINT_S
 
         F_32(w0, 0xe49b69c1)
-        PRINT_S
         F_32(w1, 0xefbe4786)
-        PRINT_S
         F_32(w2, 0x0fc19dc6)
-        PRINT_S
         F_32(w3, 0x240ca1cc)
-        PRINT_S
         F_32(w4, 0x2de92c6f)
-        PRINT_S
         F_32(w5, 0x4a7484aa)
-        PRINT_S
         F_32(w6, 0x5cb0a9dc)
-        PRINT_S
         F_32(w7, 0x76f988da)
-        PRINT_S
         F_32(w8, 0x983e5152)
-        PRINT_S
         F_32(w9, 0xa831c66d)
-        PRINT_S
         F_32(w10, 0xb00327c8)
-        PRINT_S
         F_32(w11, 0xbf597fc7)
-        PRINT_S
         F_32(w12, 0xc6e00bf3)
-        PRINT_S
         F_32(w13, 0xd5a79147)
-        PRINT_S
         F_32(w14, 0x06ca6351)
-        PRINT_S
         F_32(w15, 0x14292967)
 
-        PRINT_S
         EXPAND_32
-        PRINT_W
-        PRINT_S
 
         F_32(w0, 0x27b70a85)
         F_32(w1, 0x2e1b2138)
@@ -300,10 +233,7 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w14, 0xf40e3585)
         F_32(w15, 0x106aa070)
 
-        PRINT_S
         EXPAND_32
-        PRINT_W
-        PRINT_S
 
         F_32(w0, 0x19a4c116)
         F_32(w1, 0x1e376c08)
@@ -321,8 +251,6 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w13, 0xa4506ceb)
         F_32(w14, 0xbef9a3f7)
         F_32(w15, 0xc67178f2)
-
-        PRINT_S
 
         a += state[0];
         b += state[1];

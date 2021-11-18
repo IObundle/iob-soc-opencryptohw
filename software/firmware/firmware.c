@@ -154,7 +154,7 @@ int main()
       c->dutyA = 16;
       c->size = 8;
       c->int_addr = 0;
-      c->ext_addr = readMemory; // Some place so no segfault
+      c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
    }
 
    #if 1
