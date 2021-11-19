@@ -218,7 +218,7 @@ int main()
 
       volatile UnitMConfig* c = (volatile UnitMConfig*) unitM[i]->config;
 
-      c->configDelay = 3 + 16 * (i+1) + i; // No pc-emul, acede a uma estrutura , no embedded acede a unidade no versat
+      c->configDelay = 3 + 16 * (i+1) + i;
 
       ConnectUnits(versat,unitM[i],0,unitF[i+1],8);
       if(i != 0){
@@ -255,11 +255,10 @@ int main()
    }
    printf("\n");
 #else
-   printf("a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3\n");
-   versat_sha256(digest,"123",3);
+   versat_sha256(digest,msg_64,64);
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
 
-   OutputMemoryMap(versat);
+   //OutputMemoryMap(versat);
 #endif
    
    uart_finish();
@@ -298,9 +297,8 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
          w[14] = load_bigendian_32(in + 56);
          w[15] = load_bigendian_32(in + 60);
 
-         // Loads data + performs work 
-         AcceleratorRun(versat,accel,NULL,TerminateFunction);
-
+         // Since vread currently reads before outputing, this piece of code is set before aceleratorRun
+         // Eventually it will need to be moved to after
          #if 1
          if(!initVersat){
             for(int i = 0; i < 8; i++){
@@ -309,6 +307,9 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
             initVersat = true;
          }
          #endif
+
+         // Loads data + performs work 
+         AcceleratorRun(versat,accel,NULL,TerminateFunction);
 
          in += 64;
          inlen -= 64;
@@ -364,6 +365,8 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
         store_bigendian_32(&out[i*4],val);
     }
+
+    initVersat = false; // At the end of each run
 }
 
 /*
