@@ -78,7 +78,7 @@ static int32_t* UnitFInitializeFunction(FUInstance* inst){
 
    self->trace(tfp, 99);  // Trace 99 levels of hierarchy
 
-   sprintf(buffer,"/home/zettasticks/trace_out/unitF%d.vcd",Fcounter++);
+   sprintf(buffer,"./trace_out/unitF%d.vcd",Fcounter++);
 
    tfp->open(buffer);
 
@@ -190,7 +190,7 @@ static int32_t* UnitMInitializeFunction(FUInstance* inst){
 
    self->trace(tfp, 99);  // Trace 99 levels of hierarchy
 
-   sprintf(buffer,"/home/zettasticks/trace_out/unitM%d.vcd",Mcounter++);
+   sprintf(buffer,"./trace_out/unitM%d.vcd",Mcounter++);
 
    tfp->open(buffer);
 

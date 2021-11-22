@@ -255,6 +255,7 @@ int main()
    }
    printf("\n");
 #else
+   printf("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
    versat_sha256(digest,msg_64,64);
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
 
@@ -297,6 +298,9 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
          w[14] = load_bigendian_32(in + 56);
          w[15] = load_bigendian_32(in + 60);
 
+         // Loads data + performs work 
+         AcceleratorRun(versat,accel,NULL,TerminateFunction);
+         
          // Since vread currently reads before outputing, this piece of code is set before aceleratorRun
          // Eventually it will need to be moved to after
          #if 1
@@ -307,9 +311,6 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
             initVersat = true;
          }
          #endif
-
-         // Loads data + performs work 
-         AcceleratorRun(versat,accel,NULL,TerminateFunction);
 
          in += 64;
          inlen -= 64;
@@ -360,6 +361,9 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
         versat_crypto_hashblocks_sha256(padded, 128);
     }
     
+    // Does the last run with valid data
+    AcceleratorRun(versat,accel,NULL,TerminateFunction);
+
     for (size_t i = 0; i < 8; ++i) {
         uint32_t val = *stateReg[i]->state;
 
