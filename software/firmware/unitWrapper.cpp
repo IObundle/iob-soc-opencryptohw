@@ -3,8 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <verilated_vcd_c.h>
-
+#include "unitVCD.h"
 #include "unitWrapper.h"
 
 #include "VxunitM.h"
@@ -24,10 +23,10 @@
 #define UPDATE(unit) \
    unit->clk = 0; \
    unit->eval(); \
-   tfp->dump(5 * data->timesDumped++); \
+   vcd->dump(); \
    unit->clk = 1; \
    unit->eval(); \
-   tfp->dump(5 * data->timesDumped++);
+   vcd->dump();
 
 #define RESET(unit) \
    unit->rst = 1; \
@@ -35,52 +34,34 @@
    unit->rst = 0;
 
 #define START_RUN(unit) \
+   UPDATE(unit); \
    unit->run = 1; \
    UPDATE(unit); \
    unit->run = 0;
 
-static bool initTracing = false;
+#define PREAMBLE(type) \
+   type* self = &data->unit; \
+   VCDData* vcd = &data->vcd;
+
 static int Mcounter = 0;
 static int Fcounter = 0;
 
-static VerilatedVcdC* vcdFiles[128];
-static int openedVcdFiles = 0;
-
-static void closeOpenedVcdFiles(){
-   //printf("Closing vcd files\n");
-   for(int i = 0; i < openedVcdFiles; i++){
-      vcdFiles[i]->close();
-   }
-}
-
 struct UnitFData{
    VxunitF unit;
-   VerilatedVcdC vcd;
-   int timesDumped;
+   VCDData vcd;
 };
 
 static int32_t* UnitFInitializeFunction(FUInstance* inst){
-   static char buffer[256];
+   char buffer[256];
 
-   if(!initTracing){
-      Verilated::traceEverOn(true);
-      initTracing = true;
-      atexit(closeOpenedVcdFiles);
-   }
+   UnitFData* data = new (inst->extraData) UnitFData();
 
-   UnitFData* data = (UnitFData*) inst->extraData;
+   PREAMBLE(VxunitF);
 
-   VxunitF* self = new (&data->unit) VxunitF();
-   VerilatedVcdC* tfp = new (&data->vcd) VerilatedVcdC;
-   vcdFiles[openedVcdFiles++] = tfp;
-
-   data->timesDumped = 0;
-
-   self->trace(tfp, 99);  // Trace 99 levels of hierarchy
+   self->trace(&vcd->vcd,99);
 
    sprintf(buffer,"./trace_out/unitF%d.vcd",Fcounter++);
-
-   tfp->open(buffer);
+   vcd->open(buffer);
 
    INIT(self);
    
@@ -102,8 +83,8 @@ static int32_t* UnitFInitializeFunction(FUInstance* inst){
 
 static int32_t* UnitFStartFunction(FUInstance* inst){
    UnitFData* data = (UnitFData*) inst->extraData;
-   VxunitF* self = &data->unit;
-   VerilatedVcdC* tfp = &data->vcd;
+   PREAMBLE(VxunitF);
+
    UnitFConfig* config = (UnitFConfig*) inst->config;
 
    // Update config
@@ -118,8 +99,7 @@ static int32_t* UnitFUpdateFunction(FUInstance* inst){
    static int32_t results[8];
 
    UnitFData* data = (UnitFData*) inst->extraData;
-   VxunitF* self = &data->unit;
-   VerilatedVcdC* tfp = &data->vcd;
+   PREAMBLE(VxunitF);
 
    self->in0 = GetInputValue(inst,0);
    self->in1 = GetInputValue(inst,1);
@@ -167,32 +147,19 @@ EXPORT FU_Type RegisterUnitF(Versat* versat){
 
 struct UnitMData{
    VxunitM unit;
-   VerilatedVcdC vcd;
-   int timesDumped;
+   VCDData vcd;
 };
 
 static int32_t* UnitMInitializeFunction(FUInstance* inst){
-   static char buffer[256];
+   char buffer[256];
 
-   if(!initTracing){
-      Verilated::traceEverOn(true);
-      initTracing = true;
-      atexit(closeOpenedVcdFiles);
-   }
+   UnitMData* data = new (inst->extraData) UnitMData();
+   PREAMBLE(VxunitM);
 
-   UnitMData* data = (UnitMData*) inst->extraData;
-
-   VxunitM* self = new (&data->unit) VxunitM();
-   VerilatedVcdC* tfp = new (&data->vcd) VerilatedVcdC;
-   vcdFiles[openedVcdFiles++] = tfp;
-
-   data->timesDumped = 0;
-
-   self->trace(tfp, 99);  // Trace 99 levels of hierarchy
+   ENABLE_TRACE(self,vcd);
 
    sprintf(buffer,"./trace_out/unitM%d.vcd",Mcounter++);
-
-   tfp->open(buffer);
+   vcd->open(buffer);
 
    INIT(self);
    
@@ -205,8 +172,8 @@ static int32_t* UnitMInitializeFunction(FUInstance* inst){
 
 static int32_t* UnitMStartFunction(FUInstance* inst){
    UnitMData* data = (UnitMData*) inst->extraData;
-   VxunitM* self = &data->unit;
-   VerilatedVcdC* tfp = &data->vcd;
+   PREAMBLE(VxunitM);
+
    UnitMConfig* config = (UnitMConfig*) inst->config;
 
    // Update config
@@ -221,8 +188,7 @@ static int32_t* UnitMUpdateFunction(FUInstance* inst){
    static int32_t out;
 
    UnitMData* data = (UnitMData*) inst->extraData;
-   VxunitM* self = &data->unit;
-   VerilatedVcdC* tfp = &data->vcd;
+   PREAMBLE(VxunitM);
 
    self->in0 = GetInputValue(inst,0);
 

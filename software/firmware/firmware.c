@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "versat.h"
+#include "iob_timer.h"
 
 #include "crypto/sha2.h"
 
@@ -106,6 +107,7 @@ int main()
 {
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
+   timer_init(TIMER_BASE);
 
    // Force alignment on a 64 byte boundary
    readMemory = readMemory_;
@@ -136,7 +138,6 @@ int main()
    accel = CreateAccelerator(versat);
 
    read = CreateFUInstance(accel,VREAD);
-
    {
       volatile VReadConfig* c = (volatile VReadConfig*) read->config;
 
@@ -154,6 +155,7 @@ int main()
       c->dutyA = 16;
       c->size = 8;
       c->int_addr = 0;
+      c->pingPong = 1;
       c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
    }
 
@@ -256,8 +258,15 @@ int main()
    printf("\n");
 #else
    printf("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+   
+   timer_start();
+   timer_reset();
+   
    versat_sha256(digest,msg_64,64);
+   
+   unsigned int count = timer_time_us();
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
+   printf("Took %d us\n",count);
 
    //OutputMemoryMap(versat);
 #endif
