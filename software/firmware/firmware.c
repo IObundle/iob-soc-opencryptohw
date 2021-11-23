@@ -35,6 +35,17 @@ static uint32_t kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x3
 
 static uint32_t* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
 
+#ifdef PC
+   static char mem[1024*1024]; // 1 Mb
+   #define DDR_MEM mem
+#else
+#if (RUN_DDR_SW==0) 
+   #define DDR_MEM (EXTRA_BASE)
+#else
+   #define DDR_MEM ((1<<(FIRM_ADDR_W)))
+#endif
+#endif
+
 char GetHexadecimalChar(int value){
   if(value < 10){
     return '0' + value;
@@ -257,12 +268,20 @@ int main()
    }
    printf("\n");
 #else
-   printf("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+   printf("2312394bd99545d9de131c24efb781e765ac1aec243f2ed9347597a793a415e9\n");
    
+   char* memory = (char*) DDR_MEM;
+
+   #define TEST_SIZE (1024 * 256)
+
+   for(int i = 0; i < TEST_SIZE; i++){
+      memory[i] = (char) i;
+   }
+
    timer_start();
    timer_reset();
    
-   versat_sha256(digest,msg_64,64);
+   versat_sha256(digest,memory,TEST_SIZE); // 256Kb
    
    unsigned int count = timer_time_us();
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
