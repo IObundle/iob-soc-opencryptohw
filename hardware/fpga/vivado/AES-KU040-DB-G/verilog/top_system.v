@@ -79,48 +79,7 @@ module top_system(
    wire [2*1-1:0]         sys_rready;
 
    // DDR/MASTER SIDE
-   //Write address
-   wire [3:0] 			ddr_awid;
-   wire [`DDR_ADDR_W-1:0]       ddr_awaddr;
-   wire [7:0] 			ddr_awlen;
-   wire [2:0] 			ddr_awsize;
-   wire [1:0] 			ddr_awburst;
-   wire 			ddr_awlock;
-   wire [3:0] 			ddr_awcache;
-   wire [2:0] 			ddr_awprot;
-   wire [3:0] 			ddr_awqos;
-   wire 			ddr_awvalid;
-   wire 			ddr_awready;
-   //Write data
-   wire [31:0] 			ddr_wdata;
-   wire [3:0] 			ddr_wstrb;
-   wire 			ddr_wlast;
-   wire 			ddr_wvalid;
-   wire 			ddr_wready;
-   //Write response
-   wire [3:0]                   ddr_bid;
-   wire [1:0] 			ddr_bresp;
-   wire 			ddr_bvalid;
-   wire 			ddr_bready;
-   //Read address
-   wire [3:0] 			ddr_arid;
-   wire [`DDR_ADDR_W-1:0]       ddr_araddr;
-   wire [7:0] 			ddr_arlen;
-   wire [2:0] 			ddr_arsize;
-   wire [1:0] 			ddr_arburst;
-   wire 			ddr_arlock;
-   wire [3:0] 			ddr_arcache;
-   wire [2:0] 			ddr_arprot;
-   wire [3:0] 			ddr_arqos;
-   wire 			ddr_arvalid;
-   wire 			ddr_arready;
-   //Read data
-   wire [3:0]			ddr_rid;
-   wire [31:0] 			ddr_rdata;
-   wire [1:0] 			ddr_rresp;
-   wire 			ddr_rlast;
-   wire 			ddr_rvalid;
-   wire 			ddr_rready;
+   `define AXI4_IF_WIRE(ddr)
 `endif
 
 
@@ -226,51 +185,51 @@ module top_system(
       //USER AXI INTERFACE
       //address write 
       .c0_ddr4_aresetn        (ddr_arstn),
-      .c0_ddr4_s_axi_awid     (ddr_awid),
-      .c0_ddr4_s_axi_awaddr   (ddr_awaddr),
-      .c0_ddr4_s_axi_awlen    (ddr_awlen),
-      .c0_ddr4_s_axi_awsize   (ddr_awsize),
-      .c0_ddr4_s_axi_awburst  (ddr_awburst),
-      .c0_ddr4_s_axi_awlock   (ddr_awlock),
-      .c0_ddr4_s_axi_awprot   (ddr_awprot),
-      .c0_ddr4_s_axi_awcache  (ddr_awcache),
-      .c0_ddr4_s_axi_awqos    (ddr_awqos),
-      .c0_ddr4_s_axi_awvalid  (ddr_awvalid),
-      .c0_ddr4_s_axi_awready  (ddr_awready),
+      .c0_ddr4_s_axi_awid     (ddr_axi_awid),
+      .c0_ddr4_s_axi_awaddr   (ddr_axi_awaddr),
+      .c0_ddr4_s_axi_awlen    (ddr_axi_awlen),
+      .c0_ddr4_s_axi_awsize   (ddr_axi_awsize),
+      .c0_ddr4_s_axi_awburst  (ddr_axi_awburst),
+      .c0_ddr4_s_axi_awlock   (ddr_axi_awlock),
+      .c0_ddr4_s_axi_awprot   (ddr_axi_awprot),
+      .c0_ddr4_s_axi_awcache  (ddr_axi_awcache),
+      .c0_ddr4_s_axi_awqos    (ddr_axi_awqos),
+      .c0_ddr4_s_axi_awvalid  (ddr_axi_awvalid),
+      .c0_ddr4_s_axi_awready  (ddr_axi_awready),
 
       //write  
-      .c0_ddr4_s_axi_wvalid   (ddr_wvalid),
-      .c0_ddr4_s_axi_wready   (ddr_wready),
-      .c0_ddr4_s_axi_wdata    (ddr_wdata),
-      .c0_ddr4_s_axi_wstrb    (ddr_wstrb),
-      .c0_ddr4_s_axi_wlast    (ddr_wlast),
+      .c0_ddr4_s_axi_wvalid   (ddr_axi_wvalid),
+      .c0_ddr4_s_axi_wready   (ddr_axi_wready),
+      .c0_ddr4_s_axi_wdata    (ddr_axi_wdata),
+      .c0_ddr4_s_axi_wstrb    (ddr_axi_wstrb),
+      .c0_ddr4_s_axi_wlast    (ddr_axi_wlast),
 
       //write response
-      .c0_ddr4_s_axi_bready   (ddr_bready),
-      .c0_ddr4_s_axi_bid      (ddr_bid),
-      .c0_ddr4_s_axi_bresp    (ddr_bresp),
-      .c0_ddr4_s_axi_bvalid   (ddr_bvalid),
+      .c0_ddr4_s_axi_bready   (ddr_axi_bready),
+      .c0_ddr4_s_axi_bid      (ddr_axi_bid),
+      .c0_ddr4_s_axi_bresp    (ddr_axi_bresp),
+      .c0_ddr4_s_axi_bvalid   (ddr_axi_bvalid),
 
       //address read
-      .c0_ddr4_s_axi_arid     (ddr_arid),
-      .c0_ddr4_s_axi_araddr   (ddr_araddr),
-      .c0_ddr4_s_axi_arlen    (ddr_arlen), 
-      .c0_ddr4_s_axi_arsize   (ddr_arsize),    
-      .c0_ddr4_s_axi_arburst  (ddr_arburst),
-      .c0_ddr4_s_axi_arlock   (ddr_arlock),
-      .c0_ddr4_s_axi_arcache  (ddr_arcache),
-      .c0_ddr4_s_axi_arprot   (ddr_arprot),
-      .c0_ddr4_s_axi_arqos    (ddr_arqos),
-      .c0_ddr4_s_axi_arvalid  (ddr_arvalid),
-      .c0_ddr4_s_axi_arready  (ddr_arready),
+      .c0_ddr4_s_axi_arid     (ddr_axi_arid),
+      .c0_ddr4_s_axi_araddr   (ddr_axi_araddr),
+      .c0_ddr4_s_axi_arlen    (ddr_axi_arlen), 
+      .c0_ddr4_s_axi_arsize   (ddr_axi_arsize),    
+      .c0_ddr4_s_axi_arburst  (ddr_axi_arburst),
+      .c0_ddr4_s_axi_arlock   (ddr_axi_arlock),
+      .c0_ddr4_s_axi_arcache  (ddr_axi_arcache),
+      .c0_ddr4_s_axi_arprot   (ddr_axi_arprot),
+      .c0_ddr4_s_axi_arqos    (ddr_axi_arqos),
+      .c0_ddr4_s_axi_arvalid  (ddr_axi_arvalid),
+      .c0_ddr4_s_axi_arready  (ddr_axi_arready),
       
       //read   
-      .c0_ddr4_s_axi_rready   (ddr_rready),
-      .c0_ddr4_s_axi_rid      (ddr_rid),
-      .c0_ddr4_s_axi_rdata    (ddr_rdata),
-      .c0_ddr4_s_axi_rresp    (ddr_rresp),
-      .c0_ddr4_s_axi_rlast    (ddr_rlast),
-      .c0_ddr4_s_axi_rvalid   (ddr_rvalid)
+      .c0_ddr4_s_axi_rready   (ddr_axi_rready),
+      .c0_ddr4_s_axi_rid      (ddr_axi_rid),
+      .c0_ddr4_s_axi_rdata    (ddr_axi_rdata),
+      .c0_ddr4_s_axi_rresp    (ddr_axi_rresp),
+      .c0_ddr4_s_axi_rlast    (ddr_axi_rlast),
+      .c0_ddr4_s_axi_rvalid   (ddr_axi_rvalid)
       );   
 
 
@@ -389,51 +348,51 @@ module top_system(
       .M00_AXI_ACLK          (ddr_ui_clk),
       
       //Write address
-      .M00_AXI_AWID          (ddr_awid),
-      .M00_AXI_AWADDR        (ddr_awaddr),
-      .M00_AXI_AWLEN         (ddr_awlen),
-      .M00_AXI_AWSIZE        (ddr_awsize),
-      .M00_AXI_AWBURST       (ddr_awburst),
-      .M00_AXI_AWLOCK        (ddr_awlock),
-      .M00_AXI_AWCACHE       (ddr_awcache),
-      .M00_AXI_AWPROT        (ddr_awprot),
-      .M00_AXI_AWQOS         (ddr_awqos),
-      .M00_AXI_AWVALID       (ddr_awvalid),
-      .M00_AXI_AWREADY       (ddr_awready),
+      .M00_AXI_AWID          (ddr_axi_awid),
+      .M00_AXI_AWADDR        (ddr_axi_awaddr),
+      .M00_AXI_AWLEN         (ddr_axi_awlen),
+      .M00_AXI_AWSIZE        (ddr_axi_awsize),
+      .M00_AXI_AWBURST       (ddr_axi_awburst),
+      .M00_AXI_AWLOCK        (ddr_axi_awlock),
+      .M00_AXI_AWCACHE       (ddr_axi_awcache),
+      .M00_AXI_AWPROT        (ddr_axi_awprot),
+      .M00_AXI_AWQOS         (ddr_axi_awqos),
+      .M00_AXI_AWVALID       (ddr_axi_awvalid),
+      .M00_AXI_AWREADY       (ddr_axi_awready),
       
       //Write data
-      .M00_AXI_WDATA         (ddr_wdata),
-      .M00_AXI_WSTRB         (ddr_wstrb),
-      .M00_AXI_WLAST         (ddr_wlast),
-      .M00_AXI_WVALID        (ddr_wvalid),
-      .M00_AXI_WREADY        (ddr_wready),
+      .M00_AXI_WDATA         (ddr_axi_wdata),
+      .M00_AXI_WSTRB         (ddr_axi_wstrb),
+      .M00_AXI_WLAST         (ddr_axi_wlast),
+      .M00_AXI_WVALID        (ddr_axi_wvalid),
+      .M00_AXI_WREADY        (ddr_axi_wready),
       
       //Write response
-      .M00_AXI_BID           (ddr_bid),
-      .M00_AXI_BRESP         (ddr_bresp),
-      .M00_AXI_BVALID        (ddr_bvalid),
-      .M00_AXI_BREADY        (ddr_bready),
+      .M00_AXI_BID           (ddr_axi_bid),
+      .M00_AXI_BRESP         (ddr_axi_bresp),
+      .M00_AXI_BVALID        (ddr_axi_bvalid),
+      .M00_AXI_BREADY        (ddr_axi_bready),
       
       //Read address
-      .M00_AXI_ARID         (ddr_arid),
-      .M00_AXI_ARADDR       (ddr_araddr),
-      .M00_AXI_ARLEN        (ddr_arlen),
-      .M00_AXI_ARSIZE       (ddr_arsize),
-      .M00_AXI_ARBURST      (ddr_arburst),
-      .M00_AXI_ARLOCK       (ddr_arlock),
-      .M00_AXI_ARCACHE      (ddr_arcache),
-      .M00_AXI_ARPROT       (ddr_arprot),
-      .M00_AXI_ARQOS        (ddr_arqos),
-      .M00_AXI_ARVALID      (ddr_arvalid),
-      .M00_AXI_ARREADY      (ddr_arready),
+      .M00_AXI_ARID         (ddr_axi_arid),
+      .M00_AXI_ARADDR       (ddr_axi_araddr),
+      .M00_AXI_ARLEN        (ddr_axi_arlen),
+      .M00_AXI_ARSIZE       (ddr_axi_arsize),
+      .M00_AXI_ARBURST      (ddr_axi_arburst),
+      .M00_AXI_ARLOCK       (ddr_axi_arlock),
+      .M00_AXI_ARCACHE      (ddr_axi_arcache),
+      .M00_AXI_ARPROT       (ddr_axi_arprot),
+      .M00_AXI_ARQOS        (ddr_axi_arqos),
+      .M00_AXI_ARVALID      (ddr_axi_arvalid),
+      .M00_AXI_ARREADY      (ddr_axi_arready),
       
       //Read data
-      .M00_AXI_RID          (ddr_rid),
-      .M00_AXI_RDATA        (ddr_rdata),
-      .M00_AXI_RRESP        (ddr_rresp),
-      .M00_AXI_RLAST        (ddr_rlast),
-      .M00_AXI_RVALID       (ddr_rvalid),
-      .M00_AXI_RREADY       (ddr_rready)
+      .M00_AXI_RID          (ddr_axi_rid),
+      .M00_AXI_RDATA        (ddr_axi_rdata),
+      .M00_AXI_RRESP        (ddr_axi_rresp),
+      .M00_AXI_RLAST        (ddr_axi_rlast),
+      .M00_AXI_RVALID       (ddr_axi_rvalid),
+      .M00_AXI_RREADY       (ddr_axi_rready)
       );
 `endif
 
