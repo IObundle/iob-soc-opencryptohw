@@ -268,11 +268,9 @@ int main()
    }
    printf("\n");
 #else
-   printf("2312394bd99545d9de131c24efb781e765ac1aec243f2ed9347597a793a415e9\n");
-   
    char* memory = (char*) DDR_MEM;
 
-   #define TEST_SIZE (1024 * 256)
+   #define TEST_SIZE (1024 * 1)
 
    for(int i = 0; i < TEST_SIZE; i++){
       memory[i] = (char) i;
@@ -281,7 +279,7 @@ int main()
    timer_start();
    timer_reset();
    
-   versat_sha256(digest,memory,TEST_SIZE); // 256Kb
+   versat_sha256(digest,memory,TEST_SIZE);
    
    unsigned int count = timer_time_us();
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
