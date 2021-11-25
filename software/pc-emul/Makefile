@@ -64,7 +64,7 @@ firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
 ./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
 	g++ -std=c++11 -g -c -o ./build/unitWrapper.o -m32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
-./build/V%__ALLcls.o: $(HW_DIR)/src/units/%.v
+./build/V%__ALLcls.o ./build/V%__ALLsup.o: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;
