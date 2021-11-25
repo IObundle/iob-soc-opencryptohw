@@ -1,6 +1,8 @@
 ROOT_DIR:=../..
 include ../software.mk
 
+SUB_DIR:=$(SUBMODULES_DIR)
+
 #additional compiler flags
 CFLAGS+=--specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
 
@@ -12,7 +14,7 @@ include $(CACHE_DIR)/software/software.mk
 endif
 
 #peripherals (embedded)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/embedded/embedded.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/embedded/embedded.mk))
 
 #HEADERS
 HDR+=periphs.h
