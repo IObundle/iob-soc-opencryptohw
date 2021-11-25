@@ -143,7 +143,7 @@ clean:
 	make clean-all-simulators
 	make clean-all-boards
 	make clean-all-docs
-	@rm $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v
+	@rm -f $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v
 
 .PHONY: all pc-emul pc-emul-clean \
 	sim sim-clean\
