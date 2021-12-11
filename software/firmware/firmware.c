@@ -39,7 +39,7 @@ static uint32_t* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants
    static char mem[1024*1024]; // 1 Mb
    #define DDR_MEM mem
 #else
-#if (RUN_DDR_SW==0) 
+#if (RUN_DDR_SW==0)
    #define DDR_MEM (EXTRA_BASE)
 #else
    #define DDR_MEM ((1<<(FIRM_ADDR_W)))
@@ -157,7 +157,6 @@ int main()
       c->incrB = 1;
       c->perB = 16;
       c->dutyB = 16;
-      c->delayB = 2;
 
       // Memory side
       c->incrA = 1;
@@ -170,60 +169,55 @@ int main()
       c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
    }
 
-   #if 1
    FUInstance* unitF[4];
    for(int i = 0; i < 4; i++){
       unitF[i] = CreateFUInstance(accel,UNIT_F);
       volatile UnitFConfig* c = (volatile UnitFConfig*) unitF[i]->config;
 
-      c->configDelay = 3 + (i * 17);
-
       if(i > 0){
          for(int ii = 0; ii < 8; ii++){
-            ConnectUnits(versat,unitF[i-1],ii,unitF[i],ii);
+            ConnectUnits(unitF[i-1],ii,unitF[i],ii);
          }
       }
    }
 
-   FUInstance* kMem[4]; // Could be done by using 1 memory, change later 
+   FUInstance* kMem[4]; // Could be done by using 1 memory, change later
    for(int i = 0; i < 4; i++){
       kMem[i] = CreateFUInstance(accel,MEM);
       volatile MemConfig* c = (volatile MemConfig*) kMem[i]->config;
-      
+
       c->iterA = 1;
       c->incrA = 1;
-      c->delayA = (17*i);
       c->perA = 16;
       c->dutyA = 16;
 
       for (int ii = 0; ii < 16; ii++)
       {
-         VersatUnitWrite(versat,kMem[i],ii,kConstants[i][ii]);
+         VersatUnitWrite(kMem[i],ii,kConstants[i][ii]);
       }
    }
-   
+
    for(int i = 0; i < 8; i++){
       stateReg[i] = CreateFUInstance(accel,REG);
 
       {
-         volatile RegConfig* config = (volatile RegConfig*) stateReg[i]->config; 
+         volatile RegConfig* config = (volatile RegConfig*) stateReg[i]->config;
 
-         config->writeDelay = 3 + (16*4) + 5;
-         VersatUnitWrite(versat,stateReg[i],0,initialStateValues[i]);
+         VersatUnitWrite(stateReg[i],0,initialStateValues[i]);
       }
 
-      ConnectUnits(versat,stateReg[i],0,unitF[0],i);
+      ConnectUnits(stateReg[i],0,unitF[0],i);
    }
-   
+
    for(int i = 0; i < 8; i++){
       FUInstance* add = CreateFUInstance(accel,ADD);
 
-      ConnectUnits(versat,stateReg[i],0,add,0);
-      ConnectUnits(versat,unitF[3],i,add,1);
-      ConnectUnits(versat,add,0,stateReg[i],0);
+      ConnectUnits(stateReg[i],0,add,0);
+      ConnectUnits(unitF[3],i,add,1);
+      ConnectUnits(add,0,stateReg[i],0);
    }
 
-   ConnectUnits(versat,read,0,unitF[0],8);
+   ConnectUnits(read,0,unitF[0],8);
 
    FUInstance* unitM[3];
    for(int i = 0; i < 3; i++){
@@ -231,19 +225,18 @@ int main()
 
       volatile UnitMConfig* c = (volatile UnitMConfig*) unitM[i]->config;
 
-      c->configDelay = 3 + 16 * (i+1) + i;
-
-      ConnectUnits(versat,unitM[i],0,unitF[i+1],8);
+      ConnectUnits(unitM[i],0,unitF[i+1],8);
       if(i != 0){
-         ConnectUnits(versat,unitM[i-1],0,unitM[i],0);
+         ConnectUnits(unitM[i-1],0,unitM[i],0);
       }
    }
-   ConnectUnits(versat,read,0,unitM[0],0);
+   ConnectUnits(read,0,unitM[0],0);
 
    for(int i = 0; i < 4; i++){
-      ConnectUnits(versat,kMem[i],0,unitF[i],9);
+      ConnectUnits(kMem[i],0,unitF[i],9);
    }
-   #endif
+
+   CalculateDelay(accel);
 
    // Gera o versat.
    OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
@@ -268,6 +261,7 @@ int main()
    }
    printf("\n");
 #else
+   /*
    char* memory = (char*) DDR_MEM;
 
    #define TEST_SIZE (1024 * 1)
@@ -278,16 +272,37 @@ int main()
 
    timer_start();
    timer_reset();
-   
+
    versat_sha256(digest,memory,TEST_SIZE);
-   
+
    unsigned int count = timer_time_us();
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
    printf("Took %d us\n",count);
+   */
+
+   CalculateDelay(accel);
+
+   for(int i = 0; i < accel->nInstances; i++){
+      printf("%s\n",accel->instances[i].declaration->name);
+      for(int ii = 0; ii < accel->instances[i].declaration->nOutputs; ii++){
+         printf("\t%d\n",accel->instances[i].delays[ii]);
+      }
+   }
+   //DAGOrdering(accel);
+   //DAGOrdering(accel);
+   //CalculatePropagateDelay(accel);
+
+   /*
+   for(int i = 0; i < accel->nInstances; i++){
+      FUDeclaration* decl = GetDeclaration(versat,&accel->instances[i]);
+
+      printf("%s %d\n",decl->name,CalculateFullLatency(versat,&accel->instances[i]));
+   }
+   */
 
    //OutputMemoryMap(versat);
 #endif
-   
+
    uart_finish();
 
    return 0;
@@ -324,15 +339,15 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
          w[14] = load_bigendian_32(in + 56);
          w[15] = load_bigendian_32(in + 60);
 
-         // Loads data + performs work 
-         AcceleratorRun(versat,accel,NULL,TerminateFunction);
-         
+         // Loads data + performs work
+         AcceleratorRun(accel,NULL,TerminateFunction);
+
          // Since vread currently reads before outputing, this piece of code is set before aceleratorRun
          // Eventually it will need to be moved to after
          #if 1
          if(!initVersat){
             for(int i = 0; i < 8; i++){
-               VersatUnitWrite(versat,stateReg[i],0,initialStateValues[i]);
+               VersatUnitWrite(stateReg[i],0,initialStateValues[i]);
             }
             initVersat = true;
          }
@@ -386,9 +401,9 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
         padded[127] = (uint8_t) (bytes << 3);
         versat_crypto_hashblocks_sha256(padded, 128);
     }
-    
+
     // Does the last run with valid data
-    AcceleratorRun(versat,accel,NULL,TerminateFunction);
+    AcceleratorRun(accel,NULL,TerminateFunction);
 
     for (size_t i = 0; i < 8; ++i) {
         uint32_t val = *stateReg[i]->state;

@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-g -Os -m32 -std=c99
+CFLAGS=-g -m32 -std=c99
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC

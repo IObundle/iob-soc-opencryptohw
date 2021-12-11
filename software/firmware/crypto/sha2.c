@@ -63,7 +63,7 @@ static void store_bigendian_64(uint8_t *x, uint64_t u) {
 
 #define Sigma0_64(x) (ROTR_64(x, 28) ^ ROTR_64(x, 34) ^ ROTR_64(x, 39))
 #define Sigma1_64(x) (ROTR_64(x, 14) ^ ROTR_64(x, 18) ^ ROTR_64(x, 41))
-#define sigma0_64(x) (ROTR_64(x, 1) ^ ROTR_64(x, 8) ^ SHR(x, 7))
+#define sigma0_64(x) (ROTR_64(x, 1)  ^ ROTR_64(x, 8)  ^ SHR(x, 7))
 #define sigma1_64(x) (ROTR_64(x, 19) ^ ROTR_64(x, 61) ^ SHR(x, 6))
 
 #define M_32(w0, w14, w9, w1) w0 = sigma1_32(w14) + (w9) + sigma0_32(w1) + (w0);

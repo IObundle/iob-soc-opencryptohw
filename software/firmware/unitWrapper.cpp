@@ -64,7 +64,7 @@ static int32_t* UnitFInitializeFunction(FUInstance* inst){
    vcd->open(buffer);
 
    INIT(self);
-   
+
    self->in0 = 0;
    self->in1 = 0;
    self->in2 = 0;
@@ -88,7 +88,7 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    UnitFConfig* config = (UnitFConfig*) inst->config;
 
    // Update config
-   self->configDelay = config->configDelay;
+   self->configDelay = inst->delays[0];
 
    START_RUN(self);
 
@@ -127,20 +127,21 @@ static int32_t* UnitFUpdateFunction(FUInstance* inst){
 }
 
 EXPORT FU_Type RegisterUnitF(Versat* versat){
-   FU_Type type = RegisterFU(versat,"xunitF",
-                                    10, // n inputs
-                                    8, // n outputs
-                                    ARRAY_SIZE(unitFConfigWires), // Config
-                                    unitFConfigWires,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(UnitFData), // Extra memory
-                                    UnitFInitializeFunction,
-                                    UnitFStartFunction,
-                                    UnitFUpdateFunction,
-                                    NULL);
+   FUDeclaration decl = {};
+
+   decl.name = "xunitF";
+   decl.nInputs = 10;
+   decl.nOutputs = 8;
+   decl.nConfigs = ARRAY_SIZE(unitFConfigWires);
+   decl.configWires = unitFConfigWires;
+   decl.extraDataSize = sizeof(UnitFData);
+   decl.initializeFunction = UnitFInitializeFunction;
+   decl.startFunction = UnitFStartFunction;
+   decl.updateFunction = UnitFUpdateFunction;
+   decl.latency = 17;
+   decl.type = VERSAT_TYPE_IMPLEMENTS_DELAY;
+
+   FU_Type type = RegisterFU(versat,decl);
 
    return type;
 }
@@ -162,7 +163,7 @@ static int32_t* UnitMInitializeFunction(FUInstance* inst){
    vcd->open(buffer);
 
    INIT(self);
-   
+
    self->in0 = 0;
 
    RESET(self);
@@ -177,7 +178,7 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    UnitMConfig* config = (UnitMConfig*) inst->config;
 
    // Update config
-   self->configDelay = config->configDelay;
+   self->configDelay = inst->delays[0];
 
    START_RUN(self);
 
@@ -200,20 +201,21 @@ static int32_t* UnitMUpdateFunction(FUInstance* inst){
 }
 
 EXPORT FU_Type RegisterUnitM(Versat* versat){
-   FU_Type type = RegisterFU(versat,"xunitM",
-                                    1, // n inputs
-                                    1, // n outputs
-                                    ARRAY_SIZE(unitMConfigWires), // Config
-                                    unitMConfigWires,
-                                    0, // State
-                                    NULL,
-                                    0, // MemoryMapped
-                                    false, // IO
-                                    sizeof(UnitMData), // Extra memory
-                                    UnitMInitializeFunction,
-                                    UnitMStartFunction,
-                                    UnitMUpdateFunction,
-                                    NULL);
+   FUDeclaration decl = {};
+
+   decl.name = "xunitM";
+   decl.nInputs = 1;
+   decl.nOutputs = 1;
+   decl.nConfigs = ARRAY_SIZE(unitMConfigWires);
+   decl.configWires = unitMConfigWires;
+   decl.extraDataSize = sizeof(UnitMData);
+   decl.initializeFunction = UnitMInitializeFunction;
+   decl.startFunction = UnitMStartFunction;
+   decl.updateFunction = UnitMUpdateFunction;
+   decl.latency = 17;
+   decl.type = VERSAT_TYPE_IMPLEMENTS_DELAY;
+
+   FU_Type type = RegisterFU(versat,decl);
 
    return type;
 }

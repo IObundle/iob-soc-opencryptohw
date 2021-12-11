@@ -79,7 +79,7 @@ begin
       for(i = 0; i < 16; i = i + 1) 
          w[i] <= 0;
    end else if(run) begin
-      delay <= configDelay;
+      delay <= (configDelay + 8'h10);
    end else begin
       if(|delay) begin
          delay <= delay - 1;
