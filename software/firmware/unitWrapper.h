@@ -3,10 +3,6 @@
 
 #include "versat.h"
 
-#define INSTANTIATE_CLASS
-#include "shaUnitData.h"
-#undef INSTANTIATE_CLASS
-
 #ifdef __cplusplus
 #define EXPORT extern "C"
 #else

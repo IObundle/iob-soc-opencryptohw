@@ -132,7 +132,7 @@ int main()
    Versat versatInstance = {};
    versat = &versatInstance;
 
-   InitVersat(versat,VERSAT_BASE);
+   InitVersat(versat,VERSAT_BASE,1);
 
    // Versat specific units
    FU_Type ADD = RegisterAdd(versat);
@@ -172,7 +172,6 @@ int main()
    FUInstance* unitF[4];
    for(int i = 0; i < 4; i++){
       unitF[i] = CreateFUInstance(accel,UNIT_F);
-      volatile UnitFConfig* c = (volatile UnitFConfig*) unitF[i]->config;
 
       if(i > 0){
          for(int ii = 0; ii < 8; ii++){
@@ -199,13 +198,7 @@ int main()
 
    for(int i = 0; i < 8; i++){
       stateReg[i] = CreateFUInstance(accel,REG);
-
-      {
-         volatile RegConfig* config = (volatile RegConfig*) stateReg[i]->config;
-
-         VersatUnitWrite(stateReg[i],0,initialStateValues[i]);
-      }
-
+      VersatUnitWrite(stateReg[i],0,initialStateValues[i]);
       ConnectUnits(stateReg[i],0,unitF[0],i);
    }
 
@@ -223,8 +216,6 @@ int main()
    for(int i = 0; i < 3; i++){
       unitM[i] = CreateFUInstance(accel,UNIT_M);
 
-      volatile UnitMConfig* c = (volatile UnitMConfig*) unitM[i]->config;
-
       ConnectUnits(unitM[i],0,unitF[i+1],8);
       if(i != 0){
          ConnectUnits(unitM[i-1],0,unitM[i],0);
@@ -238,8 +229,10 @@ int main()
 
    CalculateDelay(accel);
 
+   SaveConfiguration(accel,0);
+
    // Gera o versat.
-   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v");
+   OutputVersatSource(versat,"versat_defs.vh","versat_instance.v","versat_constants.c");
 
    char digest[256];
 
@@ -284,8 +277,13 @@ int main()
 
    for(int i = 0; i < accel->nInstances; i++){
       printf("%s\n",accel->instances[i].declaration->name);
-      for(int ii = 0; ii < accel->instances[i].declaration->nOutputs; ii++){
-         printf("\t%d\n",accel->instances[i].delays[ii]);
+
+      if((accel->instances[i].declaration->type & VERSAT_TYPE_IMPLEMENTS_DELAY) && !(accel->instances[i].declaration->type & VERSAT_TYPE_SOURCE_DELAY)){
+         printf("\t%d\n",accel->instances[i].delays[0]);
+      } else {
+         for(int ii = 0; ii < accel->instances[i].declaration->nOutputs; ii++){
+            printf("\t%d\n",accel->instances[i].delays[ii]);
+         }
       }
    }
    //DAGOrdering(accel);
@@ -320,6 +318,8 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
       volatile VReadConfig* c = (volatile VReadConfig*) read->config;
       c->ext_addr = (int) w;
    }
+
+   LoadConfiguration(accel,0);
 
     while (inlen >= 64) {
          w[0]  = load_bigendian_32(in + 0);
@@ -418,13 +418,16 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Things to do:
 
+Implement the concept of configuration:
+   Board code should not need to perform any type of computation
+   Config and delay data are encoded in the code as a set of arrays. Generate .c file. (Cannot do IO on the board, versat.c declares variables as extern, add generated .c into compiled code)
+   The configuration is stored in hardware, using the configuration register.
+   The versat initializes by transfering configuration data to the configuration register.
+   Store both config and delay values
+
 Move non specific versat_instance code upwards
 Implement delay as a standard unit connection
 Implement done as a standard unit connection
-Implement valid data time computation
-   - Need to provide a range of valid data (Meaning that, after delay, the unit will produce a constant stream of valid data for N cycles)
-   - Need to differenciate between units that produce data, process data and consume data (produce and consume have a range of time values, the process do not)
-   - This does not take into account IO operations.
 
 Cleanup the versat value computations and code generation
    - Add the versat computation function to embedded as well

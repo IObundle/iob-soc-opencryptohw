@@ -1,17 +1,14 @@
+#include "unitWrapper.h"
+
 #include <new>
 #include <stddef.h>
 #include <stdio.h>
 #include <math.h>
 
 #include "unitVCD.h"
-#include "unitWrapper.h"
 
 #include "VxunitM.h"
 #include "VxunitF.h"
-
-#define INSTANTIATE_ARRAY
-#include "shaUnitData.h"
-#undef INSTANTIATE_ARRAY
 
 #define ARRAY_SIZE(array) sizeof(array) / sizeof(array[0])
 
@@ -85,8 +82,6 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    UnitFData* data = (UnitFData*) inst->extraData;
    PREAMBLE(VxunitF);
 
-   UnitFConfig* config = (UnitFConfig*) inst->config;
-
    // Update config
    self->configDelay = inst->delays[0];
 
@@ -132,8 +127,6 @@ EXPORT FU_Type RegisterUnitF(Versat* versat){
    decl.name = "xunitF";
    decl.nInputs = 10;
    decl.nOutputs = 8;
-   decl.nConfigs = ARRAY_SIZE(unitFConfigWires);
-   decl.configWires = unitFConfigWires;
    decl.extraDataSize = sizeof(UnitFData);
    decl.initializeFunction = UnitFInitializeFunction;
    decl.startFunction = UnitFStartFunction;
@@ -175,8 +168,6 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    UnitMData* data = (UnitMData*) inst->extraData;
    PREAMBLE(VxunitM);
 
-   UnitMConfig* config = (UnitMConfig*) inst->config;
-
    // Update config
    self->configDelay = inst->delays[0];
 
@@ -206,8 +197,6 @@ EXPORT FU_Type RegisterUnitM(Versat* versat){
    decl.name = "xunitM";
    decl.nInputs = 1;
    decl.nOutputs = 1;
-   decl.nConfigs = ARRAY_SIZE(unitMConfigWires);
-   decl.configWires = unitMConfigWires;
    decl.extraDataSize = sizeof(UnitMData);
    decl.initializeFunction = UnitMInitializeFunction;
    decl.startFunction = UnitMStartFunction;
