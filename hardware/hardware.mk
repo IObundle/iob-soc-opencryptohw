@@ -27,6 +27,8 @@ TDPRAM_DIR:=$(CACHE_DIR)/submodules/MEM/hardware/ram/tdp_ram
 VSRC+=$(TDPRAM_DIR)/iob_tdp_ram.v
 endif
 
+VSRC+=$(CACHE_DIR)/submodules/MEM/hardware/ram/dp_ram_be/iob_dp_ram_be.v
+
 #peripherals
 $(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/hardware/hardware.mk))
 
