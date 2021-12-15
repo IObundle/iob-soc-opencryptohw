@@ -3,7 +3,7 @@
 
 module sram #(
               parameter FILE = "none"
-         )
+	      )
    (
     input                    clk,
     input                    rst,
@@ -33,37 +33,36 @@ module sram #(
          iob_tdp_ram
                #(
 `ifdef SRAM_INIT
-            .MEM_INIT_FILE({FILE, "_", file_suffix[8*(i+1)-1 -: 8], ".hex"}),
+	         .MEM_INIT_FILE({FILE, "_", file_suffix[8*(i+1)-1 -: 8], ".hex"}),
 `endif
-            .DATA_W(8),
+	         .DATA_W(8),
                  .ADDR_W(`SRAM_ADDR_W-2))
          main_mem_byte 
                (
-           .clkA             (clk),
-           .clkB             (clk),
+	        .clk             (clk),
                 //data 
-           .enA            (d_valid),
-           .weA            (d_wstrb[i]),
-           .addrA          (d_addr),
-           .dinA           (d_wdata[8*(i+1)-1 -: 8]),
-           .doutA          (d_rdata[8*(i+1)-1 -: 8]),
+	        .en_a            (d_valid),
+	        .we_a            (d_wstrb[i]),
+	        .addr_a          (d_addr),
+	        .data_a          (d_wdata[8*(i+1)-1 -: 8]),
+	        .q_a             (d_rdata[8*(i+1)-1 -: 8]),
                 //instruction
-           .enB            (i_valid),
-           .weB            (i_wstrb[i]),
-           .addrB          (i_addr),
-           .dinB           (i_wdata[8*(i+1)-1 -: 8]),
-           .doutB          (i_rdata[8*(i+1)-1 -: 8])
-           );  
+	        .en_b            (i_valid),
+	        .we_b            (i_wstrb[i]),
+	        .addr_b          (i_addr),
+	        .data_b          (i_wdata[8*(i+1)-1 -: 8]),
+	        .q_b             (i_rdata[8*(i+1)-1 -: 8])
+	        );	
       end // block: gen_main_mem_byte
    endgenerate
 
    // reply with ready 
    always @(posedge clk, posedge rst)
      if(rst) begin
-       d_ready <= 1'b0;
-       i_ready <= 1'b0;
+	    d_ready <= 1'b0;
+	    i_ready <= 1'b0;
      end else begin 
-       d_ready <= d_valid;
-       i_ready <= i_valid;
+	    d_ready <= d_valid;
+	    i_ready <= i_valid;
      end
 endmodule

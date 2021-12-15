@@ -4,7 +4,6 @@ include $(ROOT_DIR)/system.mk
 BAUD ?=115200
 FREQ ?=100000000
 
-SUB_DIR:=$(SUBMODULES_DIR)
 
 #SUBMODULES
 
@@ -19,18 +18,16 @@ endif
 ifneq ($(ASIC_MEM),1)
 #rom
 SUBMODULES+=SPROM
-SPROM_DIR:=$(CACHE_DIR)/submodules/MEM/hardware/rom/sp_rom
-VSRC+=$(SPROM_DIR)/iob_sp_rom.v
+SPROM_DIR:=$(CACHE_DIR)/submodules/MEM/sp_rom
+VSRC+=$(SPROM_DIR)/sp_rom.v
 #ram
 SUBMODULES+=TDPRAM
-TDPRAM_DIR:=$(CACHE_DIR)/submodules/MEM/hardware/ram/tdp_ram
+TDPRAM_DIR:=$(CACHE_DIR)/submodules/MEM/tdp_ram
 VSRC+=$(TDPRAM_DIR)/iob_tdp_ram.v
 endif
 
-VSRC+=$(CACHE_DIR)/submodules/MEM/hardware/ram/dp_ram_be/iob_dp_ram_be.v
-
 #peripherals
-$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/hardware/hardware.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/hardware/hardware.mk))
 
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include

@@ -104,7 +104,7 @@ module boot_ctr
    //
    //INSTANTIATE ROM
    //
-   iob_sp_rom
+   sp_rom 
      #(
        .DATA_W(`DATA_W),
        .ADDR_W(`BOOTROM_ADDR_W-2),
@@ -114,7 +114,7 @@ module boot_ctr
             .clk(clk),
             .r_en(rom_r_valid),
             .addr(rom_r_addr),
-            .r_data(rom_r_rdata)
+            .rdata(rom_r_rdata)
             );
 
 endmodule
