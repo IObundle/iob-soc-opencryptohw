@@ -83,7 +83,7 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    PREAMBLE(VxunitF);
 
    // Update config
-   self->configDelay = inst->delays[0];
+   self->delay0 = inst->delays[0];
 
    START_RUN(self);
 
@@ -169,7 +169,7 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    PREAMBLE(VxunitM);
 
    // Update config
-   self->configDelay = inst->delays[0];
+   self->delay0 = inst->delays[0];
 
    START_RUN(self);
 

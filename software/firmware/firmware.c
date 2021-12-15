@@ -76,20 +76,6 @@ char* GetHexadecimal(const char* text, int str_size){
   return buffer;
 }
 
-int32_t* TerminateFunction(FUInstance* inst){
-   static int delay = 80;
-
-   delay -= 1;
-
-   if(delay == 0){
-      delay = 80;
-      return (int32_t*) 1;
-   }
-   else{
-      return 0;
-   }
-}
-
 static int unitFBits[] = {8};
 static int readMemory_[64];
 static int* readMemory;
@@ -286,6 +272,8 @@ int main()
          }
       }
    }
+   OutputMemoryMap(versat);
+
    //DAGOrdering(accel);
    //DAGOrdering(accel);
    //CalculatePropagateDelay(accel);
@@ -340,7 +328,7 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
          w[15] = load_bigendian_32(in + 60);
 
          // Loads data + performs work
-         AcceleratorRun(accel,NULL,TerminateFunction);
+         AcceleratorRun(accel);
 
          // Since vread currently reads before outputing, this piece of code is set before aceleratorRun
          // Eventually it will need to be moved to after
@@ -403,7 +391,7 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     }
 
     // Does the last run with valid data
-    AcceleratorRun(accel,NULL,TerminateFunction);
+    AcceleratorRun(accel);
 
     for (size_t i = 0; i < 8; ++i) {
         uint32_t val = *stateReg[i]->state;
@@ -426,8 +414,10 @@ Implement the concept of configuration:
    Store both config and delay values
 
 Move non specific versat_instance code upwards
-Implement delay as a standard unit connection
-Implement done as a standard unit connection
+
+Differentiate between done in IO units and done in source + sink units:
+   The hardware circuit only needs to implement done for IO units.
+   Sink and source always take exactly X cycles to be done with, meaning that the circuit would only need to implement a counter for these units
 
 Cleanup the versat value computations and code generation
    - Add the versat computation function to embedded as well

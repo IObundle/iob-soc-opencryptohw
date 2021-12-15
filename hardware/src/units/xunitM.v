@@ -19,7 +19,7 @@ module xunitM #(
     output reg [DATA_W-1:0] out0,
 
     //configurations
-    input [7:0]         configDelay // Encodes delay
+    input [7:0]         delay0 // Encodes delay
     );
 
 reg [7:0] delay;
@@ -79,7 +79,7 @@ begin
       for(i = 0; i < 16; i = i + 1) 
          w[i] <= 0;
    end else if(run) begin
-      delay <= (configDelay + 8'h10);
+      delay <= (delay0 + 8'h10);
    end else begin
       if(|delay) begin
          delay <= delay - 1;

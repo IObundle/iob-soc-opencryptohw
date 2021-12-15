@@ -13,9 +13,10 @@ software/*/*
 !software/bootloader/boot.c
 !software/bootloader/boot.S
 
-!software/firmware/*.c
-!software/firmware/*.h
-!software/firmware/*.cpp
+!software/firmware/firmware.c
+!software/firmware/unitWrapper.c
+!software/firmware/unitWrapper.cpp
+!software/firmware/unitWrapper.h
 !software/firmware/firmware.S
 !software/firmware/crypto/
 
