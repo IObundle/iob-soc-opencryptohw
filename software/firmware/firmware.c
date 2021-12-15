@@ -240,7 +240,13 @@ int main()
    }
    printf("\n");
 #else
-   /*
+   #if 1
+   printf("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+   versat_sha256(digest,msg_64,64);
+   printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
+   #endif
+
+   #if 0
    char* memory = (char*) DDR_MEM;
 
    #define TEST_SIZE (1024 * 1)
@@ -257,10 +263,9 @@ int main()
    unsigned int count = timer_time_us();
    printf("%s\n",GetHexadecimal(digest, HASH_SIZE));
    printf("Took %d us\n",count);
-   */
+   #endif
 
-   CalculateDelay(accel);
-
+   #if 0
    for(int i = 0; i < accel->nInstances; i++){
       printf("%s\n",accel->instances[i].declaration->name);
 
@@ -273,20 +278,7 @@ int main()
       }
    }
    OutputMemoryMap(versat);
-
-   //DAGOrdering(accel);
-   //DAGOrdering(accel);
-   //CalculatePropagateDelay(accel);
-
-   /*
-   for(int i = 0; i < accel->nInstances; i++){
-      FUDeclaration* decl = GetDeclaration(versat,&accel->instances[i]);
-
-      printf("%s %d\n",decl->name,CalculateFullLatency(versat,&accel->instances[i]));
-   }
-   */
-
-   //OutputMemoryMap(versat);
+   #endif
 #endif
 
    uart_finish();
@@ -306,8 +298,6 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
       volatile VReadConfig* c = (volatile VReadConfig*) read->config;
       c->ext_addr = (int) w;
    }
-
-   LoadConfiguration(accel,0);
 
     while (inlen >= 64) {
          w[0]  = load_bigendian_32(in + 0);

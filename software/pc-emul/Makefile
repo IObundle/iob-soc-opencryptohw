@@ -50,11 +50,13 @@ run: firmware.out
 	@rm -rf $(VALIDATION_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
+	mv versat_constants.c $(FIRM_DIR)/
 else
 run: firmware.out
 	./firmware.out $(TEST_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
+	mv versat_constants.c $(FIRM_DIR)/
 endif
 
 build: firmware.out
