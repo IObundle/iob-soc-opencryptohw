@@ -25,30 +25,37 @@ module sram #(
     output reg               d_ready
     );
 
-   iob_dp_ram_be
-     #(
-       .FILE(FILE),
-       .ADDR_W(`SRAM_ADDR_W-2),
-       .DATA_W(`DATA_W)
-       )
-   main_mem_byte
-     (
-      .clk   (clk),
+   localparam file_suffix = {"3","2","1","0"};
 
-      // data port
-      .enA   (d_valid),
-      .addrA (d_addr),
-      .weA   (d_wstrb),
-      .dinA  (d_wdata),
-      .doutA (d_rdata),
-
-      // instruction port
-      .enB   (i_valid),
-      .addrB (i_addr),
-      .weB   (i_wstrb),
-      .dinB  (i_wdata),
-      .doutB (i_rdata)
-      );
+   genvar                 i;
+   generate
+      for (i = 0; i < 4; i = i+1) begin : gen_main_mem_byte
+         iob_tdp_ram
+               #(
+`ifdef SRAM_INIT
+            .MEM_INIT_FILE({FILE, "_", file_suffix[8*(i+1)-1 -: 8], ".hex"}),
+`endif
+            .DATA_W(8),
+                 .ADDR_W(`SRAM_ADDR_W-2))
+         main_mem_byte 
+               (
+           .clkA             (clk),
+           .clkB             (clk),
+                //data 
+           .enA            (d_valid),
+           .weA            (d_wstrb[i]),
+           .addrA          (d_addr),
+           .dinA           (d_wdata[8*(i+1)-1 -: 8]),
+           .doutA          (d_rdata[8*(i+1)-1 -: 8]),
+                //instruction
+           .enB            (i_valid),
+           .weB            (i_wstrb[i]),
+           .addrB          (i_addr),
+           .dinB           (i_wdata[8*(i+1)-1 -: 8]),
+           .doutB          (i_rdata[8*(i+1)-1 -: 8])
+           );  
+      end // block: gen_main_mem_byte
+   endgenerate
 
    // reply with ready 
    always @(posedge clk, posedge rst)
