@@ -15,8 +15,8 @@ VSRC+=./verilog/top_system.v
 
 
 #TEST VECTOR
-FPGA_LOG:=$(lastword $(TEST_LOG))
-FPGA_PARSED_LOG:=$(FPGA_LOG)_parsed.log
+FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
+FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
 
@@ -98,14 +98,14 @@ test-shortmsg: run-shortmsg parse-log
 run-shortmsg:
 	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
 
-parse-log: $(FPGA_LOG)
-	sed -n -e '/\[L = /,$$p' $(FPGA_LOG) | tac | sed -n -e '/MD =/,$$p' | tac > $(FPGA_PARSED_LOG)
+parse-log: $(FPGA_TEST_LOG)
+	sed -n -e '/\[L = /,$$p' $(FPGA_TEST_LOG) | tac | sed -n -e '/MD =/,$$p' | tac > $(FPGA_PARSED_LOG)
 	echo "" >> $(FPGA_PARSED_LOG) # add final newline
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 
-$(FPGA_LOG): $(CONSOLE_DIR)/$(FPGA_LOG)
-	cp $< .
+$(FPGA_TEST_LOG): $(CONSOLE_DIR)/$(FPGA_TEST_LOG)
+	cp $< $@
 
 #
 # Clean
@@ -126,7 +126,7 @@ endif
 #clean test log only when board testing begins
 clean-testlog:
 	@rm -f $(CONSOLE_DIR)/test.log
-	@rm -f $(FPGA_LOG) $(FPGA_PARSED_LOG)
+	@rm -f $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG)
 ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi'
 	rsync -avz --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
