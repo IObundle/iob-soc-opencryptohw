@@ -1,6 +1,8 @@
 ROOT_DIR:=../..
 include ../software.mk
 
+SUB_DIR:=$(SUBMODULES_DIR)
+
 #additional compiler flags
 CFLAGS+=--specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
 
@@ -12,7 +14,7 @@ include $(CACHE_DIR)/software/software.mk
 endif
 
 #peripherals (embedded)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/embedded/embedded.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/embedded/embedded.mk))
 
 #HEADERS
 HDR+=periphs.h
@@ -21,6 +23,7 @@ HDR+=periphs.h
 SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/unitWrapper.c
+SRC+= $(FIRM_DIR)/versat_constants.c
 
 #RULES
 run: firmware.elf
@@ -38,6 +41,6 @@ periphs_tmp.h:
 	$(foreach p, $(PERIPHERALS), $(shell echo "#define $p_BASE (1<<$P) |($p<<($P-N_SLAVES_W))" >> $@) )
 
 clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h
 
 .PHONY: run clean subs periphs_tmp.h

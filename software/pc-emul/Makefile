@@ -6,7 +6,7 @@ BAUD=5000000
 FREQ=100000000
 
 #additional compiler flags
-CFLAGS=-g -Os -m32 -std=c99
+CFLAGS=-g -m32 -std=c99
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -16,7 +16,8 @@ EMUL_LOG:=emul.log
 #SUBMODULES
 
 #peripherals (pc)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/pc-emul/pc.mk))
+SUB_DIR:=$(SUBMODULES_DIR)
+$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/pc-emul/pc.mk))
 
 #HEADERS
 HDR+=periphs.h test_vectors.h
@@ -47,11 +48,15 @@ run: firmware.out
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
+	mv versat_instance.v $(HW_DIR)/src/
+	mv versat_defs.vh $(HW_DIR)/include/
+	mv versat_constants.c $(FIRM_DIR)/
 else
 run: firmware.out
 	./firmware.out $(TEST_LOG)
 	mv versat_instance.v $(HW_DIR)/src/
 	mv versat_defs.vh $(HW_DIR)/include/
+	mv versat_constants.c $(FIRM_DIR)/
 endif
 
 build: firmware.out
@@ -62,7 +67,7 @@ firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
 ./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
 	g++ -std=c++11 -g -c -o ./build/unitWrapper.o -m32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
-./build/V%__ALLcls.o: $(HW_DIR)/src/units/%.v
+./build/V%__ALLcls.o ./build/V%__ALLsup.o: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;
@@ -74,6 +79,6 @@ test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean:
-	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG) build headers versat_instance.v versat_defs.vh versat_instance_template.h UARTsw_reg.h
+	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG) build headers versat_instance_template.h UARTsw_reg.h
 
 .PHONY: all build run clean subs periphs_tmp.h firmware.out

@@ -15,7 +15,7 @@ sw:
 # SIMULATE RTL
 #
 
-sim:
+sim: $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c
 	make -C $(SIM_DIR) all
 
 sim-clean:
@@ -135,15 +135,15 @@ test-all-docs:
 clean-all-docs:
 	$(foreach s, $(DOC_LIST), make -C document/$s clean DOC=$s;)
 
+$(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c: pc-emul
 
 clean: 
 	make -C $(PC_DIR) clean
-#	make -C $(ASIC_DIR) clean
 	make -C $(DOC_DIR) clean
 	make clean-all-simulators
 	make clean-all-boards
 	make clean-all-docs
-
+	@rm -f $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c
 
 .PHONY: all pc-emul pc-emul-clean \
 	sim sim-clean\

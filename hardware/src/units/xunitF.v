@@ -36,7 +36,7 @@ module xunitF #(
     output [DATA_W-1:0] out7,
 
     //configurations
-    input [7:0]         configDelay // Encodes delay
+    input [7:0]         delay0 // Encodes delay
     );
 
 reg [7:0] delay;
@@ -108,7 +108,7 @@ begin
       g <= 0;
       h <= 0;
    end else if(run) begin
-      delay <= configDelay;
+      delay <= delay0;
    end else begin
       if(|delay) begin
          delay <= delay - 1;
