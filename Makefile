@@ -88,13 +88,13 @@ test-pc-emul: pc-emul-test
 
 test-pc-emul-clean: pc-emul-clean
 
-test-sim:
+test-sim: test-sim-clean
 	make sim-test SIMULATOR=icarus TEST_LOG=">> test.log"
 
 test-sim-clean:
 	make sim-clean SIMULATOR=icarus
 
-test-fpga:
+test-fpga: test-fpga-clean
 	make fpga-test BOARD=AES-KU040-DB-G TEST_LOG=">> test.log"
 
 test-fpga-clean:
@@ -108,7 +108,7 @@ test-asic-clean:
 
 test: test-clean test-pc-emul test-sim test-fpga
 
-test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean test-asic-clean
+test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
 
 #generic clean
