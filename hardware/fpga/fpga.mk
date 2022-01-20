@@ -105,10 +105,6 @@ parse-log: $(FPGA_TEST_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 
-$(FPGA_TEST_LOG): $(CONSOLE_DIR)/$(FPGA_TEST_LOG)
-	cp $< $@
-
-
 #
 # Clean
 #
@@ -127,7 +123,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log
+	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG) $(VALIDATION_LOG)
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
