@@ -39,7 +39,7 @@ USE_MUL_DIV ?=1
 USE_COMPRESSED ?=1
 
 #ROOT DIRECTORY ON REMOTE MACHINES
-REMOTE_ROOT_DIR ?=sandbox/iob-soc
+REMOTE_ROOT_DIR ?=sandbox/iob-soc-sha
 
 
 #SIMULATION
@@ -50,7 +50,7 @@ SIMULATOR ?=icarus
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in hardware/fpga/$(BOARD) for specific settings
-BOARD ?=CYCLONEV-GT-DK
+BOARD ?=AES-KU040-DB-G
 
 #ASIC COMPILATION
 #default asic node running locally or remotely
