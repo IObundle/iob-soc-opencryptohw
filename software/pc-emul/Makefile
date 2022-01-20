@@ -16,7 +16,7 @@ EMUL_LOG:=emul.log
 #SUBMODULES
 
 #peripherals (pc)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUBMODULES_DIR)/$p/software/pc-emul/pc.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc.mk))
 
 #HEADERS
 HDR+=periphs.h test_vectors.h
