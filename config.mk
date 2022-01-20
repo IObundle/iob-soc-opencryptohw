@@ -82,6 +82,7 @@ PC_DIR:=$(SW_DIR)/pc-emul
 FIRM_DIR:=$(SW_DIR)/firmware
 BOOT_DIR:=$(SW_DIR)/bootloader
 CONSOLE_DIR:=$(SW_DIR)/console
+SW_TEST_DIR:=$(SW_DIR)/test
 
 #hw paths
 HW_DIR=$(ROOT_DIR)/hardware
