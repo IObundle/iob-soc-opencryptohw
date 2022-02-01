@@ -10,12 +10,11 @@ include ./config.mk
 	test-sim test-sim-clean\
 	test-fpga test-fpga-clean\
 	test-asic test-asic-clean\
+	test-doc test-doc-clean\
 	test test-clean\
 	clean clean-all\
-	corename
+	debug
 
-corename:
-	@echo "IOb-SoC-SHA"
 #
 # SIMULATE RTL
 #
@@ -79,7 +78,6 @@ asic-test:
 
 asic-clean:
 	make -C $(ASIC_DIR) clean clean-testlog
-
 
 #
 # TEST ON SIMULATORS AND BOARDS

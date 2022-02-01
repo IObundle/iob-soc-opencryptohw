@@ -10,7 +10,8 @@ include $(CACHE_DIR)/software/software.mk
 endif
 
 #peripherals (embedded)
-$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/embedded/embedded.mk))
+#uart
+include $(UART_DIR)/software/embedded/embedded.mk
 
 #HEADERS
 HDR+=periphs.h test_vectors.h
@@ -24,8 +25,6 @@ TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
 
 #RULES
-run: firmware.elf
-
 firmware.elf: ../template.lds $(HDR) $(SRC)
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc -lnosys
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
