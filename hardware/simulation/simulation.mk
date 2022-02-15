@@ -34,7 +34,7 @@ VSRC+=$(wildcard $(ASIC_DIR)/$(ASIC_MEM_FILES))
 endif
 
 #axi memory
-VSRC+=$(CACHE_DIR)/submodules/MEM/submodules/LIB/submodules/AXI/rtl/axi_ram.v
+include $(AXI_DIR)/hardware/axiram/hardware.mk
 #testbench
 VSRC+=system_tb.v
 

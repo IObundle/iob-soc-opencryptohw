@@ -1,15 +1,14 @@
 ROOT_DIR=../..
 include ../software.mk
 
-#additional compiler flags
-CFLAGS+=--specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
+#additional linker flag
+LFLAGS+=-Wl,-Map,firmware.map
 
 #cache
 ifeq ($(USE_DDR),1)
 include $(CACHE_DIR)/software/software.mk
 endif
 
-#peripherals (embedded)
 #uart
 include $(UART_DIR)/software/embedded/embedded.mk
 
@@ -26,7 +25,7 @@ VALIDATION_LOG:=validation.log
 
 #RULES
 firmware.elf: ../template.lds $(HDR) $(SRC)
-	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc -lnosys
+	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
 #SHA256 test vectors

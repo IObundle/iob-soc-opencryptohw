@@ -78,9 +78,12 @@ DEFINE+=$(defmacro)INIT_MEM
 endif
 
 #submodule paths
-SUBMODULES_DIR=$(ROOT_DIR)/submodules
-SUBMODULES_DIR_LIST=$(shell ls $(SUBMODULES_DIR))
-$(foreach d, $(SUBMODULES_DIR_LIST), $(eval $d_DIR ?=$(SUBMODULES_DIR)/$d))
+PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
+CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
+UART_DIR=$(ROOT_DIR)/submodules/UART
+LIB_DIR=$(ROOT_DIR)/submodules/LIB
+MEM_DIR=$(ROOT_DIR)/submodules/MEM
+AXI_DIR=$(ROOT_DIR)/submodules/AXI
 
 #sw paths
 SW_DIR:=$(ROOT_DIR)/software
