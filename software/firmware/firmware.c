@@ -5,6 +5,8 @@
 #include "iob-uart.h"
 #include "printf.h"
 
+#include "iob_timer.h"
+
 #include "crypto/sha2.h"
 
 #include "test_vectors.h"
@@ -46,10 +48,14 @@ static char testBuffer[10000];
 int main()
 {
   char digest[256];
+  unsigned int elapsedu;
 
   int i = 0;
   //init uart
   uart_init(UART_BASE,FREQ/BAUD);   
+
+  //init timer
+  timer_init(TIMER_BASE);
 
   printf("[L = %d]\n", HASH_SIZE);
 
@@ -61,5 +67,10 @@ int main()
     printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
   }
   printf("\n");
+
+  // Complete program time
+  elapsedu = timer_time_us();
+  printf("TIMER: Execution time: %dus @%dMHz\n", elapsedu, FREQ/1000000);
+
   uart_finish();
 }
