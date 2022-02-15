@@ -30,6 +30,13 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
 
+#PROFILE
+ifeq ($(PROFILE),1)
+HDR+=$(FIRM_DIR)/profile.h
+SRC+= $(FIRM_DIR)/profile.c
+DEFINE+=$(defmacro)PROFILE
+endif
+
 #RULES
 
 all: build run parse
@@ -52,7 +59,7 @@ parse: $(EMUL_LOG_PARSED) $(VALIDATION_LOG)
 	@rm -rf $(EMUL_LOG_PARSED)
 
 $(EMUL_LOG_PARSED): $(EMUL_LOG)
-	@grep -v "TIMER:" $(EMUL_LOG) > $(EMUL_LOG_PARSED)
+	@grep -v "PROFILE:" $(EMUL_LOG) > $(EMUL_LOG_PARSED)
 
 
 $(VALIDATION_LOG): $(TEST_VECTOR_RSP)

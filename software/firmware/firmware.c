@@ -7,6 +7,10 @@
 
 #include "iob_timer.h"
 
+#ifdef PROFILE
+#include "profile.h"
+#endif
+
 #include "crypto/sha2.h"
 
 #include "test_vectors.h"
@@ -48,7 +52,6 @@ static char testBuffer[10000];
 int main()
 {
   char digest[256];
-  unsigned int elapsedu;
 
   int i = 0;
   //init uart
@@ -56,21 +59,32 @@ int main()
 
   //init timer
   timer_init(TIMER_BASE);
+#ifdef PROFILE
+  PROF_START(global)
+#endif
 
   printf("[L = %d]\n", HASH_SIZE);
 
   //Message test loop
   for(i=0; i< NUM_MSGS; i++){
+#ifdef PROFILE
+    PROF_START(sha256)
+#endif
     sha256(digest,msg_array[i],msg_len[i]);
+#ifdef PROFILE
+    PROF_END(sha256)
+#endif
     printf("\nLen = %d\n", msg_len[i]*8);
     printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
     printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
   }
   printf("\n");
 
-  // Complete program time
-  elapsedu = timer_time_us();
-  printf("TIMER: Execution time: %dus @%dMHz\n", elapsedu, FREQ/1000000);
+#ifdef PROFILE
+  // Finish profile and report execution times
+  PROF_END(global)
+  profile_report();
+#endif
 
   uart_finish();
 }
