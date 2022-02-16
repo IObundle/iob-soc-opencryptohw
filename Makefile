@@ -41,6 +41,9 @@ pc-emul-test:
 pc-emul-clean:
 	make -C $(PC_DIR) clean
 
+pc-emul-profile:
+	make -C $(PC_DIR) profile
+
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #

@@ -13,6 +13,7 @@ DEFINE+=-DPC
 
 EMUL_LOG:=emul.log
 EMUL_LOG_PARSED:=emul_parsed.log
+EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
 
@@ -39,28 +40,38 @@ endif
 
 #RULES
 
-all: build run parse
+all: clean build run
 
 build: firmware.out
 
 run: firmware.out
-	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
+	./firmware.out $(TEST_LOG)
 
 firmware.out: $(HDR) $(SRC)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
 
 test:
-	make all TEST_LOG="> test.log"
-	diff -q $(PC_DIR)/test.log $(PC_DIR)/test.expected
+	make all TEST_LOG=">> $(EMUL_LOG)"
+	make validate
 
-parse: $(EMUL_LOG_PARSED) $(VALIDATION_LOG)
+validate: $(EMUL_LOG_PARSED) $(VALIDATION_LOG)
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG_PARSED); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
 	@rm -rf $(EMUL_LOG_PARSED)
 
+profile: $(EMUL_PROFILE_LOG)
+	@printf "\n=== PROFILE LOG ===\n"
+	@cat $<
+	@printf "=== PROFILE LOG ===\n"
+
+$(EMUL_LOG): 
+	make all TEST_LOG=">> $(EMUL_LOG)" PROFILE=1
+
 $(EMUL_LOG_PARSED): $(EMUL_LOG)
 	@grep -v "PROFILE:" $(EMUL_LOG) > $(EMUL_LOG_PARSED)
 
+$(EMUL_PROFILE_LOG): $(EMUL_LOG)
+	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
 $(VALIDATION_LOG): $(TEST_VECTOR_RSP)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
@@ -72,6 +83,7 @@ test_vectors.h:
 
 clean:
 	@rm -rf firmware.out periphs.h test.log *sw_reg.h \
-		test.log test_vectors.h $(EMUL_LOG) $(EMUL_LOG_PARSED) $(VALIDATION_LOG) 
+		test.log test_vectors.h $(EMUL_LOG) $(EMUL_LOG_PARSED) \
+		$(EMUL_PROFILE_LOG) $(VALIDATION_LOG)
 
 .PHONY: all build run clean subs periphs_tmp.h test
