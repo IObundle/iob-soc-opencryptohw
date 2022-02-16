@@ -93,7 +93,7 @@ sim-shortmsg:
 
 parse-log: $(SIM_LOG)
 	@sed -n -e '/\[L = /,$$p' $(SIM_LOG) | tac | sed -n -e '/MD =/,$$p' | tac | \
-		grep -v "TIMER:" > $(SIM_PARSED_LOG)
+		grep -v "PROFILE:" > $(SIM_PARSED_LOG)
 	@echo "" >> $(SIM_PARSED_LOG) # add final newline
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars

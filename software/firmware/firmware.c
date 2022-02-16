@@ -56,7 +56,7 @@ int main()
   timer_init(TIMER_BASE);
 #ifdef PROFILE
   PROF_START(global)
-    PROF_START(printf)
+  PROF_START(printf)
 #endif
   printf("[L = %d]\n", HASH_SIZE);
 #ifdef PROFILE

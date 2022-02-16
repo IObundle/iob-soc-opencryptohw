@@ -1,4 +1,4 @@
-#include "stdio.h"
+#include "printf.h"
 #include "iob_timer.h"
 
 #define P_NVARS (3)

@@ -81,7 +81,7 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 
 # make embedded sw software
 sw:
-	make -C $(FIRM_DIR) firmware.elf FREQ=$(FREQ) BAUD=$(BAUD)
+	make -C $(FIRM_DIR) firmware.elf FREQ=$(FREQ) BAUD=$(BAUD) PROFILE=$(PROFILE)
 	make -C $(BOOT_DIR) boot.elf FREQ=$(FREQ) BAUD=$(BAUD)
 	make -C $(CONSOLE_DIR) INIT_MEM=$(INIT_MEM)
 
