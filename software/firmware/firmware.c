@@ -52,6 +52,7 @@ static char testBuffer[10000];
 int main()
 {
   char digest[256];
+  char *hex_string;
 
   int i = 0;
   //init uart
@@ -61,28 +62,55 @@ int main()
   timer_init(TIMER_BASE);
 #ifdef PROFILE
   PROF_START(global)
+    PROF_START(printf)
 #endif
-
   printf("[L = %d]\n", HASH_SIZE);
+#ifdef PROFILE
+  PROF_STOP(printf)
+#endif
 
   //Message test loop
   for(i=0; i< NUM_MSGS; i++){
+
 #ifdef PROFILE
     PROF_START(sha256)
 #endif
     sha256(digest,msg_array[i],msg_len[i]);
 #ifdef PROFILE
-    PROF_END(sha256)
+    PROF_STOP(sha256)
+    PROF_START(GetHexadecimal)
+#endif
+    hex_string = GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1);
+#ifdef PROFILE
+    PROF_STOP(GetHexadecimal)
+    PROF_START(printf)
 #endif
     printf("\nLen = %d\n", msg_len[i]*8);
-    printf("Msg = %s\n", GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1));
-    printf("MD = %s\n",GetHexadecimal(digest, HASH_SIZE));
+    printf("Msg = %s\n", hex_string);
+#ifdef PROFILE
+    PROF_STOP(printf)
+    PROF_START(GetHexadecimal)
+#endif
+    hex_string = GetHexadecimal(digest, HASH_SIZE);
+#ifdef PROFILE
+    PROF_STOP(GetHexadecimal)
+    PROF_START(printf)
+#endif
+    printf("MD = %s\n", GetHexadecimal(digest, HASH_SIZE));
+#ifdef PROFILE
+    PROF_STOP(printf)
+#endif
+
   }
-  printf("\n");
 
 #ifdef PROFILE
+    PROF_START(printf)
+#endif
+  printf("\n");
+#ifdef PROFILE
+    PROF_STOP(printf)
   // Finish profile and report execution times
-  PROF_END(global)
+  PROF_STOP(global)
   profile_report();
 #endif
 
