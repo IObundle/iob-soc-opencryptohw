@@ -17,13 +17,7 @@
 
 #define HASH_SIZE (256/8)
 
-char GetHexadecimalChar(int value){
-  if(value < 10){
-    return '0' + value;
-  } else{
-    return 'a' + (value - 10);
-  }
-}
+char HexTable[16] = "0123456789abcdef";
 
 char* GetHexadecimal(const char* text, int str_size){
   static char buffer[2048+1];
@@ -38,8 +32,8 @@ char* GetHexadecimal(const char* text, int str_size){
 
     int ch = (int) ((unsigned char) text[i]);
 
-    buffer[i*2] = GetHexadecimalChar(ch / 16);
-    buffer[i*2+1] = GetHexadecimalChar(ch % 16);
+    buffer[i*2] = HexTable[ch >> 4]; // ch/16
+    buffer[i*2+1] = HexTable[ch & 0xF]; // ch % 16
   }
 
   buffer[(i)*2] = '\0';
