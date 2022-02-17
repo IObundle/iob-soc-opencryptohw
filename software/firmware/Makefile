@@ -12,6 +12,9 @@ endif
 #uart
 include $(UART_DIR)/software/embedded/embedded.mk
 
+#timer
+include $(TIMER_DIR)/software/embedded/embedded.mk
+
 #HEADERS
 HDR+=periphs.h test_vectors.h
 
@@ -22,6 +25,13 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 #TEST VECTOR
 TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
+
+#PROFILE
+ifeq ($(PROFILE),1)
+HDR+=$(FIRM_DIR)/profile.h
+SRC+= $(FIRM_DIR)/profile.c
+DEFINE+=$(defmacro)PROFILE
+endif
 
 #RULES
 firmware.elf: ../template.lds $(HDR) $(SRC)

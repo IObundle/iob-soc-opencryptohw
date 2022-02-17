@@ -28,6 +28,9 @@ include $(CACHE_DIR)/hardware/hardware.mk
 #UART
 include $(UART_DIR)/hardware/hardware.mk
 
+#TIMER
+include $(TIMER_DIR)/hardware/hardware.mk
+
 
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include
@@ -78,7 +81,7 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 
 # make embedded sw software
 sw:
-	make -C $(FIRM_DIR) firmware.elf FREQ=$(FREQ) BAUD=$(BAUD)
+	make -C $(FIRM_DIR) firmware.elf FREQ=$(FREQ) BAUD=$(BAUD) PROFILE=$(PROFILE)
 	make -C $(BOOT_DIR) boot.elf FREQ=$(FREQ) BAUD=$(BAUD)
 	make -C $(CONSOLE_DIR) INIT_MEM=$(INIT_MEM)
 
