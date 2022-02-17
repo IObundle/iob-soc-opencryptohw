@@ -57,6 +57,9 @@ fpga-build-all:
 fpga-run:
 	make -C $(BOARD_DIR) all TEST_LOG="$(TEST_LOG)"
 
+fpga-run-profile:
+	make -C $(BOARD_DIR) profile TEST_LOG=">> test.log"
+
 fpga-test:
 	make -C $(BOARD_DIR) test
 
