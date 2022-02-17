@@ -102,18 +102,19 @@ FPGA execution requires:
 
 # Profiling
 The system can be profiled using a 
-[Timer core](github.com/IObundle/iob-timer.git), a software controlled counter.
+[Timer core](https://www.github.com/IObundle/iob-timer.git), a software 
+controlled counter.
 
 The `pc-emul` version simulates the counter behaviour by calling the C standard
 `<timer.h>` library.
 
-The profiling is available in `pc-emul`:
+The profiling is available for `pc-emul` using either of the following commands:
 ```
 make pc-emul PROFILE=1
 # or
 make pc-emul-profile
 ```
-The `pc-emul-profile` outputs an `emul_profile.log` file with the profiling 
+The `pc-emul-profile` target outputs an `emul_profile.log` file with the profiling 
 information.
 
 For `fpga` profiling run either of the following commands:
