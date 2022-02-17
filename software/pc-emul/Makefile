@@ -36,6 +36,7 @@ ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
 SRC+= $(FIRM_DIR)/profile.c
 DEFINE+=$(defmacro)PROFILE
+INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
 #RULES
