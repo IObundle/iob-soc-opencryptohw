@@ -9,6 +9,7 @@ software/*/*
 !software/*/*.expected
 !software/*/*.py
 !software/*/*.rsp
+!software/*/*.c
 
 !software/bootloader/boot.c
 !software/bootloader/boot.S

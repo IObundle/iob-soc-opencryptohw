@@ -82,6 +82,23 @@ $(VALIDATION_LOG): $(TEST_VECTOR_RSP)
 test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
+test_data_gen: $(TEST_VECTOR_RSP) read_bin
+	./$(SW_TEST_DIR)/gen_test_data.py $(TEST_VECTOR_RSP)
+	mv $(SW_TEST_DIR)/*d_in.bin .
+	mv $(SW_TEST_DIR)/*d_out.bin .
+
+read_bin: $(SW_TEST_DIR)/read_bin.c
+	gcc $< -o $@
+
+read_bin_run: read_bin
+	$(eval RD_BIN_ARGS = $(basename $(notdir $(TEST_VECTOR_RSP)))_d_in.bin)
+	$(eval RD_BIN_ARGS += $(basename $(notdir $(TEST_VECTOR_RSP)))_d_out.bin)
+	./read_bin $(RD_BIN_ARGS) > read_bin.log
+
+data_clean:
+	@rm -rf *d_in.bin *d_out.bin
+	@rm -rf read_bin read_bin.log
+
 clean:
 	@rm -rf firmware.out periphs.h test.log *sw_reg.h \
 		test.log test_vectors.h $(EMUL_LOG) $(EMUL_LOG_PARSED) \
