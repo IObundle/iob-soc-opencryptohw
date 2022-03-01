@@ -15,6 +15,9 @@ include $(UART_DIR)/software/embedded/embedded.mk
 #timer
 include $(TIMER_DIR)/software/embedded/embedded.mk
 
+#ethernet
+include $(ETHERNET_DIR)/software/embedded/embedded.mk
+
 #HEADERS
 HDR+=periphs.h test_vectors.h
 

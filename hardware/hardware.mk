@@ -31,6 +31,8 @@ include $(UART_DIR)/hardware/hardware.mk
 #TIMER
 include $(TIMER_DIR)/hardware/hardware.mk
 
+#ETHERNET
+include $(ETHERNET_DIR)/hardware/hardware.mk
 
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include
