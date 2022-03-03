@@ -6,6 +6,7 @@
 #include "printf.h"
 
 #include "iob_timer.h"
+#include "iob-eth.h"
 
 #ifdef PROFILE
 #include "profile.h"
@@ -13,9 +14,63 @@
 
 #include "crypto/sha2.h"
 
-#include "test_vectors.h"
-
 #define HASH_SIZE (256/8)
+
+/* read integer value and increment pointer */
+int get_int(char** ptr){
+    /* check for valid ptr */
+    if(ptr == NULL){
+        printf("get_int: invalid pointer\n");
+        return -1;
+    }
+    /* get int and update pointer */
+    int i_val = *( (int*) *ptr);
+    *ptr += sizeof(int);
+    return i_val;
+}
+
+/* get pointer to message and increment pointer */
+char *get_msg(char **ptr, int size){
+    /* check for valid ptr */
+    if(ptr == NULL){
+        printf("get_msg: invalid pointer\n");
+        return NULL;
+    }
+    /* get int and update pointer */
+    char *msg = *ptr;
+    *ptr += sizeof(char)*size;
+    return msg;
+}
+
+/* copy memory from pointer to another */
+void mem_copy(char *src_buf, char *dst_buf, int size){
+    if(src_buf == NULL || dst_buf == NULL){
+        printf("mem_copy: invalid pointer\n");
+        return;
+    }
+    int i = 0;
+    while(i<size){
+        dst_buf[i] = src_buf[i];
+        i++;
+    }
+    return;
+}
+
+/* copy mesage to pointer, update pointer to after message
+ * returns number of chars written
+ */
+int save_msg(char **ptr, char* msg, int size){
+    if(ptr == NULL || msg == NULL || size < 0 ){
+        printf("save_msg: invalid inputs\n");
+        return -1;
+    }
+
+    // copy message to pointer
+    mem_copy(msg, *ptr, size); 
+    // update pointer to position after message
+    *ptr += sizeof(char)*size;
+    return size;
+}
 
 char HexTable[16] = "0123456789abcdef";
 
@@ -48,12 +103,42 @@ int main()
   char digest[256];
   char *hex_string;
 
+#ifdef PC
+  char *ddr_mem = (char*) malloc(sizeof(char)*10000000);
+  if(ddr_mem == NULL){
+      printf("Failed to allocate PC-emul DDR_MEM\n");
+      return -1;
+  }
+#else
+  char *ddr_mem = (char*) DDR_MEM;
+#endif // ifndef PC
+
+  char *din_fp = ddr_mem; /* input data at ddr memory start */
+  char *dout_fp = NULL, *dout_fp_start = NULL;
+  int din_size = 0;
+  int dout_size = 0;
+
   int i = 0;
   //init uart
   uart_init(UART_BASE,FREQ/BAUD);   
 
   //init timer
   timer_init(TIMER_BASE);
+
+  //init ethernet
+  eth_init(ETHERNET_BASE);
+
+  //Receive input data from ethernet
+  din_size = eth_rcv_variable_file(din_fp);
+  printf("ETHERNET: Received file with %d bytes\n", din_size);
+  // Set output data pointer after data in
+  dout_fp_start = dout_fp = ddr_mem + din_size;
+
+  //Parse input data
+  int num_msgs = get_int(&din_fp);
+  int msg_len = 0;
+  char *msg = NULL;
+
 #ifdef PROFILE
   PROF_START(global)
   PROF_START(printf)
@@ -64,22 +149,25 @@ int main()
 #endif
 
   //Message test loop
-  for(i=0; i< NUM_MSGS; i++){
+  for(i=0; i< num_msgs; i++){
+    // Parse message and length
+    msg_len = get_int(&din_fp);
+    msg = get_msg(&din_fp, (msg_len) ? msg_len : 1);
 
 #ifdef PROFILE
     PROF_START(sha256)
 #endif
-    sha256(digest,msg_array[i],msg_len[i]);
+    sha256(digest,msg,msg_len);
 #ifdef PROFILE
     PROF_STOP(sha256)
     PROF_START(GetHexadecimal)
 #endif
-    hex_string = GetHexadecimal(msg_array[i], (msg_len[i]) ? msg_len[i] : 1);
+    hex_string = GetHexadecimal(msg, (msg_len) ? msg_len : 1);
 #ifdef PROFILE
     PROF_STOP(GetHexadecimal)
     PROF_START(printf)
 #endif
-    printf("\nLen = %d\n", msg_len[i]*8);
+    printf("\nLen = %d\n", msg_len*8);
     printf("Msg = %s\n", hex_string);
 #ifdef PROFILE
     PROF_STOP(printf)
@@ -94,8 +182,12 @@ int main()
 #ifdef PROFILE
     PROF_STOP(printf)
 #endif
-
+    //save to memory
+    dout_size += save_msg(&dout_fp, digest, HASH_SIZE);
   }
+
+  // send message digests via ethernet
+  eth_send_variable_file(dout_fp_start, dout_size);
 
 #ifdef PROFILE
     PROF_START(printf)
@@ -108,5 +200,8 @@ int main()
   profile_report();
 #endif
 
+#ifdef PC
+    free(ddr_mem);
+#endif
   uart_finish();
 }
