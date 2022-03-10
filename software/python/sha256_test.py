@@ -35,8 +35,6 @@ if __name__ == "__main__":
     # Receive Variable Data File
     print("\nStarting file reception...")
 
-    socket = CreateSocket()
-
     SyncAckLast(socket)
     RcvVariableFile(socket,rcv_file)
 
