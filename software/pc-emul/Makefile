@@ -64,8 +64,7 @@ run-python-int:
 	make run-python > host.log
 
 run-python:
-	PC=1 python3 $(ETHERNET_DIR)/software/python/ethSendVariableData.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin
-	PC=1 python3 $(ETHERNET_DIR)/software/python/ethRcvVariableData.py enp1 112233445566 ./$(SOC_OUT_BIN);
+	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
 
 validate:
 	@if ./$(SW_TEST_DIR)/validate_test.py SHA256ShortMsg_d_out.bin $(SOC_OUT_BIN); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
