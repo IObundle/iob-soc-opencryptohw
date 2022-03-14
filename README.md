@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # iob-soc-sha
 SoC to run the program in software with or without acceleration using VERSAT2.0
 
@@ -100,3 +99,29 @@ FPGA execution requires:
     ```
     - Follow [IOb-soc's README](https://github.com/IObundle/iob-soc#readme) for
     more installation details.
+
+# Profiling
+The system can be profiled using a 
+[Timer core](https://www.github.com/IObundle/iob-timer.git), a software 
+controlled counter.
+
+The `pc-emul` version simulates the counter behaviour by calling the C standard
+`<timer.h>` library.
+
+The profiling is available for `pc-emul` using either of the following commands:
+```
+make pc-emul PROFILE=1
+# or
+make pc-emul-profile
+```
+The `pc-emul-profile` target outputs an `emul_profile.log` file with the profiling 
+information.
+
+For `fpga` profiling run either of the following commands:
+```
+make fpga-run PROFILE=1
+# or
+make fpga-run-profile
+```
+The `fpga-run-profile` target outputs a `fpga_profile.log` file with the 
+profiling information.

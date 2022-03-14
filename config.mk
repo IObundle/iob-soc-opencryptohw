@@ -4,6 +4,8 @@
 #
 ######################################################################
 
+IOBSOC_NAME:=IOBSOCSHA
+
 #
 # PRIMARY PARAMETERS: CAN BE CHANGED BY USERS OR OVERRIDEN BY ENV VARS
 #
@@ -30,7 +32,7 @@ INIT_MEM ?=1
 #PERIPHERAL LIST
 #must match respective submodule CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART
+PERIPHERALS ?=UART TIMER
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
 USE_MUL_DIV ?=1
@@ -40,7 +42,6 @@ USE_COMPRESSED ?=1
 
 #ROOT DIRECTORY ON REMOTE MACHINES
 REMOTE_ROOT_DIR ?=sandbox/iob-soc-sha
-
 
 #SIMULATION
 #default simulator running locally or remotely
@@ -76,6 +77,15 @@ ifeq ($(INIT_MEM),1)
 DEFINE+=$(defmacro)INIT_MEM
 endif
 
+#submodule paths
+PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
+CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
+UART_DIR=$(ROOT_DIR)/submodules/UART
+TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
+LIB_DIR=$(ROOT_DIR)/submodules/LIB
+MEM_DIR=$(ROOT_DIR)/submodules/MEM
+AXI_DIR=$(ROOT_DIR)/submodules/AXI
+
 #sw paths
 SW_DIR:=$(ROOT_DIR)/software
 PC_DIR:=$(SW_DIR)/pc-emul
@@ -90,19 +100,12 @@ SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 ASIC_DIR=$(HW_DIR)/asic/$(ASIC_NODE)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
 
-#submodule paths
-SUBMODULES_DIR=$(ROOT_DIR)/submodules
-SUBMODULES=
-SUBMODULE_DIRS=$(shell ls $(SUBMODULES_DIR))
-$(foreach d, $(SUBMODULE_DIRS), $(eval TMP=$(shell make -C $(SUBMODULES_DIR)/$d corename | grep -v make)) $(eval SUBMODULES+=$(TMP)) $(eval $(TMP)_DIR ?=$(SUBMODULES_DIR)/$d))
-
 #define macros
 DEFINE+=$(defmacro)BOOTROM_ADDR_W=$(BOOTROM_ADDR_W)
 DEFINE+=$(defmacro)SRAM_ADDR_W=$(SRAM_ADDR_W)
 DEFINE+=$(defmacro)FIRM_ADDR_W=$(FIRM_ADDR_W)
 DEFINE+=$(defmacro)DCACHE_ADDR_W=$(DCACHE_ADDR_W)
-
-DEFINE+=$(defmacro)N_SLAVES=$(N_SLAVES)
+DEFINE+=$(defmacro)N_SLAVES=$(N_SLAVES) #peripherals
 
 #address selection bits
 E:=31 #extra memory bit
@@ -118,8 +121,10 @@ DEFINE+=$(defmacro)E=$E
 DEFINE+=$(defmacro)P=$P
 DEFINE+=$(defmacro)B=$B
 
-N_SLAVES:=0
+#PERIPHERAL IDs
 #assign sequential numbers to peripheral names used as variables
+#that define their base address in the software and instance name in the hardware
+N_SLAVES:=0
 $(foreach p, $(PERIPHERALS), $(eval $p=$(N_SLAVES)) $(eval N_SLAVES:=$(shell expr $(N_SLAVES) \+ 1)))
 $(foreach p, $(PERIPHERALS), $(eval DEFINE+=$(defmacro)$p=$($p)))
 

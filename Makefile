@@ -10,12 +10,11 @@ include ./config.mk
 	test-sim test-sim-clean\
 	test-fpga test-fpga-clean\
 	test-asic test-asic-clean\
+	test-doc test-doc-clean\
 	test test-clean\
 	clean clean-all\
-	corename
+	debug
 
-corename:
-	@echo "IOb-SoC-SHA"
 #
 # SIMULATE RTL
 #
@@ -42,6 +41,9 @@ pc-emul-test:
 pc-emul-clean:
 	make -C $(PC_DIR) clean
 
+pc-emul-profile:
+	make -C $(PC_DIR) profile
+
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
@@ -54,6 +56,9 @@ fpga-build-all:
 
 fpga-run:
 	make -C $(BOARD_DIR) all TEST_LOG="$(TEST_LOG)"
+
+fpga-run-profile:
+	make -C $(BOARD_DIR) profile TEST_LOG=">> test.log"
 
 fpga-test:
 	make -C $(BOARD_DIR) test
@@ -80,7 +85,6 @@ asic-test:
 asic-clean:
 	make -C $(ASIC_DIR) clean clean-testlog
 
-
 #
 # TEST ON SIMULATORS AND BOARDS
 #
@@ -106,7 +110,15 @@ test-asic:
 test-asic-clean:
 	make asic-clean ASIC_NODE=umc130
 
-test: test-clean test-pc-emul test-sim test-fpga
+test: test-clean 
+	make test-pc-emul 
+	make pc-emul PROFILE=1
+	make test-pc-emul-clean
+	make test-sim 
+	make test-sim-clean
+	make test-fpga
+	make fpga-run PROFILE=1
+	make test-fpga-clean
 
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 

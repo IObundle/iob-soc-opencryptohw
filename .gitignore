@@ -15,6 +15,8 @@ software/*/*
 
 !software/firmware/firmware.c
 !software/firmware/firmware.S
+!software/firmware/profile.c
+!software/firmware/profile.h
 !software/firmware/crypto/
 
 !software/console/console.c
@@ -28,7 +30,8 @@ hardware/src/system.v
 hardware/testbench/system_tb.v
 
 #simulation
-hardware/simulation/*/*
+hardware/simulation/*
+!hardware/simulation/verilog_tb
 !hardware/simulation/simulation.mk
 !hardware/simulation/*/Makefile
 !hardware/simulation/*/test.expected
