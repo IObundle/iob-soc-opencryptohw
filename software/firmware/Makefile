@@ -46,6 +46,6 @@ test_vectors.h:
 	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *sw_reg.h test_vectors.h
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h test_vectors.h
 
 .PHONY: clean

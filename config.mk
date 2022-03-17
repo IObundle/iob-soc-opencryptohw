@@ -69,7 +69,6 @@ ASIC_NODE ?=umc130
 ifeq ($(RUN_EXTMEM),1)
 DEFINE+=$(defmacro)RUN_EXTMEM
 USE_DDR=1
-INIT_MEM=0
 endif
 
 ifeq ($(USE_DDR),1)

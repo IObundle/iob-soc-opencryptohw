@@ -14,6 +14,7 @@ include $(ROOT_DIR)/hardware/hardware.mk
 VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
+TEST_LOG ?=">> test.log"
 FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
 FPGA_PROFILE_LOG:=fpga_profile.log
 FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
@@ -83,8 +84,8 @@ queue-out:
 
 queue-out-remote:
 	ssh $(BOARD_USER)@$(BOARD_SERVER) \
-	'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) queue-out;\
-	if [ "`pgrep -u $(BOARD_USER) console`" ]; then killall -q -u $(BOARD_USER) -9 console; fi'
+	"make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) queue-out;\
+	kill -9 $$(ps aux | grep $(BOARD_USER) | grep console | grep -v grep | awk '{print $$2}')"
 
 #
 # Testing
@@ -153,10 +154,14 @@ ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
 endif
 
+clean-all: clean-testlog clean
+	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
 
-.PRECIOUS: $(FPGA_OBJ)
 
-.PHONY: all run load build \
+.PRECIOUS: $(FPGA_OBJ) $(FPGA_PROFILE_LOG)
+
+.PHONY: all run build \
 	queue-in queue-out queue-wait queue-out-remote \
-	test test1 test2 test3 \
-	clean-remote clean-testlog
+	test test-shortmsg run-shortmsg parse-log\
+	profile\
+	clean-remote clean-testlog clean-all

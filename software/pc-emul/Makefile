@@ -86,7 +86,7 @@ gen_data:
 	mv $(SW_TEST_DIR)/*d_out.bin .
 
 clean:
-	@rm -rf firmware.out periphs.h test.log *sw_reg.h \
+	@rm -rf firmware.out periphs.h test.log *swreg.h \
 		test.log $(EMUL_LOG) $(EMUL_PROFILE_LOG) \
 		*d_in.bin *d_out.bin soc.log host.log $(SOC_OUT_BIN)
 
