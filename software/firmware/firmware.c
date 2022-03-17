@@ -5,7 +5,7 @@
 #include "iob-uart.h"
 #include "printf.h"
 
-#include "iob_timer.h"
+#include "iob-timer.h"
 #include "iob-eth.h"
 
 #ifdef PROFILE
