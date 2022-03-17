@@ -19,15 +19,11 @@ include $(TIMER_DIR)/software/embedded/embedded.mk
 include $(ETHERNET_DIR)/software/embedded/embedded.mk
 
 #HEADERS
-HDR+=periphs.h test_vectors.h
+HDR+=periphs.h
 
 #SOURCES
 SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
-
-#TEST VECTOR
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -37,15 +33,14 @@ DEFINE+=$(defmacro)PROFILE
 endif
 
 #RULES
-firmware.elf: ../template.lds $(HDR) $(SRC)
+firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
 #SHA256 test vectors
-test_vectors.h:
-	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
 clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h test_vectors.h
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h\
+		*d_in.bin *d_out.bin
 
 .PHONY: clean

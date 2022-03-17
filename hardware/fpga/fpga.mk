@@ -14,7 +14,6 @@ include $(ROOT_DIR)/hardware/hardware.mk
 VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
-TEST_LOG ?=">> test.log"
 FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
 FPGA_PROFILE_LOG:=fpga_profile.log
 FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
@@ -92,20 +91,18 @@ queue-out-remote:
 #
 
 test: clean-testlog test-shortmsg
+
+test-shortmsg: run-shortmsg test-validate
 	if cmp --silent $(VALIDATION_LOG) $(FPGA_PARSED_LOG); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
 
-test-shortmsg: run-shortmsg parse-log
-
 run-shortmsg:
-	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
+	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0
 
-parse-log: $(FPGA_TEST_LOG)
-	@sed -n -e '/\[L = /,$$p' $(FPGA_TEST_LOG) | tac | sed -n -e '/MD =/,$$p' | \
-		tac | grep -v "PROFILE:" > $(FPGA_PARSED_LOG)
-	@echo "" >> $(FPGA_PARSED_LOG) # add final newline
-	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
-	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
+test-validate: $(VALIDATION_OUT_BIN) $(SOC_OUT_BIN)
+	$(eval VALIDATION_OUT_BIN = $(basename $(TEST_VECTOR_RSP))_d_out.bin)
+	mv $(SW_DIR)/$(VALIDATION_OUT_BIN) .
+	@if ./$(SW_TEST_DIR)/validate_test.py $(VALIDATION_OUT_BIN) soc-out.bin; then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 
 #
 # Profiling

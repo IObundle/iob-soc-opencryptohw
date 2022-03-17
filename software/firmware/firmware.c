@@ -96,21 +96,21 @@ char* GetHexadecimal(const char* text, int str_size){
   return buffer;
 }
 
-static char testBuffer[10000];
-
 int main()
 {
   char digest[256];
   char *hex_string;
 
 #ifdef PC
-  char *ddr_mem = (char*) malloc(sizeof(char)*10000000);
+  char *ddr_mem = (char*) malloc(sizeof(char)*10000);
   if(ddr_mem == NULL){
       printf("Failed to allocate PC-emul DDR_MEM\n");
       return -1;
   }
 #else
+  /* char static_mem[10000] = {0}; */
   char *ddr_mem = (char*) DDR_MEM;
+  /* char *ddr_mem = (char*) static_mem; */
 #endif // ifndef PC
 
   char *din_fp = ddr_mem; /* input data at ddr memory start */
@@ -143,13 +143,14 @@ int main()
   PROF_START(global)
   PROF_START(printf)
 #endif
-  printf("[L = %d]\n", HASH_SIZE);
+  /* printf("[L = %d]\n", HASH_SIZE); */
 #ifdef PROFILE
   PROF_STOP(printf)
 #endif
 
   //Message test loop
   for(i=0; i< num_msgs; i++){
+    printf("Msg #%d\n", i);
     // Parse message and length
     msg_len = get_int(&din_fp);
     msg = get_msg(&din_fp, (msg_len) ? msg_len : 1);
@@ -158,32 +159,34 @@ int main()
     PROF_START(sha256)
 #endif
     sha256(digest,msg,msg_len);
+    printf("sha256 done\n");
 #ifdef PROFILE
     PROF_STOP(sha256)
     PROF_START(GetHexadecimal)
 #endif
-    hex_string = GetHexadecimal(msg, (msg_len) ? msg_len : 1);
+    /* hex_string = GetHexadecimal(msg, (msg_len) ? msg_len : 1); */
 #ifdef PROFILE
     PROF_STOP(GetHexadecimal)
     PROF_START(printf)
 #endif
-    printf("\nLen = %d\n", msg_len*8);
-    printf("Msg = %s\n", hex_string);
+    /* printf("\nLen = %d\n", msg_len*8); */
+    /* printf("Msg = %s\n", hex_string); */
 #ifdef PROFILE
     PROF_STOP(printf)
     PROF_START(GetHexadecimal)
 #endif
-    hex_string = GetHexadecimal(digest, HASH_SIZE);
+    /* hex_string = GetHexadecimal(digest, HASH_SIZE); */
 #ifdef PROFILE
     PROF_STOP(GetHexadecimal)
     PROF_START(printf)
 #endif
-    printf("MD = %s\n", GetHexadecimal(digest, HASH_SIZE));
+    /* printf("MD = %s\n", GetHexadecimal(digest, HASH_SIZE)); */
 #ifdef PROFILE
     PROF_STOP(printf)
 #endif
     //save to memory
     dout_size += save_msg(&dout_fp, digest, HASH_SIZE);
+    printf("saved msg\t acc_ptr: %d/%d\n", dout_size, 32*num_msgs);
   }
 
   // send message digests via ethernet

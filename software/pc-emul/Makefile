@@ -26,8 +26,6 @@ HDR+=periphs.h
 SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 
-#TEST VECTOR
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 SOC_OUT_BIN:=soc-out.bin
 
 #PROFILE
@@ -80,15 +78,10 @@ $(EMUL_LOG):
 $(EMUL_PROFILE_LOG): $(EMUL_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
-gen_data:
-	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
-	mv $(SW_TEST_DIR)/*d_in.bin .
-	mv $(SW_TEST_DIR)/*d_out.bin .
-
 clean:
 	@rm -rf firmware.out periphs.h test.log *swreg.h \
 		test.log $(EMUL_LOG) $(EMUL_PROFILE_LOG) \
 		*d_in.bin *d_out.bin soc.log host.log $(SOC_OUT_BIN)
 
 .PHONY: all build run run-parallel run-soc-int run-python-int run-python \
-	validate profile gen_data
+	validate profile 
