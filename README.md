@@ -38,7 +38,7 @@ PC emulation program requires:
 - Git
 - Make
 - gcc
-- Python 2.7
+- Python 3.6+
 
 * * *
 # RISCV Emulation

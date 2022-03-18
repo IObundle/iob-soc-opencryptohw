@@ -44,6 +44,7 @@ DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W)
 #INCLUDES
 INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
 
+
 #HEADERS
 VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
 
@@ -70,6 +71,7 @@ system.v: system_tmp.v
 
 system_tmp.v: $(SRC_DIR)/system_core.v
 	cp $< $@; cp $@ system.v
+
 
 
 # make and copy memory init files

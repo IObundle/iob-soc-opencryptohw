@@ -9,9 +9,9 @@ module system_tb;
 
   parameter realtime clk_per = 1s/`FREQ;
 
-   //clock
-   reg clk = 1;
-   always #(clk_per/2) clk = ~clk;
+  //clock
+  reg clk = 1;
+  always #(clk_per/2) clk = ~clk;
 
   //reset
   reg reset = 1;
@@ -23,32 +23,30 @@ module system_tb;
   integer soc2cnsl_fd = 0, cnsl2soc_fd = 0;
 
 
-   //tester uart
-   reg       uart_valid;
-   reg [`UART_ADDR_W-1:0] uart_addr;
-   reg [`DATA_W-1:0]      uart_wdata;
-   reg [3:0]              uart_wstrb;
-   wire [`DATA_W-1:0]     uart_rdata;
-   wire                   uart_ready;
+  //tester uart
+  reg       uart_valid;
+  reg [`iob_uart_swreg_ADDR_W-1:0] uart_addr;
+  reg [`DATA_W-1:0]      uart_wdata;
+  reg [3:0]              uart_wstrb;
+  wire [`DATA_W-1:0]     uart_rdata;
+  wire                   uart_ready;
 
   //iterator
   integer                i = 0, n = 0;
   integer                error, n_byte = 0;
 
-   //got enquiry (connect request)
-   reg                    gotENQ;
-   
-   //PWIRES
+  //got enquiry (connect request)
+  reg                    gotENQ;
 
    
    /////////////////////////////////////////////
    // TEST PROCEDURE
-   //
+  //
    initial begin
 
 `ifdef VCD
-      $dumpfile("system.vcd");
-      $dumpvars();
+    $dumpfile("system.vcd");
+    $dumpvars();
 `endif
 
     //init cpu bus signals
@@ -59,8 +57,8 @@ module system_tb;
     repeat (100) @(posedge clk) #1;
     reset = 0;
 
-      // configure uart
-      cpu_inituart();
+    //wait an arbitray (10) number of cycles
+    repeat (10) @(posedge clk) #1;
 
     // configure uart
     cpu_inituart();
