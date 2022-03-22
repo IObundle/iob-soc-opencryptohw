@@ -64,7 +64,6 @@ BOARD ?=AES-KU040-DB-G
 #check the respective Makefile in hardware/asic/$(ASIC_NODE) for specific settings
 ASIC_NODE ?=umc130
 
-
 ####################################################################
 # DERIVED FROM PRIMARY PARAMETERS: DO NOT CHANGE BELOW THIS POINT
 ####################################################################

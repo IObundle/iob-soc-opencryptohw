@@ -38,11 +38,13 @@ module system_tb;
   //got enquiry (connect request)
   reg                    gotENQ;
 
-   
-   /////////////////////////////////////////////
-   // TEST PROCEDURE
+  //PWIRES
+
+
+  /////////////////////////////////////////////
+  // TEST PROCEDURE
   //
-   initial begin
+  initial begin
 
 `ifdef VCD
     $dumpfile("system.vcd");
@@ -227,6 +229,7 @@ module system_tb;
      #(
  `ifdef DDR_INIT
        .FILE("firmware.hex"),
+       .FILE_SIZE(`FW_SIZE),
  `endif
        .DATA_WIDTH (`DATA_W),
        .ADDR_WIDTH (`DDR_ADDR_W)
