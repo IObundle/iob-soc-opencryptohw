@@ -19,8 +19,16 @@ int get_int(char* ptr, int *i_val){
         printf("get_int: invalid pointer\n");
         return -1;
     }
-    /* get int */
-    *i_val = *( (int*) ptr );
+    /* read 1 byte at a time
+     * write to int */
+    *i_val = ptr[3];
+    *i_val <<= 4;
+    *i_val = ptr[2];
+    *i_val <<= 4;
+    *i_val = ptr[1];
+    *i_val <<= 4;
+    *i_val = ptr[0];
+
     return sizeof(int);
 }
 
@@ -111,8 +119,7 @@ int main()
   for(i=0; i< num_msgs; i++){
     printf("Msg #%d\n", i);
     // Parse message and length
-    msg_len = *( (int*) &(din_fp[din_ptr]));
-    din_ptr += sizeof(int);
+    din_ptr += get_int(din_fp + din_ptr, &msg_len);
 
     printf("Msglen: %d\n", msg_len);
     din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
@@ -121,7 +128,7 @@ int main()
 
     //save to memory
     dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
-    printf("saved msg\t acc_ptr: %d/%d\n", dout_size, HASH_SIZE*num_msgs);
+    printf("saved msg\t acc_ptr: %d/%d\n", dout_ptr, HASH_SIZE*num_msgs);
   }
 
   // send message digests via ethernet
