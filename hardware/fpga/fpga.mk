@@ -18,6 +18,9 @@ FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
 FPGA_PROFILE_LOG:=fpga_profile.log
 FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
 
+#OUTPUT BIN
+SOC_OUT_BIN:=soc-out.bin
+
 #RULES
 
 #
@@ -67,13 +70,13 @@ endif
 run-parallel: run-fpga-int run-python-int
 
 run-fpga-int:
-	make run > fpga.log
+	make run > soc.log
 
 run-python-int:
 	make run-python > host.log
 
 run-python:
-	make -C $(SW_DIR)/python fpga-eth
+	make -C $(ROOT_DIR) fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
 
 #
 # Board access queue
@@ -106,10 +109,7 @@ run-shortmsg:
 	make all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0
 
 test-validate: 
-	$(eval VALIDATION_OUT_BIN = $(basename $(TEST_VECTOR_RSP))_d_out.bin)
-	cp $(SW_DIR)/firmware/$(VALIDATION_OUT_BIN) .
-	cp $(SW_DIR)/python/*.bin soc-out.bin
-	@if ./$(SW_TEST_DIR)/validate_test.py $(VALIDATION_OUT_BIN) soc-out.bin; then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 #
 # Profiling
@@ -146,7 +146,9 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG) $(FPGA_PROFILE_LOG) $(VALIDATION_LOG)
+	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG) $(FPGA_PROFILE_LOG) 
+	@make -C $(SW_TEST_DIR) clean
+	@make -C $(ROOT_DIR) fpga-eth-clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -160,7 +162,7 @@ endif
 
 clean-all: clean-testlog clean
 	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
-
+	@rm -f soc.log host.log
 
 .PRECIOUS: $(FPGA_OBJ) $(FPGA_PROFILE_LOG)
 

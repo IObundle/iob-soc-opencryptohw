@@ -65,7 +65,10 @@ fpga-clean-all:
 	make fpga-clean BOARD=AES-KU040-DB-G
 
 fpga-eth:
-	make -C $(SW_DIR)/python fpga-eth
+	make -C $(SW_DIR)/python fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
+
+fpga-eth-clean:
+	make -C $(SW_DIR)/python clean
 
 #
 # TEST ON SIMULATORS AND BOARDS
