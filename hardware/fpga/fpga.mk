@@ -17,15 +17,14 @@ VSRC+=./verilog/top_system.v
 FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
 FPGA_PROFILE_LOG:=fpga_profile.log
 FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
 
 #RULES
 
 #
 # Use
 #
-all: build run
+all: build 
+	make -j2 run-parallel
 FORCE ?= 1
 
 run:
@@ -65,7 +64,16 @@ else
 endif
 endif
 
+run-parallel: run-fpga-int run-python-int
 
+run-fpga-int:
+	make run > fpga.log
+
+run-python-int:
+	make run-python > host.log
+
+run-python:
+	make -C $(SW_DIR)/python fpga-eth
 
 #
 # Board access queue
@@ -93,15 +101,14 @@ queue-out-remote:
 test: clean-testlog test-shortmsg
 
 test-shortmsg: run-shortmsg test-validate
-	if cmp --silent $(VALIDATION_LOG) $(FPGA_PARSED_LOG); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
-	@rm -rf $(VALIDATION_LOG)
 
 run-shortmsg:
-	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0
+	make all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0
 
-test-validate: $(VALIDATION_OUT_BIN) $(SOC_OUT_BIN)
+test-validate: 
 	$(eval VALIDATION_OUT_BIN = $(basename $(TEST_VECTOR_RSP))_d_out.bin)
-	mv $(SW_DIR)/$(VALIDATION_OUT_BIN) .
+	cp $(SW_DIR)/firmware/$(VALIDATION_OUT_BIN) .
+	cp $(SW_DIR)/python/*.bin soc-out.bin
 	@if ./$(SW_TEST_DIR)/validate_test.py $(VALIDATION_OUT_BIN) soc-out.bin; then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 
 #

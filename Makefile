@@ -64,18 +64,6 @@ fpga-clean:
 fpga-clean-all:
 	make fpga-clean BOARD=AES-KU040-DB-G
 
-# Run fpga and ethernet script in parallel
-fpga-run-eth:
-	make -j2 fpga-run-eth-parallel
-
-fpga-run-eth-parallel: fpga-run-int fpga-eth-int
-
-fpga-run-int:
-	make fpga-run > fpga.log
-
-fpga-eth-int:
-	make fpga-eth > ethernet.log
-
 fpga-eth:
 	make -C $(SW_DIR)/python fpga-eth
 
