@@ -53,7 +53,7 @@ fpga-run:
 	make -C $(BOARD_DIR) all 
 
 fpga-run-profile:
-	make -C $(BOARD_DIR) profile TEST_LOG=">> test.log"
+	make -C $(BOARD_DIR) profile
 
 fpga-test:
 	make -C $(BOARD_DIR) test
@@ -92,12 +92,12 @@ test-fpga-clean:
 
 test: test-clean 
 	make test-pc-emul 
-	make pc-emul PROFILE=1
+	make pc-emul-profile
 	make test-pc-emul-clean
-	make test-sim 
-	make test-sim-clean
+	# make test-sim 
+	# make test-sim-clean
 	make test-fpga
-	make fpga-run PROFILE=1
+	make fpga-run-profile
 	make test-fpga-clean
 
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean

@@ -15,8 +15,10 @@ VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
 FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
+
+SOC_LOG:=soc.log
+HOST_LOG:=host.log
 FPGA_PROFILE_LOG:=fpga_profile.log
-FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
 
 #OUTPUT BIN
 SOC_OUT_BIN:=soc-out.bin
@@ -70,10 +72,10 @@ endif
 run-parallel: run-fpga-int run-python-int
 
 run-fpga-int:
-	make run > soc.log
+	make run > $(SOC_LOG)
 
 run-python-int:
-	make run-python > host.log
+	make run-python > $(HOST_LOG)
 
 run-python:
 	make -C $(ROOT_DIR) fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
@@ -114,19 +116,16 @@ test-validate:
 #
 # Profiling
 #
-profile: $(FPGA_PROFILE_LOG)
+profile: clean-all $(FPGA_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat $<
+	@cat $(FPGA_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
-$(FPGA_PROFILE_LOG): $(FPGA_TEST_LOG)
+$(FPGA_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $@
 
-$(FPGA_TEST_LOG):
-	make all TEST_LOG="$(TEST_LOG)" PROFILE=1
-ifneq ($(FPGA_SERVER),)
-	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_TEST_LOG) $(FPGA_TEST_LOG)
-endif
+$(SOC_LOG):
+	make all PROFILE=1
 
 #
 # Clean
@@ -146,7 +145,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG) $(FPGA_PROFILE_LOG) 
+	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PROFILE_LOG) 
 	@make -C $(SW_TEST_DIR) clean
 	@make -C $(ROOT_DIR) fpga-eth-clean
 ifneq ($(FPGA_SERVER),)
