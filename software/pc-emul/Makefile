@@ -11,7 +11,8 @@ CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
 
-EMUL_LOG:=emul.log
+SOC_LOG:=soc_log.log
+HOST_LOG:=host.log
 EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
@@ -56,10 +57,10 @@ test:
 run-parallel: run-soc-int run-python-int
 
 run-soc-int:
-	make run > soc.log
+	make run > $(SOC_LOG)
 
 run-python-int:
-	make run-python > host.log
+	make run-python > $(HOST_LOG)
 
 run-python:
 	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
@@ -73,10 +74,10 @@ profile: $(EMUL_PROFILE_LOG)
 	@cat $<
 	@printf "=== PROFILE LOG ===\n"
 
-$(EMUL_LOG): 
-	make all TEST_LOG=">> $(EMUL_LOG)" PROFILE=1
+$(SOC_LOG): 
+	make all PROFILE=1
 
-$(EMUL_PROFILE_LOG): $(EMUL_LOG)
+$(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
 clean:

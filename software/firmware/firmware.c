@@ -5,7 +5,12 @@
 #include "iob-uart.h"
 #include "printf.h"
 
+#include "iob-timer.h"
 #include "iob-eth.h"
+
+#ifdef PROFILE
+#include "profile.h"
+#endif
 
 #include "crypto/sha2.h"
 
@@ -95,12 +100,27 @@ int main()
   //init uart
   uart_init(UART_BASE,FREQ/BAUD);   
 
+  //init timer
+  timer_init(TIMER_BASE);
+
   //init ethernet
   eth_init(ETHERNET_BASE);
 
+#ifdef PROFILE
+  PROF_START(global)
+  PROF_START(eth)
+#endif
+
   //Receive input data from ethernet
   din_size = eth_rcv_variable_file(din_fp);
+#ifdef PROFILE
+  PROF_STOP(eth)
+  PROF_START(printf)
+#endif
   printf("ETHERNET: Received file with %d bytes\n", din_size);
+#ifdef PROFILE
+  PROF_STOP(printf)
+#endif
 
   // Calculate output size and allocate output memory
   num_msgs = *( (int*) &(din_fp[din_ptr]));
@@ -117,26 +137,44 @@ int main()
 
   //Message test loop
   for(i=0; i< num_msgs; i++){
-    printf("Msg #%d\n", i);
     // Parse message and length
     din_ptr += get_int(din_fp + din_ptr, &msg_len);
-
-    printf("Msglen: %d\n", msg_len);
     din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
 
+#ifdef PROFILE
+    PROF_START(sha256)
+#endif
     sha256(digest,msg,msg_len);
+#ifdef PROFILE
+    PROF_STOP(sha256)
+#endif
 
     //save to memory
     dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
-    printf("saved msg\t acc_ptr: %d/%d\n", dout_ptr, HASH_SIZE*num_msgs);
   }
 
   // send message digests via ethernet
+#ifdef PROFILE
+  PROF_START(eth)
+#endif
   eth_send_variable_file(dout_fp, dout_size);
-
+#ifdef PROFILE
+  PROF_STOP(eth)
+  PROF_START(printf)
+#endif
+  printf("ETHERNET: Sent file with %d bytes\n", dout_size);
+#ifdef PROFILE
+  PROF_STOP(printf)
+#endif
   // free allocated memory
   free(din_fp);
   free(dout_fp);
+
+#ifdef PROFILE
+  // Finish profile and report execution times
+  PROF_STOP(global)
+  profile_report();
+#endif
 
   uart_finish();
 }
