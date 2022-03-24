@@ -11,8 +11,12 @@ read_bin_run: read_bin gen_test_data
 	$(eval RD_BIN_ARGS += $(basename $(notdir $(TEST_VECTOR_RSP)))_d_out.bin)
 	./read_bin $(RD_BIN_ARGS) > read_bin.log
 
+validate: $(SOC_OUT_BIN)
+	$(eval VALIDATION_OUT_BIN = $(basename $(TEST_VECTOR_RSP))_d_out.bin)
+	@if ./$(SW_TEST_DIR)/validate_test.py $(VALIDATION_OUT_BIN) $(SOC_OUT_BIN); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+
 clean:
-	@rm -rf *d_in.bin *d_out.bin
+	@rm -rf *.bin
 	@rm -rf read_bin read_bin.log
 
 .PHONY: clean gen_test_data read_bin read_bin_run

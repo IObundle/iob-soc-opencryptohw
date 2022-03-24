@@ -65,7 +65,8 @@ run-python:
 	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
 
 validate:
-	@if ./$(SW_TEST_DIR)/validate_test.py SHA256ShortMsg_d_out.bin $(SOC_OUT_BIN); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 profile: $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
@@ -79,9 +80,10 @@ $(EMUL_PROFILE_LOG): $(EMUL_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
 clean:
+	make -C $(SW_TEST_DIR) clean
 	@rm -rf firmware.out periphs.h test.log *swreg.h \
 		test.log $(EMUL_LOG) $(EMUL_PROFILE_LOG) \
-		*d_in.bin *d_out.bin soc.log host.log $(SOC_OUT_BIN)
+		*d_in.bin soc.log host.log $(SOC_OUT_BIN)
 
 .PHONY: all build run run-parallel run-soc-int run-python-int run-python \
 	validate profile 
