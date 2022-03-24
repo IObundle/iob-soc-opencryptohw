@@ -11,7 +11,7 @@ CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
 
-SOC_LOG:=soc_log.log
+SOC_LOG:=soc.log
 HOST_LOG:=host.log
 EMUL_PROFILE_LOG:=emul_profile.log
 
@@ -69,9 +69,9 @@ validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
-profile: $(EMUL_PROFILE_LOG)
+profile: clean $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat $<
+	@cat $(EMUL_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
 $(SOC_LOG): 
@@ -83,8 +83,8 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 clean:
 	make -C $(SW_TEST_DIR) clean
 	@rm -rf firmware.out periphs.h test.log *swreg.h \
-		test.log $(EMUL_LOG) $(EMUL_PROFILE_LOG) \
-		*d_in.bin soc.log host.log $(SOC_OUT_BIN)
+		test.log $(EMUL_PROFILE_LOG) \
+		*d_in.bin $(SOC_LOG) $(HOST_LOG) $(SOC_OUT_BIN)
 
 .PHONY: all build run run-parallel run-soc-int run-python-int run-python \
 	validate profile 
