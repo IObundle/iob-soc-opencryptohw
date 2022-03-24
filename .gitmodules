@@ -19,3 +19,6 @@
 [submodule "submodules/TIMER"]
 	path = submodules/TIMER
 	url = git@github.com:IObundle/iob-timer.git
+[submodule "submodules/ETHERNET"]
+	path = submodules/ETHERNET
+	url = git@github.com:IObundle/iob-eth.git

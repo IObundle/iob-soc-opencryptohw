@@ -15,17 +15,21 @@ VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
 FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
+
+SOC_LOG:=soc.log
+HOST_LOG:=host.log
 FPGA_PROFILE_LOG:=fpga_profile.log
-FPGA_PARSED_LOG:=$(FPGA_TEST_LOG)_parsed.log
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
+
+#OUTPUT BIN
+SOC_OUT_BIN:=soc-out.bin
 
 #RULES
 
 #
 # Use
 #
-all: build run
+all: build 
+	make -j2 run-parallel
 FORCE ?= 1
 
 run:
@@ -65,7 +69,16 @@ else
 endif
 endif
 
+run-parallel: run-fpga-int run-python-int
 
+run-fpga-int:
+	make run > $(SOC_LOG)
+
+run-python-int:
+	make run-python > $(HOST_LOG)
+
+run-python:
+	make -C $(ROOT_DIR) fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
 
 #
 # Board access queue
@@ -83,45 +96,36 @@ queue-out:
 
 queue-out-remote:
 	ssh $(BOARD_USER)@$(BOARD_SERVER) \
-	'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) queue-out;\
-	if [ "`pgrep -u $(BOARD_USER) console`" ]; then killall -q -u $(BOARD_USER) -9 console; fi'
+	"make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) queue-out;\
+	kill -9 $$(ps aux | grep $(BOARD_USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}')"
 
 #
 # Testing
 #
 
 test: clean-testlog test-shortmsg
-	if cmp --silent $(VALIDATION_LOG) $(FPGA_PARSED_LOG); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
-	@rm -rf $(VALIDATION_LOG)
 
-test-shortmsg: run-shortmsg parse-log
+test-shortmsg: run-shortmsg test-validate
 
 run-shortmsg:
-	make all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
+	make all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0
 
-parse-log: $(FPGA_TEST_LOG)
-	@sed -n -e '/\[L = /,$$p' $(FPGA_TEST_LOG) | tac | sed -n -e '/MD =/,$$p' | \
-		tac | grep -v "PROFILE:" > $(FPGA_PARSED_LOG)
-	@echo "" >> $(FPGA_PARSED_LOG) # add final newline
-	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
-	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
+test-validate: 
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 #
 # Profiling
 #
-profile: $(FPGA_PROFILE_LOG)
+profile: clean-all $(FPGA_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat $<
+	@cat $(FPGA_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
-$(FPGA_PROFILE_LOG): $(FPGA_TEST_LOG)
+$(FPGA_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $@
 
-$(FPGA_TEST_LOG):
-	make all TEST_LOG="$(TEST_LOG)" PROFILE=1
-ifneq ($(FPGA_SERVER),)
-	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_TEST_LOG) $(FPGA_TEST_LOG)
-endif
+$(SOC_LOG):
+	make all PROFILE=1
 
 #
 # Clean
@@ -141,7 +145,9 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PARSED_LOG) $(FPGA_PROFILE_LOG) $(VALIDATION_LOG)
+	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PROFILE_LOG) 
+	@make -C $(SW_TEST_DIR) clean
+	@make -C $(ROOT_DIR) fpga-eth-clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -153,10 +159,14 @@ ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
 endif
 
+clean-all: clean-testlog clean
+	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
+	@rm -f soc.log host.log
 
-.PRECIOUS: $(FPGA_OBJ)
+.PRECIOUS: $(FPGA_OBJ) $(FPGA_PROFILE_LOG)
 
-.PHONY: all run load build \
+.PHONY: all run build \
 	queue-in queue-out queue-wait queue-out-remote \
-	test test1 test2 test3 \
-	clean-remote clean-testlog
+	test test-shortmsg run-shortmsg parse-log\
+	profile\
+	clean-remote clean-testlog clean-all

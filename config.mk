@@ -10,6 +10,9 @@ IOBSOC_NAME:=IOBSOCSHA
 # PRIMARY PARAMETERS: CAN BE CHANGED BY USERS OR OVERRIDEN BY ENV VARS
 #
 
+#TEST VECTOR
+TEST_VECTOR_RSP ?=SHA256ShortMsg.rsp
+
 #FIRMWARE SIZE (LOG2)
 FIRM_ADDR_W ?=16
 
@@ -29,10 +32,13 @@ BOOTROM_ADDR_W:=12
 #PRE-INIT MEMORY WITH PROGRAM AND DATA
 INIT_MEM ?=1
 
+#ETHERNET RMAC_ADDR
+RMAC_ADDR=4437e6a6893b
+
 #PERIPHERAL LIST
 #must match respective submodule CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART TIMER
+PERIPHERALS ?=UART TIMER ETHERNET
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
 USE_MUL_DIV ?=1
@@ -58,7 +64,6 @@ BOARD ?=AES-KU040-DB-G
 #check the respective Makefile in hardware/asic/$(ASIC_NODE) for specific settings
 ASIC_NODE ?=umc130
 
-
 ####################################################################
 # DERIVED FROM PRIMARY PARAMETERS: DO NOT CHANGE BELOW THIS POINT
 ####################################################################
@@ -66,7 +71,6 @@ ASIC_NODE ?=umc130
 ifeq ($(RUN_EXTMEM),1)
 DEFINE+=$(defmacro)RUN_EXTMEM
 USE_DDR=1
-INIT_MEM=0
 endif
 
 ifeq ($(USE_DDR),1)
@@ -82,6 +86,7 @@ PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
 CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
 UART_DIR=$(ROOT_DIR)/submodules/UART
 TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
+ETHERNET_DIR=$(ROOT_DIR)/submodules/ETHERNET
 LIB_DIR=$(ROOT_DIR)/submodules/LIB
 MEM_DIR=$(ROOT_DIR)/submodules/MEM
 AXI_DIR=$(ROOT_DIR)/submodules/AXI
