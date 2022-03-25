@@ -14,9 +14,7 @@ include $(ROOT_DIR)/hardware/hardware.mk
 VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
-FPGA_TEST_LOG:=$(lastword $(TEST_LOG))
-
-SOC_LOG:=soc.log
+SOC_LOG<cmd>=soc.log
 HOST_LOG:=host.log
 FPGA_PROFILE_LOG:=fpga_profile.log
 
@@ -149,7 +147,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log $(FPGA_TEST_LOG) $(FPGA_PROFILE_LOG) 
+	@rm -f test.log $(FPGA_PROFILE_LOG) 
 	@make -C $(SW_TEST_DIR) clean
 	@make -C $(ROOT_DIR) fpga-eth-clean
 ifneq ($(FPGA_SERVER),)
@@ -165,7 +163,7 @@ endif
 
 clean-all: clean-testlog clean
 	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
-	@rm -f soc.log host.log
+	@rm -f $(SOC_LOG) $(HOST_LOG)
 
 .PRECIOUS: $(FPGA_OBJ) $(FPGA_PROFILE_LOG)
 

@@ -106,6 +106,6 @@ test: test-clean
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
 #generic clean
-clean: pc-emul-clean sim-clean make fpga-clean 
+clean: pc-emul-clean sim-clean fpga-clean 
 
 clean-all: test-clean
