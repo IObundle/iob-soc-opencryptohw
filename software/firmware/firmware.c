@@ -127,8 +127,7 @@ int main()
 #endif
 
   // Calculate output size and allocate output memory
-  num_msgs = *( (int*) &(din_fp[din_ptr]));
-  din_ptr += sizeof(int);
+  din_ptr += get_int(din_fp + din_ptr, &num_msgs);
   dout_size = num_msgs*HASH_SIZE;
   dout_fp = (char*) malloc(sizeof(char)*dout_size);
   if(dout_fp == NULL){
