@@ -11,8 +11,8 @@ CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
 
-EMUL_LOG:=emul.log
-EMUL_LOG_PARSED:=emul_parsed.log
+SOC_LOG:=soc.log
+HOST_LOG:=host.log
 EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
@@ -21,15 +21,13 @@ EMUL_PROFILE_LOG:=emul_profile.log
 $(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc.mk))
 
 #HEADERS
-HDR+=periphs.h test_vectors.h
+HDR+=periphs.h 
 
 #SOURCES
 SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 
-#TEST VECTOR
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
+SOC_OUT_BIN:=soc-out.bin
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -41,7 +39,8 @@ endif
 
 #RULES
 
-all: clean build run
+all: clean gen_data build
+	make -j2 run-parallel
 
 build: firmware.out
 
@@ -51,40 +50,41 @@ run: firmware.out
 firmware.out: $(HDR) $(SRC)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
 
-test:
-	make all TEST_LOG=">> $(EMUL_LOG)"
+test: 
+	make all
 	make validate
 
-validate: $(EMUL_LOG_PARSED) $(VALIDATION_LOG)
-	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG_PARSED); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
-	@rm -rf $(VALIDATION_LOG)
-	@rm -rf $(EMUL_LOG_PARSED)
+run-parallel: run-soc-int run-python-int
 
-profile: $(EMUL_PROFILE_LOG)
+run-soc-int:
+	make run > $(SOC_LOG)
+
+run-python-int:
+	make run-python > $(HOST_LOG)
+
+run-python:
+	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
+
+validate:
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+
+profile: clean $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat $<
+	@cat $(EMUL_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
-$(EMUL_LOG): 
-	make all TEST_LOG=">> $(EMUL_LOG)" PROFILE=1
+$(SOC_LOG): 
+	make all PROFILE=1
 
-$(EMUL_LOG_PARSED): $(EMUL_LOG)
-	@grep -v "PROFILE:" $(EMUL_LOG) > $(EMUL_LOG_PARSED)
-
-$(EMUL_PROFILE_LOG): $(EMUL_LOG)
+$(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
-$(VALIDATION_LOG): $(TEST_VECTOR_RSP)
-	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
-	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
-
-#SHA256 test vectors
-test_vectors.h:
-	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
-
 clean:
-	@rm -rf firmware.out periphs.h test.log *sw_reg.h \
-		test.log test_vectors.h $(EMUL_LOG) $(EMUL_LOG_PARSED) \
-		$(EMUL_PROFILE_LOG) $(VALIDATION_LOG)
+	make -C $(SW_TEST_DIR) clean
+	@rm -rf firmware.out periphs.h test.log *swreg.h \
+		test.log $(EMUL_PROFILE_LOG) \
+		*d_in.bin $(SOC_LOG) $(HOST_LOG) $(SOC_OUT_BIN)
 
-.PHONY: all build run clean subs periphs_tmp.h test
+.PHONY: all build run run-parallel run-soc-int run-python-int run-python \
+	validate profile 

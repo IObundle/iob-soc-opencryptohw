@@ -1,5 +1,5 @@
 #include "printf.h"
-#include "iob_timer.h"
+#include "iob-timer.h"
 
 #define P_NVARS (3)
 #define P_CNT (0)
@@ -8,7 +8,7 @@
 
 extern unsigned int prof_global_us[P_NVARS];
 extern unsigned int prof_sha256_us[P_NVARS];
-extern unsigned int prof_GetHexadecimal_us[P_NVARS];
+extern unsigned int prof_eth_us[P_NVARS];
 extern unsigned int prof_printf_us[P_NVARS];
 extern unsigned int prof_sha_init_us[P_NVARS];
 extern unsigned int prof_sha_finalize_us[P_NVARS];

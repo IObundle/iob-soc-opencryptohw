@@ -26,7 +26,7 @@ message digests (MD). An external script compares the implementation output with
 the expected MD from the test vectors.
 
 The implementation output can be checked manually in 
-`software/pc-emul/emul.log`.
+`software/pc-emul/soc.log` and `software/pc-emul/host.log`
 
 ### Clean environment
 To clean the workspace after PC emulation:
@@ -38,18 +38,19 @@ PC emulation program requires:
 - Git
 - Make
 - gcc
-- Python 2.7
+- Python 3.6+
 
 * * *
 # RISCV Emulation
 The iob-soc-sha system can be emulated using a verilog simulator like icarus 
 with:
-```
+```Make
+# Test with all supported simulators
 make test-sim
+# Test with a specific simulator
+make sim-test SIMULATOR=icarus
+make sim-test SIMULATOR=verilator
 ```
-
-The simulation output can be checked manually in 
-`hardware/simulation/icarus/test.log_parsed.log`
 
 ### Clean environment
 To clean the workspace after the RISCV emulation:
@@ -66,7 +67,9 @@ RISCV emulation requires:
     export RISCV=/path/to/riscv/bin
     export PATH=$RISCV:$PATH
     ```
-- Verilog simulator (for example icarus verilog)
+- Verilog simulator, for example: 
+    - [icarus verilog](https://github.com/steveicarus/iverilog)  
+    - [verilator](https://github.com/verilator/verilator)
 
 # FPGA Execution
 The system can be tested on FPGA with:
@@ -108,20 +111,23 @@ controlled counter.
 The `pc-emul` version simulates the counter behaviour by calling the C standard
 `<timer.h>` library.
 
-The profiling is available for `pc-emul` using either of the following commands:
+The profiling is available for `pc-emul` using the following command:
 ```
-make pc-emul PROFILE=1
-# or
 make pc-emul-profile
 ```
 The `pc-emul-profile` target outputs an `emul_profile.log` file with the profiling 
 information.
 
-For `fpga` profiling run either of the following commands:
+For `fpga` profiling run the following command:
 ```
-make fpga-run PROFILE=1
-# or
 make fpga-run-profile
 ```
 The `fpga-run-profile` target outputs a `fpga_profile.log` file with the 
 profiling information.
+
+# Ethernet
+The system supports ethernet communication using the 
+[IOb-Eth core](https://github.com/IObundle/iob-eth).
+
+Check [IO-Eth's README](https://github.com/IObundle/iob-eth#readme) for setup 
+instructions and further details.
