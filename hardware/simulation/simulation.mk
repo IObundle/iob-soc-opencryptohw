@@ -124,6 +124,8 @@ kill-sim:
 	@if [ "`ps aux | grep $(USER) | grep console | grep python3 | grep -v grep`" ]; then \
 	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}'); fi
 
+test: clean-testlog test-shortmsg
+
 test-shortmsg: sim-shortmsg validate
 
 sim-shortmsg:
