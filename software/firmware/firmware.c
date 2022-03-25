@@ -18,7 +18,7 @@
 
 /* read integer value
  * return number of bytes read */
-int get_int(char* ptr, int *i_val){
+int get_int(char* ptr, unsigned int *i_val){
     /* check for valid ptr */
     if(ptr == NULL){
         printf("get_int: invalid pointer\n");
@@ -26,14 +26,13 @@ int get_int(char* ptr, int *i_val){
     }
     /* read 1 byte at a time
      * write to int */
-    *i_val = ptr[3];
-    *i_val <<= 4;
-    *i_val = ptr[2];
-    *i_val <<= 4;
-    *i_val = ptr[1];
-    *i_val <<= 4;
-    *i_val = ptr[0];
-
+    *i_val = (unsigned char) ptr[3];
+    *i_val <<= 8;
+    *i_val += (unsigned char) ptr[2];
+    *i_val <<= 8;
+    *i_val += (unsigned char) ptr[1];
+    *i_val <<= 8;
+    *i_val += (unsigned char) ptr[0];
     return sizeof(int);
 }
 
