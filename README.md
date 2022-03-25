@@ -44,12 +44,13 @@ PC emulation program requires:
 # RISCV Emulation
 The iob-soc-sha system can be emulated using a verilog simulator like icarus 
 with:
-```
+```Make
+# Test with all supported simulators
 make test-sim
+# Test with a specific simulator
+make sim-test SIMULATOR=icarus
+make sim-test SIMULATOR=verilator
 ```
-
-The simulation output can be checked manually in 
-`hardware/simulation/icarus/test.log_parsed.log`
 
 ### Clean environment
 To clean the workspace after the RISCV emulation:
@@ -66,7 +67,9 @@ RISCV emulation requires:
     export RISCV=/path/to/riscv/bin
     export PATH=$RISCV:$PATH
     ```
-- Verilog simulator (for example icarus verilog)
+- Verilog simulator, for example: 
+    - [icarus verilog](https://github.com/steveicarus/iverilog)  
+    - [verilator](https://github.com/verilator/verilator)
 
 # FPGA Execution
 The system can be tested on FPGA with:
