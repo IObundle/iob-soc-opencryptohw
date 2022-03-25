@@ -71,7 +71,7 @@ ifeq ($(SIM_SERVER),)
 	@rm -f soc2cnsl cnsl2soc
 	make $(SIM_PROC)
 	$(CONSOLE_CMD) $(TEST_LOG) &
-	bash -c "trap 'make kill-sim' INT TERM KILL; make run"
+	bash -c "trap 'make kill-sim' INT TERM KILL EXIT; make run"
 else
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
@@ -121,9 +121,8 @@ ifeq ($(VCD),1)
 endif
 
 kill-sim:
-	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}')
-
-test: clean-testlog test-shortmsg
+	@if [ "`ps aux | grep $(USER) | grep console | grep python3 | grep -v grep`" ]; then \
+	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}'); fi
 
 test-shortmsg: sim-shortmsg validate
 
@@ -165,5 +164,5 @@ clean-all: clean-testlog clean
 
 .PHONY: all sim build\
 	kill-remote-sim kill-sim\
-	test test-shortmsg sim-shortmsg parse-log \
+	test test-shortmsg sim-shortmsg validate \
 	clean-remote clean-testlog clean-all

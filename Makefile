@@ -3,7 +3,8 @@ include ./config.mk
 
 .PHONY: sim sim-test sim-clean\
 	pc-emul pc-emul-test pc-emul-clean pc-emul-profile\
-	fpga-build fpga-build-all fpga-run-profile fpga-test fpga-clean fpga-clean-all\
+	fpga-build fpga-build-all fpga-run fpga-run-profile fpga-test fpga-clean \
+	fpga-clean-all fpga-eth fpga-eth-clean\
 	test-pc-emul test-pc-emul-clean\
 	test-sim test-sim-clean\
 	test-fpga test-fpga-clean\
