@@ -29,6 +29,9 @@ endif
 FW_SIZE=$(shell wc -l firmware.hex | awk '{print $$1}')
 
 DEFINE+=$(defmacro)FW_SIZE=$(FW_SIZE)
+SIM=1
+DEFINE+=$(defmacro)SIM=$(SIM)
+
 
 #SOURCES
 
@@ -46,11 +49,12 @@ endif
 #axi memory
 include $(AXI_DIR)/hardware/axiram/hardware.mk
 
-#TEST VECTOR
-SIM_LOG:=$(lastword $(TEST_LOG))
-SIM_PARSED_LOG:=$(SIM_LOG)_parsed.log
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
+#TEST OUTPUT
+SOC_OUT_BIN:=soc-out.bin
+
+# Simulation images
+SIM_IN_BIN:=sim_in.bin
+IMAGES+=$(SIM_IN_BIN)
 
 #testbench
 ifeq ($(SIMULATOR),verilator)
@@ -120,25 +124,25 @@ kill-sim:
 	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}')
 
 test: clean-testlog test-shortmsg
-	if cmp --silent $(VALIDATION_LOG) $(SIM_PARSED_LOG); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
-	@rm -rf $(VALIDATION_LOG)
 
-test-shortmsg: sim-shortmsg parse-log 
+test-shortmsg: sim-shortmsg validate
 
 sim-shortmsg:
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG="$(TEST_LOG)"
+	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 
 
-parse-log: $(SIM_LOG)
-	@sed -n -e '/\[L = /,$$p' $(SIM_LOG) | tac | sed -n -e '/MD =/,$$p' | tac | \
-		grep -v "PROFILE:" > $(SIM_PARSED_LOG)
-	@echo "" >> $(SIM_PARSED_LOG) # add final newline
-	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
-	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
+validate:
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+
+$(SIM_IN_BIN):
+	$(eval TEST_VECTOR_RSP_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin)
+	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
+	cp $(TEST_VECTOR_RSP_PATH) $(SIM_IN_BIN)
 
 #clean target common to all simulators
 clean-remote: hw-clean
 	@rm -f soc2cnsl cnsl2soc
-	@rm -f system.vcd *.log
+	@rm -f system.vcd *.log *.bin
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
@@ -148,6 +152,7 @@ endif
 #clean test log only when sim testing begins
 clean-testlog:
 	@rm -f test.log
+	make -C $(SW_TEST_DIR) clean
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)

@@ -80,9 +80,11 @@ test-pc-emul-clean: pc-emul-clean
 
 test-sim: test-sim-clean
 	make sim-test SIMULATOR=icarus 
+	make sim-test SIMULATOR=verilator 
 
 test-sim-clean:
 	make sim-clean SIMULATOR=icarus
+	make sim-clean SIMULATOR=verilator
 
 test-fpga: test-fpga-clean
 	make fpga-test BOARD=AES-KU040-DB-G
@@ -94,8 +96,8 @@ test: test-clean
 	make test-pc-emul 
 	make pc-emul-profile
 	make test-pc-emul-clean
-	# make test-sim 
-	# make test-sim-clean
+	make test-sim
+	make test-sim-clean
 	make test-fpga
 	make fpga-run-profile
 	make test-fpga-clean

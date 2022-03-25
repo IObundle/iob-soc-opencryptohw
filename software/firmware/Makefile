@@ -32,6 +32,11 @@ SRC+= $(FIRM_DIR)/profile.c
 DEFINE+=$(defmacro)PROFILE
 endif
 
+#SIMULATION
+ifeq ($(SIM),1)
+DEFINE+=$(defmacro)SIM
+endif
+
 #RULES
 firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
