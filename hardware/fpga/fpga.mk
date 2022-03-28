@@ -14,7 +14,7 @@ include $(ROOT_DIR)/hardware/hardware.mk
 VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
-SOC_LOG<cmd>=soc.log
+SOC_LOG=soc.log
 HOST_LOG:=host.log
 FPGA_PROFILE_LOG:=fpga_profile.log
 
