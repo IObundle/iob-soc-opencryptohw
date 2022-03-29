@@ -20,16 +20,16 @@ unsigned int prof_Expand32_us[P_NVARS] = {0};
 void profile_report(){
     printf("PROFILE: REPORT\n");
     printf("PROFILE: Global time: %dus @%dMHz\n", prof_global_us[P_CNT], FREQ/1000000);
-    PROF_REPORT(sha256)
-    printf("\t"); PROF_REPORT(sha_init)
-    printf("\t"); PROF_REPORT(sha_finalize)
-    printf("\t\t"); PROF_REPORT(crypto_hashblocks)
-    printf("\t\t\t"); PROF_REPORT(ld_big_endian)
-    printf("\t\t\t"); PROF_REPORT(st_big_endian)
-    printf("\t\t\t"); PROF_REPORT(F_32)
-    printf("\t\t\t"); PROF_REPORT(Expand32)
-    printf("\t\t"); PROF_REPORT(sha_ctxrelease)
-    PROF_REPORT(mem)
-    PROF_REPORT(eth)
-    PROF_REPORT(printf)
+    printf("\t"); PROF_REPORT(sha256)
+    printf("\t\t"); PROF_REPORT(sha_init)
+    printf("\t\t"); PROF_REPORT(sha_finalize)
+    printf("\t\t\t"); PROF_REPORT(crypto_hashblocks)
+    printf("\t\t\t\t"); PROF_REPORT(ld_big_endian)
+    printf("\t\t\t\t"); PROF_REPORT(st_big_endian)
+    printf("\t\t\t\t"); PROF_REPORT(F_32)
+    printf("\t\t\t\t"); PROF_REPORT(Expand32)
+    printf("\t\t\t"); PROF_REPORT(sha_ctxrelease)
+    printf("\t"); PROF_REPORT(mem)
+    printf("\t"); PROF_REPORT(eth)
+    printf("\t"); PROF_REPORT(printf)
 }
