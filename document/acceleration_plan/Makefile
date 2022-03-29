@@ -3,8 +3,13 @@ include $(ROOT_DIR)/config.mk
 
 DOC=acceleration_plan
 
-NOCLEAN= -name "Makefile" -o -name "$(DOC).pdf" -o -name "$(DOC).tex"
-NOCLEAN+= -o -name "$(DOC).cls"
+KEEP_FILES = $(DOC).tex 
+KEEP_FILES+= intro.tex profile.tex proposal.tex 
+KEEP_FILES+= plan.cls
+KEEP_FILES+= $(DOC).pdf
+
+NOCLEAN= -name "Makefile"
+NOCLEAN+= $(foreach f, $(KEEP_FILES),-o -name "$f")
 
 LIB_DOC_DIR=$(LIB_DIR)/document
 
