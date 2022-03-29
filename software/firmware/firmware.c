@@ -123,6 +123,7 @@ int main()
   printf("ETHERNET: Received file with %d bytes\n", din_size);
 #ifdef PROFILE
   PROF_STOP(printf)
+  PROF_START(mem)
 #endif
 
   // Calculate output size and allocate output memory
@@ -137,22 +138,33 @@ int main()
 
   char *msg = NULL;
 
+#ifdef PROFILE
+  PROF_STOP(mem)
+#endif
   //Message test loop
   for(i=0; i< num_msgs; i++){
+#ifdef PROFILE
+    PROF_START(mem)
+#endif
     // Parse message and length
     din_ptr += get_int(din_fp + din_ptr, &msg_len);
     din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
 
 #ifdef PROFILE
+    PROF_STOP(mem)
     PROF_START(sha256)
 #endif
     sha256(digest,msg,msg_len);
 #ifdef PROFILE
     PROF_STOP(sha256)
+    PROF_START(mem)
 #endif
 
     //save to memory
     dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
+#ifdef PROFILE
+    PROF_STOP(mem)
+#endif
   }
 
 #ifdef PROFILE

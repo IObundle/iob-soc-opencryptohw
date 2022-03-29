@@ -4,6 +4,7 @@
 unsigned int prof_global_us[P_NVARS] = {0};
 unsigned int prof_sha256_us[P_NVARS] = {0};
 unsigned int prof_eth_us[P_NVARS] = {0};
+unsigned int prof_mem_us[P_NVARS] = {0};
 unsigned int prof_printf_us[P_NVARS] = {0};
 
 
@@ -28,6 +29,7 @@ void profile_report(){
     printf("\t\t\t"); PROF_REPORT(F_32)
     printf("\t\t\t"); PROF_REPORT(Expand32)
     printf("\t\t"); PROF_REPORT(sha_ctxrelease)
+    PROF_REPORT(mem)
     PROF_REPORT(eth)
     PROF_REPORT(printf)
 }

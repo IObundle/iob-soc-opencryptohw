@@ -9,6 +9,7 @@
 extern unsigned int prof_global_us[P_NVARS];
 extern unsigned int prof_sha256_us[P_NVARS];
 extern unsigned int prof_eth_us[P_NVARS];
+extern unsigned int prof_mem_us[P_NVARS];
 extern unsigned int prof_printf_us[P_NVARS];
 extern unsigned int prof_sha_init_us[P_NVARS];
 extern unsigned int prof_sha_finalize_us[P_NVARS];
