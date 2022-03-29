@@ -1,1 +1,37 @@
-This is the text for the profiling assessment section.
+The execution time for the SHA256 application is presented in
+Table~\ref{tab:prof1}. The program runs exclusively on software with
+instructions and data stored in internal memory. The system has a clock
+frequency of 100 MHz.
+
+\begin{table}[h]
+    \centering
+        \begin{tabular}{ | l | c | c | }
+        \hline
+        \rowcolor{iob-green}
+        {\bf Function} & {\bf Time ($\mu$s)} & {\bf Time (\%)} \\ \hline
+        \rowcolor{dark-blue}
+        Global  &   1134    & 100 \\ \hline
+        \rowcolor{dark-blue}
+        sha256  &   767     & 67 \\ \hline
+        \rowcolor{mid-blue}
+            \hspace{10pt}sha\_init & 24  & 2 \\ \hline
+        \rowcolor{mid-blue}
+           \hspace{10pt}sha\_finalize & 688  & 60 \\ \hline
+        \rowcolor{light-blue}
+            \hspace{20pt}crypto\_hashblocks & 583  & 51 \\ \hline
+            \hspace{30pt}ld\_big\_endian & 68  & 5 \\ \hline
+            \hspace{30pt}st\_big\_endian & 44  & 3 \\ \hline
+            \hspace{30pt}F\_32 & 106  & 9 \\ \hline
+            \hspace{30pt}Expand32 & 74  & 6 \\ \hline
+        \rowcolor{light-blue}
+            \hspace{20pt}sha\_ctxrelease & 21  & 1 \\ \hline
+        \rowcolor{dark-blue}
+        mem     &   45      & 3 \\ \hline
+        \rowcolor{dark-blue}
+        eth     &   257     & 22 \\ \hline
+        \rowcolor{dark-blue}
+        printf  &   3       & 0  \\ \hline
+        \end{tabular}
+    \caption{Baseline application profile data.}
+    \label{tab:prof1}
+\end{table}
