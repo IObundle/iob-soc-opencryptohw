@@ -1,24 +1,26 @@
-\LoadClass[twoside,twocolumn,a4paper]{article}
+\LoadClass[twoside,a4paper]{article}
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{acceleration_plan}
+\ProvidesClass{plan}
 
 \RequirePackage{graphicx}
 \RequirePackage{helvet}
 \RequirePackage{fancyhdr}
+%\RequirePackage{fancyvrb}
+%\RequirePackage[includehead,includefoot,top=50pt,bottom=50pt,headheight=24pt,margin=1in]{geometry}
 \RequirePackage[includehead,includefoot,top=50pt,bottom=50pt,headheight=24pt]{geometry}
 \RequirePackage[hidelinks]{hyperref}
-%\RequirePackage{geometry}
-\RequirePackage{enumitem}
-\RequirePackage{titlesec}
+\RequirePackage{multirow}
+\RequirePackage{verbatim}
+\RequirePackage{geometry}
+\RequirePackage{bm}
+\RequirePackage{tabularx}
+\RequirePackage{lipsum}
 \RequirePackage{catchfile}
-
-\setitemize{labelindent=2mm,labelsep=1mm,leftmargin=*}
-
-\setlength{\parindent}{1.0ex}
-\setlength{\parskip}{0.7ex}
-
-\titlespacing*{\section}
-{0pt}{1.5ex plus 0.5ex minus .2ex}{1.3ex plus .2ex}
+\RequirePackage[all]{nowidow}
+\widowpenalty10000
+\clubpenalty10000
+\RequirePackage{enumerate}
+\RequirePackage{enumitem}
 
 \geometry{
  a4paper,
@@ -27,9 +29,9 @@
  top=20mm,
 }
 
-
 \pagestyle{fancy}
-\graphicspath{{../figures/} {./} {\TEX/figures/}}
+\graphicspath{ {./figures} {\TEX/figures/} }
+\setlength{\parskip}{\baselineskip}
 
 
 \renewcommand{\headrulewidth}{.4pt}
@@ -39,18 +41,14 @@
 \\
 \textsc{\small{\@category}}
 }
-\fancyhead[RE,LO]{\includegraphics[scale=.4]{Logo.png}}
+\fancyhead[RE,LO]{\includegraphics[scale=.15]{Logo.png}}
 
-\newcommand{\confidential}{\def\@confidential}
 \renewcommand{\footruleskip}{10pt}
 \renewcommand{\footrulewidth}{.4pt}
+
 \fancyfoot{}
-%\fancyfoot[RO,LE]{
-\fancyfoot[L]{\copyright \the\year{} IObundle Lda. All rights reserved}
-\fancyfoot[R]{\url{www.IObundle.com}}
-%\fancyfoot[RE,LO]{\@ifundefined{@confidential}{}{\textbf{Confidential}}}
-%\thepage
-%}
+\fancyfoot[LO,RE]{\copyright \the\year{} IObundle Lda. \hspace{1cm}\url{www.iobundle.com}\hspace{1cm}{\bf OpenCryptoHW}}
+\fancyfoot[LE,RO]{\thepage}
 
 \newcommand{\category}[1]{\def\@category{#1}}
 \renewcommand{\familydefault}{\sfdefault}
@@ -75,3 +73,4 @@
 \newcommand{\getenv}[2][]{%
   \CatchFileEdef{\temp}{"|kpsewhich --var-value #2"}{\endlinechar=-1}%
   \if\relax\detokenize{#1}\relax\temp\else\let#1\temp\fi}
+
