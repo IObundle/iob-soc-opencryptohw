@@ -30,6 +30,4 @@ void profile_report(){
     printf("\t\t\t\t"); PROF_REPORT(Expand32)
     printf("\t\t\t"); PROF_REPORT(sha_ctxrelease)
     printf("\t"); PROF_REPORT(mem)
-    printf("\t"); PROF_REPORT(eth)
-    printf("\t"); PROF_REPORT(printf)
 }
