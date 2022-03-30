@@ -36,14 +36,24 @@ def get_color(num_tabs):
             }
     return color_dict[num_tabs]
 
+def escape_underscore(lines):
+    escaped_lines = []
+    for line in lines:
+        escaped_lines.append(line.replace("_", "\\_"))
+    return escaped_lines
+
 def process_input(parsed_lines):
     table = []
+    table.append("\\begin{tabular}{ | l | c | c | }\n")
+    table.append("\\hline\n")
+    table.append("\\rowcolor{iob-green}\n")
+    table.append("{\\bf Function} & {\\bf Time ($\mu$s)} & {\\bf Time (\%)} \\\\ \hline\n")
     for line in parsed_lines:
         # check for \t in first result
         num_tabs = line[0].count('\t')
         if num_tabs == 0:
             # Global time format
-            col0 = f"\hspace{{{num_tabs*10}pt}}" + line[0]
+            col0 = line[0]
             col1 = line[1]
             col2 = "100"
         else:
@@ -52,11 +62,13 @@ def process_input(parsed_lines):
             col1 = line[2]
             col2 = line[3]
 
-        table_line = get_color(num_tabs) + col0 + "\t&" + col1 + "\t&" + col2 + "\t\\\\ \hline"
+        table_line = get_color(num_tabs) + col0 + "\t&" + col1 + "\t&" + col2 + "\t\\\\ \hline\n"
 
         table.append(table_line)
 
-    return table
+    table.append("\\end{tabular}\n")
+ 
+    return escape_underscore(table)
 
 def write_table(output_fname, table):
     with open(output_fname, 'w') as fout:
@@ -64,7 +76,7 @@ def write_table(output_fname, table):
             fout.write(line)
 
 if __name__ == "__main__":
-    print("\nParse Profile Script\n")
+    print("\nProfile Log to LaTeX Script\n")
 
     # Check input arguments
     if len(sys.argv) != 3:

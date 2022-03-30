@@ -9,6 +9,7 @@ include ./config.mk
 	test-sim test-sim-clean\
 	test-fpga test-fpga-clean\
 	test test-clean\
+	doc-accel-plan doc-accel-plan-clean doc-clean\
 	clean clean-all
 
 #
@@ -66,6 +67,19 @@ fpga-clean-all:
 	make fpga-clean BOARD=AES-KU040-DB-G
 
 #
+# GENERATE DOCUMENTATION
+#
+
+doc-accel-plan:
+	make -C $(DOC_DIR) accel-plan
+
+doc-accel-plan-clean:
+	make -C $(DOC_DIR) accel-plan-clean
+
+doc-clean:
+	make -C $(DOC_DIR) clean
+
+#
 # TEST ON SIMULATORS AND BOARDS
 #
 
@@ -100,6 +114,6 @@ test: test-clean
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
 #generic clean
-clean: pc-emul-clean sim-clean fpga-clean 
+clean: pc-emul-clean sim-clean fpga-clean doc-clean
 
 clean-all: test-clean

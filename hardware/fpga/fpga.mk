@@ -101,7 +101,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: run-shortmsg test-validate
 
 run-shortmsg:
-	make all INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0
+	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
 
 test-validate: 
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
@@ -115,7 +115,7 @@ profile: clean-all profile1
 	@printf "=== PROFILE LOG ===\n"
 
 profile1:
-	make all PROFILE=1 
+	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1 
 	make fpga_use_ddr_profile.log
 
 %_profile.log: $(SOC_LOG)

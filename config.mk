@@ -108,6 +108,7 @@ HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 ASIC_DIR=$(HW_DIR)/asic/$(ASIC_NODE)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
+DOC_DIR=$(ROOT_DIR)/document
 
 #define macros
 DEFINE+=$(defmacro)DATA_W=$(DATA_W)
