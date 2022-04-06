@@ -42,7 +42,7 @@ fpga-run:
 	make -C $(BOARD_DIR) sw
 	make -C $(BOARD_DIR) run
 
-fpga-build:
+fpga-build: $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c
 	make -C $(BOARD_DIR) build
 
 fpga-clean:

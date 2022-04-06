@@ -1,5 +1,7 @@
 #include "unitWrapper.h"
 
+#include "versat.hpp"
+
 #include <new>
 #include <stddef.h>
 #include <stdio.h>
@@ -83,7 +85,7 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    PREAMBLE(VxunitF);
 
    // Update config
-   self->delay0 = inst->delays[0];
+   self->delay0 = inst->delay;
 
    START_RUN(self);
 
@@ -121,10 +123,10 @@ static int32_t* UnitFUpdateFunction(FUInstance* inst){
    return results;
 }
 
-EXPORT FU_Type RegisterUnitF(Versat* versat){
+EXPORT FUDeclaration* RegisterUnitF(Versat* versat){
    FUDeclaration decl = {};
 
-   decl.name = "xunitF";
+   strcpy(decl.name.str,"xunitF");
    decl.nInputs = 10;
    decl.nOutputs = 8;
    decl.extraDataSize = sizeof(UnitFData);
@@ -132,11 +134,9 @@ EXPORT FU_Type RegisterUnitF(Versat* versat){
    decl.startFunction = UnitFStartFunction;
    decl.updateFunction = UnitFUpdateFunction;
    decl.latency = 17;
-   decl.type = VERSAT_TYPE_IMPLEMENTS_DELAY;
+   decl.delayType = DELAY_TYPE_IMPLEMENTS_DELAY;
 
-   FU_Type type = RegisterFU(versat,decl);
-
-   return type;
+   return RegisterFU(versat,decl);
 }
 
 struct UnitMData{
@@ -169,7 +169,7 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    PREAMBLE(VxunitM);
 
    // Update config
-   self->delay0 = inst->delays[0];
+   self->delay0 = inst->delay;
 
    START_RUN(self);
 
@@ -191,10 +191,10 @@ static int32_t* UnitMUpdateFunction(FUInstance* inst){
    return &out;
 }
 
-EXPORT FU_Type RegisterUnitM(Versat* versat){
+EXPORT FUDeclaration* RegisterUnitM(Versat* versat){
    FUDeclaration decl = {};
 
-   decl.name = "xunitM";
+   strcpy(decl.name.str,"xunitM");
    decl.nInputs = 1;
    decl.nOutputs = 1;
    decl.extraDataSize = sizeof(UnitMData);
@@ -202,9 +202,7 @@ EXPORT FU_Type RegisterUnitM(Versat* versat){
    decl.startFunction = UnitMStartFunction;
    decl.updateFunction = UnitMUpdateFunction;
    decl.latency = 17;
-   decl.type = VERSAT_TYPE_IMPLEMENTS_DELAY;
+   decl.delayType = DELAY_TYPE_IMPLEMENTS_DELAY;
 
-   FU_Type type = RegisterFU(versat,decl);
-
-   return type;
+   return RegisterFU(versat,decl);
 }

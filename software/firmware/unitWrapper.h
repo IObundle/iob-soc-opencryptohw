@@ -9,7 +9,7 @@
 #define EXPORT
 #endif
 
-EXPORT FU_Type RegisterUnitF(Versat* versat);
-EXPORT FU_Type RegisterUnitM(Versat* versat);
+EXPORT FUDeclaration* RegisterUnitF(Versat* versat);
+EXPORT FUDeclaration* RegisterUnitM(Versat* versat);
 
 #endif //INCLUDED_UNIT_WRAPPER
