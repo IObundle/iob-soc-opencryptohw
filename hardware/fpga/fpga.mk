@@ -21,14 +21,15 @@ FPGA_PROFILE_LOG:=fpga_profile.log
 #OUTPUT BIN
 SOC_OUT_BIN:=soc-out.bin
 
+FORCE ?= 1
+
 #RULES
 
 #
 # Use
 #
-all: build 
-	make -j2 run-parallel
-FORCE ?= 1
+all: build run
+	
 
 run:
 ifeq ($(NORUN),0)
@@ -44,6 +45,7 @@ else
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR) 
 	bash -c "trap 'make queue-out-remote' INT TERM KILL; ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) FORCE=$(FORCE) TEST_LOG=\"$(TEST_LOG)\"'"
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/*.log . 2>/dev/null || :
+	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/software/python/*.bin . 2>/dev/null || :
 endif
 endif
 
@@ -66,17 +68,6 @@ else
 	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_LOG) $(FPGA_LOG) 
 endif
 endif
-
-run-parallel: run-fpga-int run-python-int
-
-run-fpga-int:
-	make run > $(SOC_LOG)
-
-run-python-int:
-	make run-python > $(HOST_LOG)
-
-run-python:
-	make -C $(ROOT_DIR) fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
 
 #
 # Board access queue
@@ -149,7 +140,6 @@ endif
 clean-testlog:
 	@rm -f test.log $(FPGA_PROFILE_LOG) 
 	@make -C $(SW_TEST_DIR) clean
-	@make -C $(ROOT_DIR) fpga-eth-clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
