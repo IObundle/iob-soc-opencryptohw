@@ -18,7 +18,7 @@ EMUL_PROFILE_LOG:=emul_profile.log
 #SUBMODULES
 
 #peripherals (pc)
-$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.mk))
 
 #HEADERS
 HDR+=periphs.h 
@@ -37,6 +37,9 @@ DEFINE+=$(defmacro)PROFILE
 INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
+#CONSOLE
+CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
+
 #RULES
 
 all: clean gen_data build
@@ -45,6 +48,8 @@ all: clean gen_data build
 build: firmware.out
 
 run: firmware.out
+	@rm -f soc2cnsl cnsl2soc
+	$(CONSOLE_CMD) $(TEST_LOG) &
 	./firmware.out $(TEST_LOG)
 
 firmware.out: $(HDR) $(SRC)
@@ -82,7 +87,7 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 
 clean:
 	make -C $(SW_TEST_DIR) clean
-	@rm -rf firmware.out periphs.h test.log *swreg.h \
+	@rm -rf firmware.out periphs.h test.log *swreg*.h *swreg*.c \
 		test.log $(EMUL_PROFILE_LOG) \
 		*d_in.bin $(SOC_LOG) $(HOST_LOG) $(SOC_OUT_BIN)
 
