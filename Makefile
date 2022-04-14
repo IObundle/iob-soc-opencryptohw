@@ -4,7 +4,7 @@ include ./config.mk
 .PHONY: sim sim-test sim-clean\
 	pc-emul pc-emul-test pc-emul-clean pc-emul-profile\
 	fpga-build fpga-build-all fpga-run fpga-run-profile fpga-test fpga-clean \
-	fpga-clean-all fpga-eth fpga-eth-clean\
+	fpga-clean-all \
 	test-pc-emul test-pc-emul-clean\
 	test-sim test-sim-clean\
 	test-fpga test-fpga-clean\
@@ -64,12 +64,6 @@ fpga-clean:
 
 fpga-clean-all:
 	make fpga-clean BOARD=AES-KU040-DB-G
-
-fpga-eth:
-	make -C $(SW_DIR)/python fpga-eth SOC_OUT_BIN=$(SOC_OUT_BIN)
-
-fpga-eth-clean:
-	make -C $(SW_DIR)/python clean
 
 #
 # TEST ON SIMULATORS AND BOARDS

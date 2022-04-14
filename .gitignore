@@ -5,6 +5,7 @@
 software/periphs.h
 
 software/*/*
+!software/*/makefile
 !software/*/Makefile
 !software/*/*.expected
 !software/*/*.py

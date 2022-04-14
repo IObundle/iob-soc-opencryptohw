@@ -18,7 +18,7 @@ EMUL_PROFILE_LOG:=emul_profile.log
 #SUBMODULES
 
 #peripherals (pc)
-$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.mk))
 
 #HEADERS
 HDR+=periphs.h 
@@ -37,14 +37,19 @@ DEFINE+=$(defmacro)PROFILE
 INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
+#CONSOLE
+CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
+
 #RULES
 
-all: clean gen_data build
-	make -j2 run-parallel
+all: clean build run
+	
 
-build: firmware.out
+build: gen_data firmware.out
 
 run: firmware.out
+	@rm -f soc2cnsl cnsl2soc
+	$(CONSOLE_CMD) $(TEST_LOG) &
 	./firmware.out $(TEST_LOG)
 
 firmware.out: $(HDR) $(SRC)
@@ -53,17 +58,6 @@ firmware.out: $(HDR) $(SRC)
 test: 
 	make all
 	make validate
-
-run-parallel: run-soc-int run-python-int
-
-run-soc-int:
-	make run > $(SOC_LOG)
-
-run-python-int:
-	make run-python > $(HOST_LOG)
-
-run-python:
-	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
@@ -82,7 +76,7 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 
 clean:
 	make -C $(SW_TEST_DIR) clean
-	@rm -rf firmware.out periphs.h test.log *swreg.h \
+	@rm -rf firmware.out periphs.h test.log *swreg*.h *swreg*.c \
 		test.log $(EMUL_PROFILE_LOG) \
 		*d_in.bin $(SOC_LOG) $(HOST_LOG) $(SOC_OUT_BIN)
 

@@ -42,10 +42,9 @@ firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
-#SHA256 test vectors
-
 clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h\
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg*.h \
+		*swreg*.c \
 		*d_in.bin *d_out.bin
 
 .PHONY: clean
