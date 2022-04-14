@@ -42,10 +42,10 @@ CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
 
 #RULES
 
-all: clean gen_data build
-	make -j2 run-parallel
+all: clean build run
+	
 
-build: firmware.out
+build: gen_data firmware.out
 
 run: firmware.out
 	@rm -f soc2cnsl cnsl2soc
@@ -58,17 +58,6 @@ firmware.out: $(HDR) $(SRC)
 test: 
 	make all
 	make validate
-
-run-parallel: run-soc-int run-python-int
-
-run-soc-int:
-	make run > $(SOC_LOG)
-
-run-python-int:
-	make run-python > $(HOST_LOG)
-
-run-python:
-	PC=1 python3 $(ROOT_DIR)/software/python/sha256_test.py enp1 112233445566 ./SHA256ShortMsg_d_in.bin ./$(SOC_OUT_BIN);
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
