@@ -86,7 +86,7 @@ DEFINE+=$(defmacro)INIT_MEM
 endif
 
 #submodule paths
-PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
+VEXRISCV_DIR=$(ROOT_DIR)/submodules/VEXRISCV
 CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
 UART_DIR=$(ROOT_DIR)/submodules/UART
 TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
