@@ -1,12 +1,12 @@
 PROFILE: REPORT
-PROFILE: Global time: 78619us @100MHz
-	PROFILE: sha256 time: 70622us (89%)
-		PROFILE: sha_init time: 2645us (3%)
-		PROFILE: sha_finalize time: 63728us (81%)
-			PROFILE: crypto_hashblocks time: 54240us (68%)
-				PROFILE: ld_big_endian time: 6039us (7%)
-				PROFILE: st_big_endian time: 3424us (4%)
-				PROFILE: F_32 time: 14680us (18%)
-				PROFILE: Expand32 time: 8251us (10%)
-			PROFILE: sha_ctxrelease time: 1494us (1%)
-	PROFILE: mem time: 3727us (4%)
+PROFILE: Global time: 28381us @100MHz
+	PROFILE: sha256 time: 25360us (89%)
+		PROFILE: sha_init time: 886us (3%)
+		PROFILE: sha_finalize time: 22816us (80%)
+			PROFILE: crypto_hashblocks time: 19435us (68%)
+				PROFILE: ld_big_endian time: 2262us (7%)
+				PROFILE: st_big_endian time: 1282us (4%)
+				PROFILE: F_32 time: 4686us (16%)
+				PROFILE: Expand32 time: 2755us (9%)
+			PROFILE: sha_ctxrelease time: 571us (2%)
+	PROFILE: mem time: 1351us (4%)
