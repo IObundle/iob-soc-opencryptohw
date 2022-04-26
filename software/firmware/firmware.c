@@ -88,14 +88,12 @@ static int* writeMemory;
 // GLOBALS
 Versat* versat;
 Accelerator* accel;
-FUInstance* wMem;
-FUInstance* read;
-FUInstance* stateReg[8];
 bool initVersat = false;
 
 // Versat specific units
 FUDeclaration* ADD;
 FUDeclaration* REG;
+FUDeclaration* CONST;
 FUDeclaration* VREAD;
 FUDeclaration* VWRITE;
 FUDeclaration* MEM;
@@ -113,35 +111,69 @@ void ClearCache(){
     printf("Clear cache: %d [ignore]\n\n",count);
 }
 
-#if 0
-FUInstance* UnitM(Accelerator* accel,FUInstance* in){
-    FUInstance* regs[16];
-
-    for(int i = 0; i < 16; i++){
-        regs[i] = CreateFUInstance(accel,REG);
-    }
-    for(int i = 0; i < 15; i++){
-        ConnectUnits(regs[i+1],0,regs[i],0);
-    }
-
-    FUInstance* val = M_32(accel,regs[0],regs[14],regs[9],regs[1]);
-
-    FUInstance* mux = CreateFUInstance(accel,DELAY_MUX);
-
-    ConnectUnits(in,0,mux,0);
-    ConnectUnits(val,0,mux,1);
-
-    ConnectUnits(mux,0,regs[15],0);
-
-    return regs[0];
-}
-#endif
-
 void ParseVersatSpecification(Versat* versat,FILE* file);
+
+int32_t* UnaryNot(FUInstance* inst){
+    static uint32_t out;
+    out = ~GetInputValue(inst,0);
+    return (int32_t*) &out;
+}
+
+int32_t* BinaryXOR(FUInstance* inst){
+    static uint32_t out;
+    out = GetInputValue(inst,0) ^ GetInputValue(inst,1);
+    return (int32_t*) &out;
+}
+
+int32_t* BinaryADD(FUInstance* inst){
+    static uint32_t out;
+    out = GetInputValue(inst,0) + GetInputValue(inst,1);
+    return (int32_t*) &out;
+}
+int32_t* BinaryAND(FUInstance* inst){
+    static uint32_t out;
+    out = GetInputValue(inst,0) & GetInputValue(inst,1);
+    return (int32_t*) &out;
+}
+int32_t* BinaryOR(FUInstance* inst){
+    static uint32_t out;
+    out = GetInputValue(inst,0) | GetInputValue(inst,1);
+    return (int32_t*) &out;
+}
+int32_t* BinaryRHR(FUInstance* inst){
+    static uint32_t out;
+    uint32_t value = GetInputValue(inst,0);
+    uint32_t shift = GetInputValue(inst,1);
+    out = (value >> shift) | (value << (32 - shift));
+    return (int32_t*) &out;
+}
+int32_t* BinaryRHL(FUInstance* inst){
+    static uint32_t out;
+    uint32_t value = GetInputValue(inst,0);
+    uint32_t shift = GetInputValue(inst,1);
+    out = (value << shift) | (value >> (32 - shift));
+    return (int32_t*) &out;
+}
+int32_t* BinarySHR(FUInstance* inst){
+    static uint32_t out;
+    uint32_t value = GetInputValue(inst,0);
+    uint32_t shift = GetInputValue(inst,1);
+    out = (value >> shift);
+    return (int32_t*) &out;
+}
+int32_t* BinarySHL(FUInstance* inst){
+    static uint32_t out;
+    uint32_t value = GetInputValue(inst,0);
+    uint32_t shift = GetInputValue(inst,1);
+    out = (value << shift);
+    return (int32_t*) &out;
+}
 
 void RegisterOperators(Versat* versat){
     char* unary[] = {"NOT"};
+    FUFunction unaryF[] = {UnaryNot};
     char* binary[] = {"XOR","ADD","AND","OR","RHR","SHR","RHL","SHL"};
+    FUFunction binaryF[] = {BinaryXOR,BinaryADD,BinaryAND,BinaryOR,BinaryRHR,BinarySHR,BinaryRHL,BinarySHL};
 
     FUDeclaration decl = {};
     decl.nOutputs = 1;
@@ -149,21 +181,123 @@ void RegisterOperators(Versat* versat){
     decl.nInputs = 1;
     for(int i = 0; i < ARRAY_SIZE(unary); i++){
         FixedStringCpy(decl.name.str,unary[i],MAX_NAME_SIZE);
+        decl.updateFunction = unaryF[i];
         RegisterFU(versat,decl);
     }
 
     decl.nInputs = 2;
     for(int i = 0; i < ARRAY_SIZE(binary); i++){
         FixedStringCpy(decl.name.str,binary[i],MAX_NAME_SIZE);
+        decl.updateFunction = binaryF[i];
         RegisterFU(versat,decl);
+    }
+}
+
+void TestMStage(Versat* versat){
+    FUDeclaration* type = GetTypeByName(versat,"M_Stage");
+    Accelerator* accel = CreateAccelerator(versat);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,"Test",NULL);
+
+    FUInstance* input[4];
+    FUInstance* output;
+    int32_t values[] = {0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9};
+
+    for(int i = 0; i < inst->declaration->nInputs; i++){
+        input[i] = CreateFUInstance(accel,REG);
+
+        VersatUnitWrite(input[i],0,values[i]);
+
+        ConnectUnits(input[i],0,inst,i);
+    }
+
+    output = CreateFUInstance(accel,REG);
+    ConnectUnits(inst,0,output,0);
+
+    FUInstance* const1 = GetInstanceByName(accel,"Test","sigma1","const1");
+    FUInstance* const2 = GetInstanceByName(accel,"Test","sigma1","const2");
+    FUInstance* const3 = GetInstanceByName(accel,"Test","sigma1","const3");
+    FUInstance* Const1 = GetInstanceByName(accel,"Test","sigma0","const1");
+    FUInstance* Const2 = GetInstanceByName(accel,"Test","sigma0","const2");
+    FUInstance* Const3 = GetInstanceByName(accel,"Test","sigma0","const3");
+
+    FUInstance* test = GetInstanceByName(accel,"Test","d0");
+
+    const1->config[0] = 17;
+    const2->config[0] = 19;
+    const3->config[0] = 10;
+    Const1->config[0] = 7;
+    Const2->config[0] = 18;
+    Const3->config[0] = 3;
+
+    printf("\n========\n========\n========\n========\n========\n========\n========\n========\n");
+
+    CalculateDelay(versat,accel);
+
+    AcceleratorRun(accel);
+
+    printf("Expected: 0xb89ab4ca\n");
+    printf("Got:      0x%x\n",VersatUnitRead(output,0));
+}
+
+void TestM(Versat* versat){
+    FUDeclaration* type = GetTypeByName(versat,"M");
+    accel = CreateAccelerator(versat);
+    FUInstance* inst = CreateFUInstance(accel,type);
+
+    FUInstance* input[16];
+    FUInstance* output[16];
+    int32_t values[] = {0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509};
+
+    for(int i = 0; i < inst->declaration->nInputs; i++){
+        input[i] = CreateFUInstance(accel,REG);
+
+        VersatUnitWrite(input[i],0,values[i]);
+
+        ConnectUnits(input[i],0,inst,i);
+    }
+    for(int i = 0; i < inst->declaration->nOutputs; i++){
+        output[i] = CreateFUInstance(accel,REG);
+        ConnectUnits(inst,i,output[i],0);
+    }
+
+    for(int i = 0; i < 16; i++){
+        FUInstance* const1 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const1");
+        FUInstance* const2 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const2");
+        FUInstance* const3 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const3");
+        FUInstance* Const1 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const1");
+        FUInstance* Const2 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const2");
+        FUInstance* Const3 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const3");
+
+        const1->config[0] = 17;
+        const2->config[0] = 19;
+        const3->config[0] = 10;
+        Const1->config[0] = 7;
+        Const2->config[0] = 18;
+        Const3->config[0] = 3;
+    }
+
+    CalculateDelay(versat,accel);
+
+    printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
+
+    AcceleratorRun(accel);
+
+    for(int i = 0; i < inst->declaration->nOutputs; i++){
+        printf("%08x ",VersatUnitRead(output[i],0));
     }
 }
 
 int main(int argc,const char* argv[])
 {
+    char digest[256];
+
     //init uart
     uart_init(UART_BASE,FREQ/BAUD);
     timer_init(TIMER_BASE);
+
+    for(int i = 0; i < 256; i++){
+        digest[i] = 0;
+    }
 
     // Force alignment on a 64 byte boundary
     readMemory = readMemory_;
@@ -185,6 +319,7 @@ int main(int argc,const char* argv[])
     VWRITE = RegisterVWrite(versat);
     MEM = RegisterMem(versat,10);
     DEBUG = RegisterDebug(versat);
+    CONST = RegisterConst(versat);
     RegisterDelay(versat);
     RegisterCircuitInput(versat);
     RegisterCircuitOutput(versat);
@@ -197,15 +332,14 @@ int main(int argc,const char* argv[])
 
     FILE* file = fopen("testVersatSpecification.txt","r");
 
-    return 0;
-
     ParseVersatSpecification(versat,file);
 
-    #if 1
+    #if 0
     {
     //FUDeclaration* type = GetTypeByName(versat,"M");
-    FUDeclaration* type = GetTypeByName(versat,"TestSpec");
+    //FUDeclaration* type = GetTypeByName(versat,"TestSpec");
     //FUDeclaration* type = GetTypeByName(versat,"TestDelay");
+    FUDeclaration* type = GetTypeByName(versat,"SHA");
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateFUInstance(accel,type);
 
@@ -220,15 +354,16 @@ int main(int argc,const char* argv[])
 
     {
     FILE* dotFile = fopen("versat.dot","w");
-    OutputGraphDotFile(accel,dotFile,0);
+    OutputGraphDotFile(accel,dotFile,1);
     fclose(dotFile);
     }
 
-    Accelerator* flatten = Flatten(versat,accel,99);
+    #if 1
+    //Accelerator* flatten = Flatten(versat,accel,99);
 
     {
     FILE* dotFile = fopen("flatten.dot","w");
-    OutputGraphDotFile(flatten,dotFile,0);
+    OutputGraphDotFile(flatten,dotFile,1);
     fclose(dotFile);
     }
 
@@ -236,15 +371,98 @@ int main(int argc,const char* argv[])
 
     {
     FILE* dotFile = fopen("delayed.dot","w");
-    OutputGraphDotFile(flatten,dotFile,0);
+    OutputGraphDotFile(flatten,dotFile,1);
     fclose(dotFile);
     }
+    #endif
 
-    volatile int* r1 = (volatile int*) GetInstanceByName(accel,"r1");
+    #if 0
+    FUInstance* r1 = GetInstanceByName(accel,"TestSpec","r1");
+    FUInstance* r2 = GetInstanceByName(accel,"TestSpec","r2");
+    FUInstance* r3 = GetInstanceByName(accel,"TestSpec","r3");
+
+    VersatUnitWrite(r1,0,2);
+    VersatUnitWrite(r2,0,3);
+
+    AcceleratorRun(accel);
+
+    printf("%d\n",VersatUnitRead(r1,0));
+    printf("%d\n",VersatUnitRead(r2,0));
+    printf("%d\n",VersatUnitRead(r3,0));
+    #endif
 
     return 0;
     }
     #endif
+
+    #if 1
+    TestMStage(versat);
+
+    return 0;
+    #endif
+
+    #if 0
+    TestM(versat);
+
+    return 0;
+    #endif
+
+    #if 1
+    printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+    sha256(digest,msg_64,64);
+    printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
+    #endif
+
+    {
+    FILE* dotFile = fopen("versat.dot","w");
+    OutputGraphDotFile(accel,dotFile,1);
+    fclose(dotFile);
+    }
+
+    return 0;
+
+    FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
+    {
+        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+
+        // Versat side
+        c->iterB = 1;
+        c->incrB = 1;
+        c->perB = 16;
+        c->dutyB = 16;
+
+        // Memory side
+        c->incrA = 1;
+        c->iterA = 1;
+        c->perA = 16;
+        c->dutyA = 16;
+        c->size = 8;
+        c->int_addr = 0;
+        c->pingPong = 1;
+        c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
+    }
+
+    for(int i = 0; i < 4; i++){
+        FUInstance* inst = GetInstanceByName(accel,"SHA","cMem%d",i);
+
+        volatile MemConfig* c = (volatile MemConfig*) inst->config;
+
+        c->iterA = 1;
+        c->incrA = 1;
+        c->perA = 16;
+        c->dutyA = 16;
+
+        for (int ii = 0; ii < 16; ii++)
+        {
+            VersatUnitWrite(inst,ii,kConstants[i][ii]);
+        }
+    }
+
+    for(int i = 0; i < 8; i++){
+        FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
+
+        VersatUnitWrite(inst,0,initialStateValues[i]);
+    }
 
     #if 0
     read = CreateFUInstance(accel,VREAD);
@@ -327,8 +545,6 @@ int main(int argc,const char* argv[])
     }
     #endif
 
-    accel = Flatten(versat,accel,1);
-
     //CalculateDelay(versat,accel);
 
     {
@@ -336,8 +552,6 @@ int main(int argc,const char* argv[])
     OutputGraphDotFile(accel,dotFile,1);
     fclose(dotFile);
     }
-
-    return 0;
 
     #if 0
     CalculateDelay(accel);
@@ -364,12 +578,6 @@ int main(int argc,const char* argv[])
     // Gera o versat.
     OutputVersatSource(versat,"versat_defs.vh","versat_instance.v","versat_constants.c");
     #endif
-
-    char digest[256];
-
-    for(int i = 0; i < 256; i++){
-        digest[i] = 0;
-    }
 
 #ifdef AUTOMATIC_TEST
     int i = 0;
@@ -423,6 +631,8 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
     uint32_t w[16];
 
     {
+        FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
+
         volatile VReadConfig* c = (volatile VReadConfig*) read->config;
         c->ext_addr = (int) w;
     }
@@ -453,7 +663,9 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
         #if 1
         if(!initVersat){
             for(int i = 0; i < 8; i++){
-                VersatUnitWrite(stateReg[i],0,initialStateValues[i]);
+                FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
+
+                VersatUnitWrite(inst,0,initialStateValues[i]);
             }
             initVersat = true;
         }
@@ -512,7 +724,9 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     AcceleratorRun(accel);
 
     for (size_t i = 0; i < 8; ++i) {
-        uint32_t val = *stateReg[i]->state;
+        FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
+
+        uint32_t val = *inst->state;
 
         store_bigendian_32(&out[i*4],val);
     }
