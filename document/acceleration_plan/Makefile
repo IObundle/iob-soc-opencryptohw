@@ -27,6 +27,7 @@ view: $(DOC).pdf
 
 figures:
 	make -C $(LIB_DOC_DIR)/figures pb_figs
+	make -C ./figures all
 
 $(DOC)top.tex:
 	echo "\def\TEX{$(LIB_DOC_DIR)}" > $@
@@ -43,8 +44,9 @@ endif
 	cp $(PROFILE_LOG_PATH) $@
 
 clean:
-	@find . -type f -not \( $(NOCLEAN) \) -delete
+	@find . -type f -not \( $(NOCLEAN) \) -delete -maxdepth 1
 	@rm -rf $(DOC).pdf
 	@make -C $(LIB_DOC_DIR)/figures clean
+	@make -C ./figures clean
 
 .PHONY: all clean figures
