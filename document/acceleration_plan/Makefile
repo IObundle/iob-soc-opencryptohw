@@ -4,7 +4,9 @@ include $(ROOT_DIR)/config.mk
 DOC=acceleration_plan
 
 KEEP_FILES = $(DOC).tex 
-KEEP_FILES+= intro.tex profile.tex proposal.tex 
+KEEP_FILES+= intro.tex sha256_algo.tex profile.tex proposal.tex
+KEEP_FILES+= expected_results.tex conclusion.tex
+KEEP_FILES+= refs.bib
 KEEP_FILES+= plan.cls
 KEEP_FILES+= $(DOC).pdf
 KEEP_FILES+= profile.log
@@ -22,6 +24,8 @@ view: $(DOC).pdf
 	evince $< &
 
 %.pdf: figures $(TEX_SRC) $(DOC)top.tex
+	pdflatex -jobname $(DOC) $(DOC)top.tex
+	if [ -f *.bib ]; then bibtex $(DOC); fi
 	pdflatex -jobname $(DOC) $(DOC)top.tex
 	pdflatex -jobname $(DOC) $(DOC)top.tex
 
@@ -44,7 +48,7 @@ endif
 	cp $(PROFILE_LOG_PATH) $@
 
 clean:
-	@find . -type f -not \( $(NOCLEAN) \) -delete -maxdepth 1
+	@find . -maxdepth 1 -type f -not \( $(NOCLEAN) \) -delete 
 	@rm -rf $(DOC).pdf
 	@make -C $(LIB_DOC_DIR)/figures clean
 	@make -C ./figures clean
