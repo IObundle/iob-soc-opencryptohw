@@ -1,0 +1,53 @@
+\documentclass{plan}
+\usepackage{float}
+\usepackage{color, colortbl}
+\usepackage[section]{placeins}
+\usepackage{mathtools}
+\usepackage{amsthm}
+%\usepackage[T1]{helvet}
+\usepackage[OT1]{fontenc} 
+\usepackage{array}
+\usepackage[binary-units=true]{siunitx}
+\usepackage{subcaption}
+\usepackage{caption,tabularx,booktabs}
+\usepackage{longtable}
+\usepackage[all]{nowidow}
+\widowpenalty10000
+\clubpenalty10000
+
+\usepackage{listings}
+
+\lstset{captionpos=b}
+
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+% \graphicspath{ {./figures/} {}
+
+\title{IOb-SoC-SHA}
+\category{Acceleration Proposal}
+%\confidential{}
+
+\input{\TEX/color}
+
+\begin{document}
+\maketitle
+\cleardoublepage
+\tableofcontents
+\listoftables
+\listoffigures
+\cleardoublepage
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro}
+
+\section{Profiling Assessment}
+\label{sec:profiling}
+\input{profile}
+
+\section{Acceleration Proposal}
+\label{sec:accel_proposal}
+\input{proposal}
+
+
+\end{document}

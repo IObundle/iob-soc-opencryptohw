@@ -16,6 +16,13 @@
 
 #define HASH_SIZE (256/8)
 
+// Pointer to DDR_MEM
+#ifdef PC
+    char ddr_mem[100000] = {0};
+#else
+    char *ddr_mem = (char*) EXTRA_BASE;
+#endif
+
 /* read integer value
  * return number of bytes read */
 int get_int(char* ptr, unsigned int *i_val){
@@ -87,11 +94,8 @@ int main()
   int i = 0;
 
   int din_size = 0, din_ptr = 0;
-  char *din_fp = (char*) malloc(sizeof(char)*INPUT_FILE_SIZE);
-  if(din_fp == NULL){
-      printf("Failed to allocate input file memory\n");
-      return -1;
-  }
+  // input file points to ddr_mem start
+  char *din_fp = (char*) ddr_mem;
 
   int dout_size = 0, dout_ptr = 0;
   char *dout_fp = NULL;
@@ -105,10 +109,6 @@ int main()
   //init ethernet
   eth_init(ETHERNET_BASE);
 
-#ifdef PROFILE
-  PROF_START(global)
-  PROF_START(eth)
-#endif
 #ifdef SIM
   //Receive input data from uart
   din_size = uart_recvfile("sim_in.bin", &din_fp);
@@ -116,47 +116,52 @@ int main()
   //Receive input data from ethernet
   din_size = eth_rcv_variable_file(din_fp);
 #endif
-#ifdef PROFILE
-  PROF_STOP(eth)
-  PROF_START(printf)
-#endif
   printf("ETHERNET: Received file with %d bytes\n", din_size);
 #ifdef PROFILE
-  PROF_STOP(printf)
+  PROF_START(global)
+  PROF_START(mem)
 #endif
 
   // Calculate output size and allocate output memory
   din_ptr += get_int(din_fp + din_ptr, &num_msgs);
   dout_size = num_msgs*HASH_SIZE;
-  dout_fp = (char*) malloc(sizeof(char)*dout_size);
-  if(dout_fp == NULL){
-      printf("Failed to allocate output file memory\n");
-      free(din_fp);
-      return -1;
-  }
+  // output file starts after input file
+  dout_fp = din_fp + din_size;
 
   char *msg = NULL;
 
+#ifdef PROFILE
+  PROF_STOP(mem)
+#endif
   //Message test loop
   for(i=0; i< num_msgs; i++){
+#ifdef PROFILE
+    PROF_START(mem)
+#endif
     // Parse message and length
     din_ptr += get_int(din_fp + din_ptr, &msg_len);
     din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
 
 #ifdef PROFILE
+    PROF_STOP(mem)
     PROF_START(sha256)
 #endif
     sha256(digest,msg,msg_len);
 #ifdef PROFILE
     PROF_STOP(sha256)
+    PROF_START(mem)
 #endif
 
     //save to memory
     dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
+#ifdef PROFILE
+    PROF_STOP(mem)
+#endif
   }
 
 #ifdef PROFILE
-  PROF_START(eth)
+  // Finish profile
+  PROF_STOP(global)
 #endif
 #ifdef SIM
   // send message digests via uart
@@ -165,21 +170,10 @@ int main()
   // send message digests via ethernet
   eth_send_variable_file(dout_fp, dout_size);
 #endif
-#ifdef PROFILE
-  PROF_STOP(eth)
-  PROF_START(printf)
-#endif
   printf("ETHERNET: Sent file with %d bytes\n", dout_size);
-#ifdef PROFILE
-  PROF_STOP(printf)
-#endif
-  // free allocated memory
-  free(din_fp);
-  free(dout_fp);
 
 #ifdef PROFILE
-  // Finish profile and report execution times
-  PROF_STOP(global)
+  // report execution times
   profile_report();
 #endif
 

@@ -101,7 +101,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: run-shortmsg test-validate
 
 run-shortmsg:
-	make all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0
+	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
 
 test-validate: 
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
@@ -109,16 +109,17 @@ test-validate:
 #
 # Profiling
 #
-profile: clean-all $(FPGA_PROFILE_LOG)
+profile: clean-all profile1 
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat $(FPGA_PROFILE_LOG)
+	@cat *_profile.log
 	@printf "=== PROFILE LOG ===\n"
 
-$(FPGA_PROFILE_LOG): $(SOC_LOG)
-	@grep "PROFILE:" $< > $@
+profile1:
+	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1 
+	make fpga_use_ddr_profile.log
 
-$(SOC_LOG):
-	make all PROFILE=1
+%_profile.log: $(SOC_LOG)
+	@grep "PROFILE:" $< > $@
 
 #
 # Clean
@@ -138,7 +139,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log $(FPGA_PROFILE_LOG) 
+	@rm -f test.log *_profile.log
 	@make -C $(SW_TEST_DIR) clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"

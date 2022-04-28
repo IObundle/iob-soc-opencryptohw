@@ -1,0 +1,26 @@
+The execution time for the SHA256 application is presented in
+Table~\ref{tab:prof1}. The program runs exclusively on software with
+instructions stored in internal memory and data stored in external memory
+(DDR). The system uses the VexRiscv CPU at a clock frequency of 100 MHz.
+
+\begin{table}[h]
+    \centering
+    \input{profile_tab.tex}
+    \caption{Baseline application profile data.}
+    \label{tab:prof1}
+\end{table}
+
+The profile analysis tracks the time in clock cycles since the input data is in
+the external memory, until the output data in stored in the external memory.
+
+The results from Table~\ref{tab:prof1} demonstrate that about 80\% of the
+execution time is used to run the \texttt{sha\_finalize()} function, in
+particular, the \texttt{crypto\_hashblocks()} function. The functions and macro
+calls inside the \texttt{crypto\_hashblocks()} function have the same order of
+magnitude with regards to duration.
+
+The acceleration efforts should be focussed on the
+\texttt{crypto\_hashblocks()} function and respective subfunction and macro
+calls.
+
+

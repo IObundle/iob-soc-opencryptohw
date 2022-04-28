@@ -185,7 +185,7 @@ def init_serial():
     ser.xonxoff = False     #disable software flow control
     ser.rtscts = False     #disable hardware (RTS/CTS) flow control
     ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-    ser.writeTimeout = 2     #timeout for write
+    ser.writeTimeout = 4     #timeout for write
 
 
 def init_files():

@@ -24,7 +24,7 @@ FIRM_ADDR_W ?=16
 SRAM_ADDR_W ?=16
 
 #DDR
-USE_DDR ?=0
+USE_DDR ?=1
 RUN_EXTMEM ?=0
 
 #DATA CACHE ADDRESS WIDTH (tag + index + offset)
@@ -86,7 +86,7 @@ DEFINE+=$(defmacro)INIT_MEM
 endif
 
 #submodule paths
-PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
+VEXRISCV_DIR=$(ROOT_DIR)/submodules/VEXRISCV
 CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
 UART_DIR=$(ROOT_DIR)/submodules/UART
 TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
@@ -108,6 +108,7 @@ HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 ASIC_DIR=$(HW_DIR)/asic/$(ASIC_NODE)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
+DOC_DIR=$(ROOT_DIR)/document
 
 #define macros
 DEFINE+=$(defmacro)DATA_W=$(DATA_W)
