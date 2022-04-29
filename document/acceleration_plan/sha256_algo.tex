@@ -1,5 +1,5 @@
 The SHA-256 algorithm \cite{SHA_NIST_FIPS} is a secure hash algorithm that
-receives input data of any size up to $2^(64)$ bits and computes an output of
+receives input data of any size up to $2^{64}$ bits and computes an output of
 256 bits. This output is called a message digest.
 The SHA-256 algorithm is divided into two main stages: preprocessing and hash
 computation.
@@ -54,7 +54,7 @@ computed by the operations presented in~(\ref{eq:gen_w}). The addition is
 modulo $2^{32}$.
 
 \begin{equation}
-    W_{t} = \sigma_{1}(W_{t-2}) + W_{t-7} + \sigma_{0}(W_{t-15}) + W_{t-16}, 16 \leq t \leq 63.
+    W_{t} = \sigma_{1}(W_{t-2}) + W_{t-7} + \sigma_{0}(W_{t-15}) + W_{t-16}, \ \ \ 16 \leq t \leq 63.
 \label{eq:gen_w}
 \end{equation}
 
@@ -90,9 +90,9 @@ d, e, f, g, h$:
 The working variables are updated for 64 iterations ($ 0 \leq t \leq 63$),
 following the algorithm in~(\ref{eq:hash_iter}). The functions $\Sigma_1(x)$,
 $Ch(x,y,z)$, $\Sigma_0(x)$ and $Maj(x,y,z)$ are defined
-in~(\ref{eq:Sigma_Ch_Maj}). $Ch(x,y,z)$ is performs a choice operation: if $x$ 
-is 1, the output outputs $z$, otherwise outputs $y$. $Maj(x,y,z)$ outputs the 
-most common value between the three inputs.
+in~(\ref{eq:Sigma_Ch_Maj}). $Ch(x,y,z)$ is a choice operation: if $x$ is 1, the
+output is $z$, otherwise outputs $y$. $Maj(x,y,z)$ outputs the most common
+value between the three inputs.
 
 \begin{align}
     \begin{split}
@@ -120,7 +120,8 @@ most common value between the three inputs.
 \label{eq:Sigma_Ch_Maj}
 \end{align}
 
-The working variables $a,..., h$ are the result of one hashing interation.
+The results $H_{0}^{(i+1)}, H_{1}^{(i+1)},..., H_{7}^{(i+1)}$ of hashing
+iteration $i$ are the final values of the working variables $a,..., h$.
 The resulting hash state values of one iteration are used as the input of the
 next iteration until all message blocks have been used. The message digest is
 the concatenation of the hash state values at the final iteration.
