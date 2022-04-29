@@ -1,7 +1,8 @@
-The execution time for the SHA256 application is presented in
-Table~\ref{tab:prof1}. The program runs exclusively on software with
-instructions stored in internal memory and data stored in external memory
-(DDR). The system uses the VexRiscv CPU at a clock frequency of 100 MHz.
+The execution time for the SHA256 implementation \cite{iob-soc-sha} is
+presented in Table~\ref{tab:prof1}. The program runs exclusively on software
+with instructions stored in internal memory and data stored in external memory
+(DDR). The system uses the VexRiscv CPU \cite{iob-vexriscv} at a clock
+frequency of 100 MHz.
 
 \begin{table}[h]
     \centering
@@ -11,7 +12,7 @@ instructions stored in internal memory and data stored in external memory
 \end{table}
 
 The profile analysis tracks the time in clock cycles since the input data is in
-the external memory, until the output data in stored in the external memory.
+the external memory until the output data in stored in the external memory.
 
 The results from Table~\ref{tab:prof1} demonstrate that about 80\% of the
 execution time is used to run the \texttt{sha\_finalize()} function, in

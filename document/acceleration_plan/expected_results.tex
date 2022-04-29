@@ -1,0 +1,31 @@
+The best case performance for the acceleration of a hash function is to compute
+the working variables equations~(\ref{eq:hash_iter}) once per cycle. This gives
+a total of 64 clock cycles to hash a message block. 
+The test messages used in the profiling application have increasing sizes from
+0 to 512 bits with a step size of 8 bits. The test messages with sizes from 0
+to 440 bits are split into one message block. The remaining test messages are
+split into two message blocks. 
+The minimum number of clock cycles to execute the hashing of message blocks for
+the complete test is given in (\ref{eq:hash_cycles_test}). The test contains 65
+messages and the last 9 are split into two message blocks during hashing.
+
+\begin{align}
+    \begin{split}
+    hash\_cycles &= 64 \times ( 65 + 9 ) = 4736 \ clock \ cycles \\
+    4736 \ clock \ cycles &\Leftrightarrow \frac{4736}{100\times 10^{6}}\times 10^{6} = 47 \ \mu s.
+    \end{split}
+\label{eq:hash_cycles_test}
+\end{align}
+
+The acceleration proposed in section~\ref{sec:accel_proposal} replaces the 
+\texttt{sha\_init()}, \texttt{sha\_finalize()} and \texttt{sha\_ctxrelease()} 
+functions. From table~\ref{tab:prof1}, these functions take a total of 
+$ (886 + 22816 + 571) = 24273 \ \mu s$ to execute. Assuming that the SHA-256
+acceleration takes the time calculated in (\ref{eq:hash_cycles_test}), the
+expected speedup is given by:
+
+\begin{equation}
+    \frac{Total\ time}{Accel\ time} = \frac{28381}{28381 - 24273 + 47} \approx 6.83.
+\label{eq:expected_speedup}
+\end{equation}
+

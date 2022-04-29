@@ -4,6 +4,7 @@
 \usepackage[section]{placeins}
 \usepackage{mathtools}
 \usepackage{amsthm}
+\usepackage{amsmath}
 %\usepackage[T1]{helvet}
 \usepackage[OT1]{fontenc} 
 \usepackage{array}
@@ -15,16 +16,12 @@
 \widowpenalty10000
 \clubpenalty10000
 
-\usepackage{listings}
-
-\lstset{captionpos=b}
-
 \newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
 
 % \graphicspath{ {./figures/} {}
 
 \title{IOb-SoC-SHA}
-\category{Acceleration Proposal}
+\category{Acceleration with the Versat CGRA}
 %\confidential{}
 
 \input{\TEX/color}
@@ -41,6 +38,10 @@
 \label{sec:intro}
 \input{intro}
 
+\section{SHA256 Algorithm}
+\label{sec:sha256}
+\input{sha256_algo}
+
 \section{Profiling Assessment}
 \label{sec:profiling}
 \input{profile}
@@ -49,5 +50,17 @@
 \label{sec:accel_proposal}
 \input{proposal}
 
+\section{Expected Results}
+\label{sec:expected_results}
+\input{expected_results}
+
+\section{Conclusion}
+\label{sec:conclusion}
+\input{conclusion}
+
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{unsrt}
+\bibliography{refs}
 
 \end{document}
