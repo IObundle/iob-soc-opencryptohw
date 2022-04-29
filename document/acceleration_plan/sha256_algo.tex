@@ -1,2 +1,127 @@
-The SHA-256 algorithm \cite{SHA_NIST_FIPS} is divided into two main stages: 
-preprocessing and hash computation.
+The SHA-256 algorithm \cite{SHA_NIST_FIPS} is a secure hash algorithm that
+receives input data of any size up to $2^(64)$ bits and computes an output of
+256 bits. This output is called a message digest.
+The SHA-256 algorithm is divided into two main stages: preprocessing and hash
+computation.
+
+\subsection{Preprocessing}
+\label{subsec:preprocessing}
+The preprocessing stage pads the input data to obtain an input size multiple of
+512 bits. Given a message $M$ of size $\lambda$ bits. The padding process
+appends the bit "1" to the end of the message followed by $\delta$ "0" bits
+such that $\delta$ is the smallest positive integer that
+solves~(\ref{eq:sha_padding}).
+
+\begin{equation}
+\lambda + 1 + \delta \equiv 448 \mod 512.
+\label{eq:sha_padding}
+\end{equation}
+
+After the padded zeroes, the message is appended with the 64 bit representation
+of the size of the original message $\lambda$. At the end of this process the 
+padded message size is a multiple of 512 bits. The padded input is divided into
+blocks of 512 bits which can be represented as sixteen words of 32 bit. 
+
+The preprocessing stage also sets the initial state for the hash value. The hash
+state values are a set of eight 32 bit words. For the SHA-256 algorithm, the
+initial values are the first 32 bits of the fractionary part of the square root
+of the first eight prime numbers.
+
+\subsection{Hash Computation}
+\label{subsec:hash_computation}
+
+Figure~\ref{fig:hash_flowchart} presents the hash computation stage which
+processes one message block at a time. For each iteration $i$, the hash stage
+values $H_{0}^{(i+1)}, H_{1}^{(i+1)},..., H_{7}^{(i+1)}$ are updated using a
+message schedule of sixty-four 32 bit words $W_0, W_1,..., W_{63}$, the previous hash
+state values $H_{0}^{(i)}, H_{1}^{(i)},..., H_{7}^{(i)}$ and 64 constants 
+$K_{0},K_{1},...,K_{63}$ of 32 bit each.
+
+\begin{figure}[!htbp]
+    \centerline{\includegraphics[width=14cm]{./figures/crypto_hashblock_flowchart.pdf}}
+    \vspace{0cm}\caption{\texttt{crypto\_hashblocks()} function flowchart.}
+    \label{fig:hash_flowchart}
+\end{figure}
+
+The initial hash state values and the message block words are obtained from the 
+preprocessing stage as described in section~\ref{subsec:preprocessing}.
+The 64 constants $K_{t}$ are the 32 fractionary bits of the cubic roots of the
+first 64 prime numbers.
+
+The sixty-four message schedule words are the sixteen 32 bit words from the
+input message block plus 48 generated words. Each generated word $W_{t}$ is
+computed by the operations presented in~(\ref{eq:gen_w}). The addition is
+modulo $2^{32}$.
+
+\begin{equation}
+    W_{t} = \sigma_{1}(W_{t-2}) + W_{t-7} + \sigma_{0}(W_{t-15}) + W_{t-16}, 16 \leq t \leq 63.
+\label{eq:gen_w}
+\end{equation}
+
+Where $\sigma_{0}()$ and $\sigma_{1}()$ functions are a set of logic operations
+defined in~(\ref{eq:sigma_funcs}). $ROTR^{n}(x)$ is a rotate right $n$ bits
+function and $SHR^{n}(x)$ is a right shift $n$ bits operation.
+
+\begin{align}
+    \begin{split}
+        \sigma_{0}(x) &= ROTR^{7}(x) \oplus ROTR^{18}(x) \oplus SHR^{3}(x), \\
+        \sigma_{1}(x) &= ROTR^{17}(x) \oplus ROTR^{19}(x) \oplus SHR^{10}(x).
+    \end{split}
+\label{eq:sigma_funcs}
+\end{align}
+
+The initial hash state values initialize a set of working variables $a, b, c,
+d, e, f, g, h$:
+
+\begin{align}
+    \begin{split}
+        a &= H_{0}^{(i-1)} \\
+        b &= H_{1}^{(i-1)} \\
+        c &= H_{2}^{(i-1)} \\
+        d &= H_{3}^{(i-1)} \\
+        e &= H_{4}^{(i-1)} \\
+        f &= H_{5}^{(i-1)} \\
+        g &= H_{6}^{(i-1)} \\
+        h &= H_{7}^{(i-1)}.
+    \end{split}
+\label{eq:init_state}
+\end{align}
+
+The working variables are updated for 64 iterations ($ 0 \leq t \leq 63$),
+following the algorithm in~(\ref{eq:hash_iter}). The functions $\Sigma_1(x)$,
+$Ch(x,y,z)$, $\Sigma_0(x)$ and $Maj(x,y,z)$ are defined
+in~(\ref{eq:Sigma_Ch_Maj}). $Ch(x,y,z)$ is performs a choice operation: if $x$ 
+is 1, the output outputs $z$, otherwise outputs $y$. $Maj(x,y,z)$ outputs the 
+most common value between the three inputs.
+
+\begin{align}
+    \begin{split}
+        T_1 &= h + \Sigma_1(e) + Ch(e,f,g) + K_{t} + W_{t} \\
+        T_2 &= h + \Sigma_0(a) + Maj(a,b,c) \\
+        h &= g \\
+        g &= f \\
+        f &= e \\
+        e &= d + T_1 \\
+        d &= c \\
+        c &= b \\
+        b &= a \\
+        a &= T_1 + T_2.
+    \end{split}
+\label{eq:hash_iter}
+\end{align}
+
+\begin{align}
+    \begin{split}
+        \Sigma_{0}(x) &= ROTR^{2}(x) \oplus ROTR^{13}(x) \oplus ROTR^{22}(x), \\
+        \Sigma_{1}(x) &= ROTR^{6}(x) \oplus ROTR^{11}(x) \oplus ROTR^{25}(x), \\
+        Ch(x,y,z) &= (x \land y) \oplus ( \neg x \land z), \\
+        Maj(x,y,z) &= (x \land y) \oplus (x \land z) \oplus (y \land z).
+    \end{split}
+\label{eq:Sigma_Ch_Maj}
+\end{align}
+
+The working variables $a,..., h$ are the result of one hashing interation.
+The resulting hash state values of one iteration are used as the input of the
+next iteration until all message blocks have been used. The message digest is
+the concatenation of the hash state values at the final iteration.
+
