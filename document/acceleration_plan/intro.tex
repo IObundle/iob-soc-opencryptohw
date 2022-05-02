@@ -10,25 +10,25 @@ the ideas proposed.
 
 The project's assumptions are the following: internet devices use a main
 Central Processing Unit and an Ethernet Medium Access Controller (MAC) core.
-Each internet device is engaged in frequent secure network communications. To
-ensure trust, the software and hardware descriptions must be open-source.
+Each internet device is engaged in frequent secure network communications. The
+software and hardware descriptions must be open-source to ensure trust. 
 OpenCryptoHW uses the VexRiscV processor~\cite{VexRiscv} and the IOb-Eth MAC
 core~\cite{iob-eth} to accomplish these objectives. Moreover, it uses the
 IOb-Versat CGRA~\cite{iob-versat} to accelerate the cryptography algorithms.
 
 This document describes the SHA256~\cite{SHA_NIST_FIPS} acceleration plan
 running on the IOb-SoC-SHA system~\cite{iob-soc-sha}, according to Milestone 7
-of the OpenCryptoHW project. The document is divided in four parts:
+of the OpenCryptoHW project. The document has five parts:
 \begin{itemize}
 \item the first part provides a brief introduction to the SHA-256 algorithm.
 \item the second part presents profiling data for the SHA256 application
-    running exclusively on the riscv CPU.
+    running exclusively on the RISC-V CPU.
 \item the third part elaborates on the profiling conclusions and establishes
     functional unit architectures to accelerate the application.
-\item the fourth part outlines a prediction for the expected resutls from
+\item the fourth part outlines a prediction for the expected results from
     implementing the acceleration strategy.
+\item the fifth part introduces the IOb-Versat framework and related tools.
 \end{itemize}
-
 
 
 

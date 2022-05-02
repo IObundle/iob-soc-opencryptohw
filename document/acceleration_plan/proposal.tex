@@ -1,17 +1,15 @@
 The \texttt{crypto\_hashblocks()} function has a similar flowchart to the
-generic SHA-256 algorithm presented in Figure~\ref{fig:hash_flowchart}.
-The function starts by reading the current hash state values from memory. Then 
-each message block of 64 bytes (512 bits) of the input data is used to hash the 
-message block.
-After all input data is used, the new state is written to memory.
-The majority of computations take place inside the loop to hash the message
-blocks.
+generic SHA-256 algorithm presented in Figure~\ref{fig:hash_flowchart}. The
+function starts by reading the current hash state values from memory. Then uses
+each message block of 64 bytes (512 bits) of the input data to hash the message
+block. After using all input data, the function writes the new state to memory.
+Most computations take place inside the loop to hash the message blocks.
 
 Figure~\ref{fig:main_hashblock_diagram} presents a block diagram for the
 process of hashing a message block.
 The message block hashing output is the accumulation from the initial state
-with the new computed state.
-The new computed state is the output of the sequence of \textbf{F} blocks. Each
+with the newly computed state.
+The newly computed state is the output of the sequence of \textbf{F} blocks. Each
 \textbf{F} block receives three inputs: a set of constants stored in the
 \textbf{cMem} blocks; the previous or initial state in the \textbf{a-h}
 variables; and a set of words from the message scheduling array.
@@ -22,8 +20,8 @@ variables; and a set of words from the message scheduling array.
     \label{fig:main_hashblock_diagram}
 \end{figure}
 
-Each set of 16 \textbf{w} words is obtained from the input data or by applying a
-previous set of words to the \textbf{M} block.
+Each set of 16 $W$ words is obtained from the input data or by applying
+a previous set of words to the \textbf{M} block.
 
 The proposed accelerator architecture has 5 functional unit (FU) types:
 \begin{itemize}
@@ -42,12 +40,12 @@ The Vread, state and memory FUs are default FUs from Versat. The \textbf{M} and
 The Vread FU reads data from any memory address in the system and provides input
 data to other FUs.
 
-The memory FU is an auxiliar memory that holds constant values used as input to
+The memory FU is an auxiliary memory that holds constant values used as input to
 other FUs.
 
 The state FU is a set of accumulation registers. The registers can be
-initialized with a value by the CPU. The register values can be used as input or
-output of other FUs.
+initialized with a value by the CPU. The register values can be inputs or
+outputs of other FUs.
 
 The \textbf{M} FU performs the logic equivalent to the \texttt{EXPAND\_32}
 macro defined in the \texttt{sha.c} source code. The macro generates 16 new

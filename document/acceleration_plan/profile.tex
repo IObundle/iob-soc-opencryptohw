@@ -12,7 +12,7 @@ frequency of 100 MHz.
 \end{table}
 
 The profile analysis tracks the time in clock cycles since the input data is in
-the external memory until the output data in stored in the external memory.
+external memory until the CPU writes the output data to external memory.
 
 The results from Table~\ref{tab:prof1} demonstrate that about 80\% of the
 execution time is used to run the \texttt{sha\_finalize()} function, in
@@ -23,5 +23,3 @@ magnitude with regards to duration.
 The acceleration efforts should be focussed on the
 \texttt{crypto\_hashblocks()} function and respective subfunction and macro
 calls.
-
-
