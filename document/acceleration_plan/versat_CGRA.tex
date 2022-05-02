@@ -1,0 +1,28 @@
+The IOb-Versat~\cite{iob-versat} CGRA aims to provide a framework and a set of
+tools to facilitate the development of CGRA architectures.
+A CGRA is comprised of multiple interconnected functional units (FUs). Both the
+FUs and the connections between then can be configured by a CPU at runtime to
+change the functionality and the dataflow of the hardware architecture.
+
+For a particular application, the developer needs to extablish the required
+FUs. The FUs can be choosen from a set of FUs supported by IOb-Versat by
+default. These include external memory access, addition, multiplication and
+accumulation, internal memory blocks, simple arithmetic and logic unit,
+multiplexing among other FUs.
+
+IOb-Versat also supports custom designed FUs in Verilog. The integration with
+IOb-Versat requires the development of corresponding FU wrappers in C/C++ to
+allow simulation and software driver control.
+
+The computation datapaths are described in C/C++ by interconnecting FU wrappers.
+IOb-Versat provides tools to automatically synchronize the data along the
+datapaths and to merge multiple computation datapaths.
+The datapaths are synchronized using the delays of each FU type and the
+datapath graph. 
+Multiple computation datapaths can be merged to reduce the hardware footprint
+in the case of datapaths that use common sets of FUs.
+
+The accelerated routines in software are replaced by IOb-Versat drivers that
+configure the CGRA and execute the datapath. The IOb-Versat accesses the system 
+memory directly through a direct memory access (DMA) block, thus bypassing the 
+CPU+cache subsystem.

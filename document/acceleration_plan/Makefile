@@ -4,7 +4,7 @@ include $(ROOT_DIR)/config.mk
 DOC=acceleration_plan
 
 KEEP_FILES = $(DOC).tex 
-KEEP_FILES+= intro.tex sha256_algo.tex profile.tex proposal.tex
+KEEP_FILES+= intro.tex sha256_algo.tex profile.tex proposal.tex versat_CGRA.tex
 KEEP_FILES+= expected_results.tex conclusion.tex
 KEEP_FILES+= refs.bib
 KEEP_FILES+= plan.cls
