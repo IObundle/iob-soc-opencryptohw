@@ -1,14 +1,14 @@
 The SHA-256 algorithm \cite{SHA_NIST_FIPS} is a secure hash algorithm that
 receives input data of any size up to $2^{64}$ bits and computes an output of
 256 bits. This output is called a message digest.
-The SHA-256 algorithm is divided into two main stages: preprocessing and hash
+The SHA-256 algorithm has two main stages: preprocessing and hash
 computation.
 
 \subsection{Preprocessing}
 \label{subsec:preprocessing}
 The preprocessing stage pads the input data to obtain an input size multiple of
 512 bits. Given a message $M$ of size $\lambda$ bits. The padding process
-appends the bit "1" to the end of the message followed by $\delta$ "0" bits
+appends the bit "1" to the end of the message, followed by $\delta$ "0" bits
 such that $\delta$ is the smallest positive integer that
 solves~(\ref{eq:sha_padding}).
 
@@ -17,14 +17,14 @@ solves~(\ref{eq:sha_padding}).
 \label{eq:sha_padding}
 \end{equation}
 
-After the padded zeroes, the message is appended with the 64 bit representation
-of the size of the original message $\lambda$. At the end of this process the 
-padded message size is a multiple of 512 bits. The padded input is divided into
-blocks of 512 bits which can be represented as sixteen words of 32 bit. 
+After the padded zeroes, the message is appended with the 64-bit representation
+of the size of the original message $\lambda$. At the end of this process, the 
+padded message size is a multiple of 512 bits. The padded input splits into
+blocks of 512 bits. Each blocks forms a set of sixteen words of 32 bits. 
 
 The preprocessing stage also sets the initial state for the hash value. The hash
 state values are a set of eight 32 bit words. For the SHA-256 algorithm, the
-initial values are the first 32 bits of the fractionary part of the square root
+initial values are the first 32 bits of the fractional part of the square root
 of the first eight prime numbers.
 
 \subsection{Hash Computation}
@@ -33,9 +33,9 @@ of the first eight prime numbers.
 Figure~\ref{fig:hash_flowchart} presents the hash computation stage which
 processes one message block at a time. For each iteration $i$, the hash stage
 values $H_{0}^{(i+1)}, H_{1}^{(i+1)},..., H_{7}^{(i+1)}$ are updated using a
-message schedule of sixty-four 32 bit words $W_0, W_1,..., W_{63}$, the previous hash
-state values $H_{0}^{(i)}, H_{1}^{(i)},..., H_{7}^{(i)}$ and 64 constants 
-$K_{0},K_{1},...,K_{63}$ of 32 bit each.
+message schedule of sixty-four 32 bit words $W_0, W_1,..., W_{63}$, the
+previous hash state values $H_{0}^{(i)}, H_{1}^{(i)},..., H_{7}^{(i)}$ and 64
+constants $K_{0},K_{1},...,K_{63}$ of 32 bit each.
 
 \begin{figure}[!htbp]
     \centerline{\includegraphics[width=14cm]{./figures/crypto_hashblock_flowchart.pdf}}
@@ -43,9 +43,9 @@ $K_{0},K_{1},...,K_{63}$ of 32 bit each.
     \label{fig:hash_flowchart}
 \end{figure}
 
-The initial hash state values and the message block words are obtained from the 
+The initial hash state values and the message block words come from the 
 preprocessing stage as described in section~\ref{subsec:preprocessing}.
-The 64 constants $K_{t}$ are the 32 fractionary bits of the cubic roots of the
+The 64 constants $K_{t}$ are the 32 fractional bits of the cubic roots of the
 first 64 prime numbers.
 
 The sixty-four message schedule words are the sixteen 32 bit words from the
@@ -122,7 +122,8 @@ value between the three inputs.
 
 The results $H_{0}^{(i+1)}, H_{1}^{(i+1)},..., H_{7}^{(i+1)}$ of hashing
 iteration $i$ are the final values of the working variables $a,..., h$.
-The resulting hash state values of one iteration are used as the input of the
-next iteration until all message blocks have been used. The message digest is
-the concatenation of the hash state values at the final iteration.
+The resulting hash state values of one iteration are the input of the next.
+This process repeats for all message blocks. The hash state values at the final
+iteration concatenated form the message digest.
+
 
