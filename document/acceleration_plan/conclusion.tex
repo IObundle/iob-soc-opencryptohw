@@ -2,16 +2,16 @@ This document presents the SHA256~\cite{SHA_NIST_FIPS} acceleration plan
 running on the IOb-SoC-SHA system~\cite{iob-soc-sha}, according to Milestone 7
 of the OpenCryptoHW project.
 
-The IOb-SoC-SHA system consists of a VexRiscV processor~\cite{bla}, the IOb-Eth
-MAC core~\cite{iob-eth}, and the IOb-Versat CGRA~\cite{iob-versat} to accelerate
-the cryptography algorithms.
+The IOb-SoC-SHA system consists of a VexRiscV processor~\cite{VexRiscv}, the
+IOb-Eth MAC core~\cite{iob-eth}, and the IOb-Versat CGRA~\cite{iob-versat} to
+accelerate the cryptography algorithms.
 
 First the document briefly introduces the sha256 cryptographic algorithm. Then
 the execution profile of a purely software implementation run on the Vex RiscV
 CPU is derived and discussed.
 
 Based on the profile results, a hardware accelerator using the Versat CGRA is
-proposed. The CGRA can morph into a differnt acceleration to support other
+proposed. The CGRA can morph into a different acceleration to support other
 algorithms. The proposed system is analysed and an expected acceleration of
 almost seven times compared to software is derived.
 

@@ -49,7 +49,6 @@ endif
 
 clean:
 	@find . -maxdepth 1 -type f -not \( $(NOCLEAN) \) -delete 
-	@rm -rf $(DOC).pdf
 	@make -C $(LIB_DOC_DIR)/figures clean
 	@make -C ./figures clean
 
