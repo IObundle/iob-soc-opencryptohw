@@ -30,7 +30,6 @@ view: $(DOC).pdf
 	pdflatex -jobname $(DOC) $(DOC)top.tex
 
 figures:
-	make -C $(LIB_DOC_DIR)/figures pb_figs
 	make -C ./figures all
 
 $(DOC)top.tex:
@@ -49,7 +48,6 @@ endif
 
 clean:
 	@find . -maxdepth 1 -type f -not \( $(NOCLEAN) \) -delete 
-	@make -C $(LIB_DOC_DIR)/figures clean
 	@make -C ./figures clean
 
 .PHONY: all clean figures
