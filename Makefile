@@ -36,7 +36,7 @@ pc-emul-profile:
 #
 
 sim-build:
-	make fw-build BAUD=5000000
+	make fw-build BAUD=5000000 SIM=1
 	make -C $(SIM_DIR) build
 
 sim-run: sim-build

@@ -46,4 +46,12 @@ periphs_tmp.h:
 gen_data:
 	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
+build-all:
+	make -C $(FIRM_DIR) build
+	make -C $(BOOT_DIR) build
+
+clean-all: gen-clean
+	make -C $(FIRM_DIR) clean
+	make -C $(BOOT_DIR) clean
+
 .PHONY: build-all clean-all

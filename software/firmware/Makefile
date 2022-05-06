@@ -48,6 +48,7 @@ firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h \
 		*swreg_emb.c \
-		*d_in.bin *d_out.bin
+		*d_in.bin *d_out.bin \
+		eth_frame_struct.h
 
 .PHONY: build clean

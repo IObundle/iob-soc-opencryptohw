@@ -63,7 +63,7 @@ VSRC+=system_tb.v
 endif
 
 #RULES
-build: $(VSRC) $(VHDR) $(HEXPROGS)
+build: $(VSRC) $(VHDR) $(HEXPROGS) $(SIM_IN_BIN)
 ifeq ($(SIM_SERVER),)
 	make comp
 else
@@ -127,7 +127,6 @@ kill-sim:
 	@if [ "`ps aux | grep $(USER) | grep console | grep python3 | grep -v grep`" ]; then \
 	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}'); fi
 
-<<<<<<< HEAD
 test: clean-testlog test-shortmsg
 
 test-shortmsg: sim-shortmsg validate
@@ -148,6 +147,7 @@ $(SIM_IN_BIN):
 clean-remote: hw-clean
 	@rm -f soc2cnsl cnsl2soc
 	@rm -f system.vcd *.log *.bin
+	@make -C $(SW_TEST_DIR) clean
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
@@ -157,7 +157,6 @@ endif
 #clean test log only when sim testing begins
 clean-testlog:
 	@rm -f test.log
-	make -C $(SW_TEST_DIR) clean
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
