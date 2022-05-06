@@ -38,13 +38,16 @@ DEFINE+=$(defmacro)SIM
 endif
 
 #RULES
+
+build: firmware.elf
+
 firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
-clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg*.h \
-		*swreg*.c \
+clean:
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h \
+		*swreg_emb.c \
 		*d_in.bin *d_out.bin
 
-.PHONY: clean
+.PHONY: build clean

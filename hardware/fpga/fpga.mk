@@ -22,34 +22,40 @@ FPGA_PROFILE_LOG:=fpga_profile.log
 SOC_OUT_BIN:=soc-out.bin
 
 FORCE ?= 1
+#console command 
+CONSOLE_CMD=$(CONSOLE_DIR)/console -s /dev/usb-uart
+ifeq ($(INIT_MEM),0)
+CONSOLE_CMD+=-f
+endif
+
 
 #RULES
 
 #
 # Use
 #
-all: build run
-	
+FORCE ?= 1
 
 run:
 ifeq ($(NORUN),0)
 ifeq ($(BOARD_SERVER),)
+	cp $(FIRM_DIR)/firmware.bin .
 	if [ ! -f $(LOAD_FILE) ]; then touch $(LOAD_FILE); chown $(USER):dialout $(LOAD_FILE); chmod 664 $(LOAD_FILE); fi;\
 	bash -c "trap 'make queue-out' INT TERM KILL; make queue-in; if [ $(FORCE) = 1 -o \"`head -1 $(LOAD_FILE)`\" != \"$(JOB)\" ];\
-	then ../prog.sh; echo $(JOB) > $(LOAD_FILE); fi; rm -f $(CONSOLE_DIR)/test.log; make -C $(CONSOLE_DIR) run; make queue-out;\
-	if [ -f $(CONSOLE_DIR)/$(lastword $(TEST_LOG)) ]; then cat $(CONSOLE_DIR)/$(lastword $(TEST_LOG)) $(TEST_LOG); fi;\
-	rm -f $(CONSOLE_DIR)/$(lastword $(TEST_LOG));\
-	if ls $(CONSOLE_DIR)/*.log > /dev/null 2>&1; then cp $(CONSOLE_DIR)/*.log .; fi"
+	then ../prog.sh; echo $(JOB) > $(LOAD_FILE); fi; $(CONSOLE_CMD) $(TEST_LOG); make queue-out;"
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR) 
 	bash -c "trap 'make queue-out-remote' INT TERM KILL; ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) FORCE=$(FORCE) TEST_LOG=\"$(TEST_LOG)\"'"
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/*.log . 2>/dev/null || :
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/software/python/*.bin . 2>/dev/null || :
+ifneq ($(TEST_LOG),)
+	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
+endif
 endif
 endif
 
-build: sw $(FPGA_OBJ)
+build: $(FPGA_OBJ)
 
 ifeq ($(INIT_MEM),1)
 $(FPGA_OBJ): $(wildcard *.sdc) $(VSRC) $(VHDR) boot.hex firmware.hex
@@ -58,16 +64,19 @@ $(FPGA_OBJ): $(wildcard *.sdc) $(VSRC) $(VHDR) boot.hex
 endif
 ifeq ($(NORUN),0)
 ifeq ($(FPGA_SERVER),)
+	@rm -f $(FPGA_LOG)
 	../build.sh "$(INCLUDE)" "$(DEFINE)" "$(VSRC)" "$(DEVICE)"
 	make post-build
 else 
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM)'
-	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_OBJ) $(FPGA_OBJ)
-	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_LOG) $(FPGA_LOG) 
+	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_OBJ) .
+	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_LOG) .
 endif
 endif
+
+
 
 #
 # Board access queue
@@ -101,7 +110,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: run-shortmsg test-validate
 
 run-shortmsg:
-	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
+	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
 
 test-validate: 
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
@@ -115,7 +124,7 @@ profile: clean-all profile1
 	@printf "=== PROFILE LOG ===\n"
 
 profile1:
-	make all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1 
+	make -C fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
 	make fpga_use_ddr_profile.log
 
 %_profile.log: $(SOC_LOG)
@@ -125,7 +134,8 @@ profile1:
 # Clean
 #
 
-clean-remote: hw-clean
+clean-all: hw-clean
+	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -140,26 +150,14 @@ endif
 #clean test log only when board testing begins
 clean-testlog:
 	@rm -f test.log *_profile.log
-	@make -C $(SW_TEST_DIR) clean
-ifneq ($(FPGA_SERVER),)
-	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
-	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
-endif
 ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
 endif
 
-clean-all: clean-testlog clean
-	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
-	@rm -f $(SOC_LOG) $(HOST_LOG)
-
-.PRECIOUS: $(FPGA_OBJ) $(FPGA_PROFILE_LOG)
-
-.PHONY: all run build \
-	queue-in queue-out queue-wait queue-out-remote \
-	test test-shortmsg run-shortmsg parse-log\
-	profile\
-	clean-remote clean-testlog clean-all
+.PHONY: run build \
+	queue-in queue-out queue-out-remote \
+	test test-shortmsg run-shortmsg test-validate \
+	profile profile1 \
+	clean-all clean-testlog

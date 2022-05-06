@@ -11,8 +11,8 @@ export RDI_VERBOSE = False
 
 post-build:
 
-clean: clean-remote
-	@rm -rf .Xil/ .cache/ reports/ *.bit vivado_*.backup.log
+clean: clean-all
+	@rm -rf .Xil/ .cache/ reports/ *.bit
 	if [ $(CLEANIP) ]; then rm -rf ip/ ; fi
 
 .PHONY: post-build clean

@@ -1,60 +1,67 @@
 ROOT_DIR:=.
 include ./config.mk
 
-.PHONY: sim sim-test sim-clean\
-	pc-emul pc-emul-test pc-emul-clean pc-emul-profile\
-	fpga-build fpga-build-all fpga-run fpga-run-profile fpga-test fpga-clean \
-	fpga-clean-all \
-	test-pc-emul test-pc-emul-clean\
-	test-sim test-sim-clean\
-	test-fpga test-fpga-clean\
-	test test-clean\
-	doc-accel-plan doc-accel-plan-clean doc-clean\
-	clean clean-all
-
 #
-# SIMULATE RTL
+# BUILD EMBEDDED SOFTWARE
 #
 
-sim:
-	make -C $(SIM_DIR) all
+fw-build:
+	make -C $(FIRM_DIR) build-all
 
-sim-test:
-	make -C $(SIM_DIR) test
-
-sim-clean:
-	make -C $(SIM_DIR) clean-all
+fw-clean:
+	make -C $(FIRM_DIR) clean-all
 
 #
 # EMULATE ON PC
 #
 
-pc-emul:
-	make -C $(PC_DIR) all
+pc-emul-build:
+	make fw-build BAUD=5000000
+	make -C $(PC_DIR) build
 
-pc-emul-test:
+pc-emul-run: pc-emul-build
+	make -C $(PC_DIR) run
+
+pc-emul-test: pc-emul-clean
 	make -C $(PC_DIR) test
 
-pc-emul-clean:
+pc-emul-clean: fw-clean
 	make -C $(PC_DIR) clean
 
 pc-emul-profile:
+	make fw-build BAUD=5000000 PROFILE=1
 	make -C $(PC_DIR) profile
+
+#
+# SIMULATE RTL
+#
+
+sim-build:
+	make fw-build BAUD=5000000
+	make -C $(SIM_DIR) build
+
+sim-run: sim-build
+	make -C $(SIM_DIR) run
+
+sim-clean: fw-clean
+	make -C $(SIM_DIR) clean
+
+sim-test:
+	make -C $(SIM_DIR) test
 
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
 
 fpga-build:
+	make fw-build
 	make -C $(BOARD_DIR) build
 
-fpga-build-all:
-	make fpga-build BOARD=AES-KU040-DB-G
-
-fpga-run:
-	make -C $(BOARD_DIR) all 
+fpga-run: fpga-build
+	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"
 
 fpga-run-profile:
+	make fw-build PROFILE=1
 	make -C $(BOARD_DIR) profile
 
 fpga-test:
@@ -62,9 +69,6 @@ fpga-test:
 
 fpga-clean:
 	make -C $(BOARD_DIR) clean-all
-
-fpga-clean-all:
-	make fpga-clean BOARD=AES-KU040-DB-G
 
 #
 # GENERATE DOCUMENTATION
@@ -117,3 +121,14 @@ test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 clean: pc-emul-clean sim-clean fpga-clean doc-clean
 
 clean-all: test-clean
+
+.PHONY: fw-build fw-clean \
+	pc-emul-build pc-emul-run pc-emul-test pc-emul-clean pc-emul-profile \
+	sim-build sim-run sim-clean sim-test \
+	fpga-build fpga-run fpga-run-profile fpga-test fpga-clean \
+	doc-accel-plan doc-accel-plan-clean doc-clean \
+	test-pc-emul test-pc-emul-clean \
+	test-sim test-sim-clean \
+	test-fpga test-fpga-clean \
+	test test-clean \
+	clean clean-all
