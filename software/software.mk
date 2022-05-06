@@ -45,6 +45,5 @@ periphs_tmp.h:
 
 gen_data:
 	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
-	mv $(SW_TEST_DIR)/*d_in.bin .
 
 .PHONY: build-all clean-all

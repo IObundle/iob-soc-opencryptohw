@@ -15,6 +15,8 @@ $(ETH_INPUT_BIN):
 	$(eval ETH_INPUT_BIN_PATH = $(shell find $(ROOT_DIR) -name "$@"))
 	cp $(ETH_INPUT_BIN_PATH) $@
 
+pc-eth: $(ETH_INPUT_BIN)
+	PC=1 python3 ./sha256_test.py eno1 112233445566 $(ETH_INPUT_BIN) ./$(SOC_OUT_BIN);
 
 kill-remote-eth:
 	@$(eval ETH_PROC=sha256_test)

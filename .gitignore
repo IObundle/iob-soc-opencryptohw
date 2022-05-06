@@ -21,10 +21,8 @@ software/*/*
 !software/firmware/profile.h
 !software/firmware/crypto/
 
-!software/console/console.c
-!software/console/console.h
-!software/console/rs232comm.c
-!software/console/socketcomm.c
+!software/console/console
+!software/console/eth_console
 
 #HARDWARE
 #sources

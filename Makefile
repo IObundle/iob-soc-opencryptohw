@@ -16,10 +16,9 @@ fw-clean:
 #
 
 pc-emul-build:
-	make fw-build BAUD=5000000
 	make -C $(PC_DIR) build
 
-pc-emul-run: pc-emul-build
+pc-emul-run:
 	make -C $(PC_DIR) run
 
 pc-emul-test: pc-emul-clean

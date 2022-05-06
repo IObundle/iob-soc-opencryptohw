@@ -9,7 +9,7 @@ CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 DEFINE+=-DPC
 
 SOC_LOG:=soc.log
-HOST_LOG:=host.log
+ETH_LOG:=ethernet.log
 EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
@@ -35,7 +35,7 @@ INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
 #CONSOLE
-CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
+CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
 #RULES
 
@@ -50,14 +50,16 @@ run: build
 	./fw_emul $(TEST_LOG)
 
 clean:
-	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc
+	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
+		$(ETH_LOG) eth_frame_struct.h
+	@make -C $(SW_DIR)/python clean
+	@make -C $(SW_TEST_DIR) clean
 
 test: 
 	make run
 	make validate
 
 validate:
-	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 profile: clean $(EMUL_PROFILE_LOG)
