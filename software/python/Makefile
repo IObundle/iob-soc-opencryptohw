@@ -7,7 +7,6 @@ ETH_INPUT_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN?=soc-out.bin
 
 run-eth-scripts: $(ETH_INPUT_BIN)
-	mv $(SW_DIR)/firmware/$(ETH_INPUT_BIN) .
 	$(eval RMAC := $(shell ethtool -P $(RMAC_INTERFACE) | awk '{print $$3}' | sed 's/://g'))
 	source /opt/pyeth3/bin/activate; python3 ./sha256_test.py $(RMAC_INTERFACE) $(RMAC) ./$(ETH_INPUT_BIN) $(SOC_OUT_BIN); deactivate;
 

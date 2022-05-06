@@ -51,7 +51,7 @@ run: build
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) eth_frame_struct.h
+		$(ETH_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 

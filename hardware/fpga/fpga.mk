@@ -15,7 +15,7 @@ VSRC+=./verilog/top_system.v
 
 #TEST VECTOR
 SOC_LOG=soc.log
-HOST_LOG:=host.log
+ETH_LOG:=ethernet.log
 FPGA_PROFILE_LOG:=fpga_profile.log
 
 #OUTPUT BIN
@@ -23,7 +23,7 @@ SOC_OUT_BIN:=soc-out.bin
 
 FORCE ?= 1
 #console command 
-CONSOLE_CMD=$(CONSOLE_DIR)/console -s /dev/usb-uart
+CONSOLE_CMD=$(CONSOLE_DIR)/eth_console -s /dev/usb-uart
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
@@ -47,7 +47,7 @@ else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR) 
 	bash -c "trap 'make queue-out-remote' INT TERM KILL; ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) FORCE=$(FORCE) TEST_LOG=\"$(TEST_LOG)\"'"
-	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/*.log . 2>/dev/null || :
+	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(ETH_LOG) . 2>/dev/null || :
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/software/python/*.bin . 2>/dev/null || :
 ifneq ($(TEST_LOG),)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
@@ -124,7 +124,7 @@ profile: clean-all profile1
 	@printf "=== PROFILE LOG ===\n"
 
 profile1:
-	make -C fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0
+	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1
 	make fpga_use_ddr_profile.log
 
 %_profile.log: $(SOC_LOG)
@@ -135,7 +135,7 @@ profile1:
 #
 
 clean-all: hw-clean
-	@rm -f $(FPGA_OBJ) $(FPGA_LOG)
+	@rm -f $(FPGA_OBJ) $(FPGA_LOG) ethernet.log
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -149,7 +149,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log *_profile.log
+	@rm -f test.log *_profile.log $(ETH_LOG)
 ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
