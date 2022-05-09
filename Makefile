@@ -66,7 +66,7 @@ fpga-run-profile:
 fpga-test:
 	make -C $(BOARD_DIR) test
 
-fpga-clean:
+fpga-clean: fw-clean
 	make -C $(BOARD_DIR) clean-all
 
 #

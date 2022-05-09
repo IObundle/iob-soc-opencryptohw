@@ -50,7 +50,7 @@ else
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(ETH_LOG) . 2>/dev/null || :
 	scp -r $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/software/python/*.bin . 2>/dev/null || :
 ifneq ($(TEST_LOG),)
-	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
+	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(lastword $(TEST_LOG)) .
 endif
 endif
 endif
@@ -120,22 +120,20 @@ test-validate:
 #
 profile: clean-all profile1 
 	@printf "\n=== PROFILE LOG ===\n"
-	@cat *_profile.log
+	@cat $(FPGA_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
 profile1:
-	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1
-	make fpga_use_ddr_profile.log
-
-%_profile.log: $(SOC_LOG)
-	@grep "PROFILE:" $< > $@
+	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=0 PROFILE=1 TEST_LOG="> $(SOC_LOG)"
+	@grep "PROFILE:" $(SOC_LOG) > $(FPGA_PROFILE_LOG)
 
 #
 # Clean
 #
 
 clean-all: hw-clean
-	@rm -f $(FPGA_OBJ) $(FPGA_LOG) ethernet.log
+	@rm -f $(FPGA_OBJ) $(FPGA_LOG) $(SOC_LOG) $(ETH_LOG)
+	@make -C $(SW_TEST_DIR) clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -149,7 +147,7 @@ endif
 
 #clean test log only when board testing begins
 clean-testlog:
-	@rm -f test.log *_profile.log $(ETH_LOG)
+	@rm -f test.log $(SOC_LOG) $(ETH_LOG) $(FPGA_PROFILE_LOG)
 ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
