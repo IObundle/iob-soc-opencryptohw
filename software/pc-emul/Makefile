@@ -51,7 +51,7 @@ run: build
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 
@@ -68,7 +68,7 @@ profile: clean $(EMUL_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
 $(SOC_LOG): 
-	make run PROFILE=1
+	make run PROFILE=1 TEST_LOG="> $(SOC_LOG)"
 
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
