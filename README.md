@@ -14,7 +14,7 @@ git clone --recursive https://github.com/IObundle/iob-soc-sha.git
 # PC Emulation
 The iob-soc-sha system can build and run an environment for PC with:
 ```
-make pc-emul
+make pc-emul-run
 ```
 This target performs the Short Message Test for Byte-Oriented `sha256()` 
 implementations from the 
