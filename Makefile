@@ -28,6 +28,9 @@ sim-clean:
 pc-emul:
 	make -C $(PC_DIR) all
 
+pc-emul-build:
+	make -C $(PC_DIR) build
+
 pc-emul-clean:
 	make -C $(PC_DIR) clean
 

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "sha2.h"
 
@@ -195,7 +196,69 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w14, 0x9bdc06a7)
         F_32(w15, 0xc19bf174)
 
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15);
+
+        #if 0
         EXPAND_32
+        #else
+        printf("%08x %08x %08x %08x\n",w0, w14, w9, w1);
+        #if 0
+        M_32(w0, w14, w9, w1)
+        #else
+        #if 0
+        int x1 = sigma1_32(w14);
+        #else
+        int y11 = ROTR_32(w14,17);
+        int y12 = ROTR_32(w14,19);
+        int y13 = SHR(w14,10);
+
+        int z11 = y11 ^ y12;
+
+        int x1 = z11 ^ y13;
+        printf(">%08x %08x %08x %08x %08x\n",y11,y12,y13,z11,x1);
+        #endif
+        #if 0
+        int x2 = sigma0_32(w1);
+        #else
+        int y21 = ROTR_32(w1,7);
+        int y22 = ROTR_32(w1,18);
+        int y23 = SHR(w1,3);
+
+        int z21 = y21 ^ y22;
+
+        int x2 = z21 ^ y23;
+        printf("<%08x %08x %08x %08x %08x\n",y21,y22,y23,z21,x2);
+        #endif
+        int x3 = x1 + w9;
+        int x4 = x2 + w0;
+
+        printf("====== %08x %08x %08x %08x\n",x1,x2,x3,x4);
+
+        w0 = x3 + x4;
+        #endif
+        printf("%08x %08x %08x %08x\n",w0, w14, w9, w1);
+        M_32(w1, w15, w10, w2)
+        M_32(w2, w0, w11, w3)
+        M_32(w3, w1, w12, w4)
+        M_32(w4, w2, w13, w5)
+        M_32(w5, w3, w14, w6)
+        M_32(w6, w4, w15, w7)
+        M_32(w7, w5, w0, w8)
+        M_32(w8, w6, w1, w9)
+        M_32(w9, w7, w2, w10)
+        M_32(w10, w8, w3, w11)
+        M_32(w11, w9, w4, w12)
+        M_32(w12, w10, w5, w13)
+        M_32(w13, w11, w6, w14)
+        M_32(w14, w12, w7, w15)
+        printf("%08x %08x %08x %08x\n",w15,w13,w8,w0);
+        M_32(w15, w13, w8, w0)
+        printf("%08x %08x %08x %08x\n",w15,w13,w8,w0);
+        #endif
+
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15);
+
+        exit(0);
 
         F_32(w0, 0xe49b69c1)
         F_32(w1, 0xefbe4786)
@@ -496,7 +559,7 @@ static const uint8_t iv_512[64] = {
     0x2b, 0x3e, 0x6c, 0x1f, 0x1f, 0x83, 0xd9, 0xab, 0xfb, 0x41, 0xbd,
     0x6b, 0x5b, 0xe0, 0xcd, 0x19, 0x13, 0x7e, 0x21, 0x79
 };
-#endif 
+#endif
 
 void sha224_inc_init(sha224ctx *state) {
     state->ctx = (uint8_t*) malloc(PQC_SHA256CTX_BYTES);

@@ -23,7 +23,6 @@ $(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/pc-emul/pc.mk
 HDR+=periphs.h test_vectors.h
 
 #SOURCES
-SRC+= $(FIRM_DIR)/firmware.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+=$(UART_DIR)/software/printf.c
 
@@ -33,9 +32,9 @@ VALIDATION_LOG:=validation.log
 
 #UNITS TO VERILATE
 VERILATE_UNIT = xunitF xunitM
-
-UNIT_OBJ+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj)__ALLcls.o)
+UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
 OBJ+=./build/unitWrapper.o
+OBJ+=./build/firmware.o
 
 #RULES
 
@@ -48,26 +47,32 @@ run: firmware.out
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 	@rm -rf $(VALIDATION_LOG)
-	mv versat_instance.v $(HW_DIR)/src/
-	mv versat_defs.vh $(HW_DIR)/include/
-	mv versat_constants.c $(FIRM_DIR)/
+	cp versat_instance.v $(HW_DIR)/src/
+	cp versat_defs.vh $(HW_DIR)/include/
+	cp versat_data.inc $(FIRM_DIR)/
+	cp src/sigma.v $(HW_DIR)/src/
+	cp src/M_Stage.v $(HW_DIR)/src/
+	cp src/Test_M_Stage.v $(HW_DIR)/src/
 else
 run: firmware.out
 	./firmware.out $(TEST_LOG)
-	mv versat_instance.v $(HW_DIR)/src/
-	mv versat_defs.vh $(HW_DIR)/include/
-	mv versat_constants.c $(FIRM_DIR)/
+	cp versat_instance.v $(HW_DIR)/src/
+	cp versat_defs.vh $(HW_DIR)/include/
+	cp versat_data.inc $(FIRM_DIR)/
+	cp src/sigma.v $(HW_DIR)/src/
+	cp src/M_Stage.v $(HW_DIR)/src/
+	cp src/Test_M_Stage.v $(HW_DIR)/src/
 endif
 
 build: firmware.out
 
-firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
+firmware.out: $(HDR) $(UNIT_HDR) $(SRC) $(CPP_OBJ) $(OBJ)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
 
-./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
-	g++ -std=c++11 -g -c -o ./build/unitWrapper.o -m32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
+./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)
+	g++ -std=c++11 -g -c -o ./build/$*.o -m32 $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
-./build/V%__ALLcls.o ./build/V%__ALLsup.o: $(HW_DIR)/src/units/%.v
+./build/V%.h: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;

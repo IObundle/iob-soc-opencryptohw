@@ -75,7 +75,7 @@ module Maj (x,y,z){
 module M_Stage(w0,w14,w9,w1){
    sigma sigma1;
    sigma sigma0;
-   delay d0;
+   pipeline_register r;
 #
    w14 -> sigma1;
    w1 -> sigma0;
@@ -85,9 +85,25 @@ module M_Stage(w0,w14,w9,w1){
 
    b = a1 + a2;
 
-   b -> d0;
+   b -> r;
 
-   d0 -> out;
+   r -> out;
+}
+
+module Test_M_Stage(){
+   xreg r0;
+   xreg r1;
+   xreg r2;
+   xreg r3;
+   xreg r4;
+   M_Stage unit;
+#
+   r0 -> unit:0;
+   r1 -> unit:1;
+   r2 -> unit:2;
+   r3 -> unit:3;
+
+   unit -> r4;
 }
 
 module M(w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,wa,wb,wc,wd,we,wf){
@@ -184,7 +200,7 @@ module M(w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,wa,wb,wc,wd,we,wf){
    wf -> me:3;
    
    wf -> mf:0;
-   me -> mf:1;
+   md -> mf:1;
    m8 -> mf:2;
    m0 -> mf:3;
 
@@ -726,28 +742,6 @@ module P1(x,y,z){
    b -> out;
 }
 
-module TestDelay(){
-   xmem mem1;
-   xmem mem2;
-   delay d1;
-   delay d2;
-   delay d3;
-   P1 p;
-#
-   mem1:0 -> d1;
-   d1 -> d2;
-   mem1:1 -> d3;
-
-   d2 -> mem2:0;
-   d3 -> mem2:1;
-
-   mem2:0 -> p:0;
-   mem2:0 -> p:1;
-   mem2:1 -> p:2;
-
-   p -> out;
-}
-
 module SHA(){
    vread MemRead;
    F F0;
@@ -786,3 +780,36 @@ module SHA(){
    F3:0.7 -> State:0.7;
 }
 
+module TestDelay(){
+   xmem mem1;
+   delay d11;
+   delay d22;
+   delay d21;
+   delay d33;
+   delay d32;
+   delay d31;
+   delay d44;
+   delay d43;
+   delay d42;
+   delay d41;
+   debug d;
+#
+   mem1:0 -> d11;
+
+   mem1:0 -> d22;
+   d22 -> d21;
+
+   mem1:0 -> d33;
+   d33 -> d32;
+   d32 -> d31;
+
+   mem1:0 -> d44;
+   d44 -> d43;
+   d43 -> d42;
+   d42 -> d41;
+
+   d41 -> d:3;
+   d31 -> d:2;
+   d21 -> d:1;
+   d11 -> d:0;
+}

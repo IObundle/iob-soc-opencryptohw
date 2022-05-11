@@ -60,6 +60,9 @@ endif
 VSRC+=system.v
 
 VSRC+=$(SRC_DIR)/versat_instance.v
+VSRC+=$(SRC_DIR)/sigma.v
+VSRC+=$(SRC_DIR)/M_Stage.v
+VSRC+=$(SRC_DIR)/Test_M_Stage.v
 VSRC+=$(SRC_DIR)/units/xunitF.v
 VSRC+=$(SRC_DIR)/units/xunitM.v
 

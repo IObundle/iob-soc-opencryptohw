@@ -1,4 +1,4 @@
-#include "unitWrapper.h"
+#include "unitWrapper.hpp"
 
 #include "versat.hpp"
 
@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "unitVCD.h"
+#include "unitVCD.hpp"
 
 #include "VxunitM.h"
 #include "VxunitF.h"
@@ -85,7 +85,7 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    PREAMBLE(VxunitF);
 
    // Update config
-   self->delay0 = inst->delay;
+   self->delay0 = inst->delay[0];
 
    START_RUN(self);
 
@@ -123,7 +123,7 @@ static int32_t* UnitFUpdateFunction(FUInstance* inst){
    return results;
 }
 
-EXPORT FUDeclaration* RegisterUnitF(Versat* versat){
+FUDeclaration* RegisterUnitF(Versat* versat){
    FUDeclaration decl = {};
 
    strcpy(decl.name.str,"xunitF");
@@ -134,7 +134,6 @@ EXPORT FUDeclaration* RegisterUnitF(Versat* versat){
    decl.startFunction = UnitFStartFunction;
    decl.updateFunction = UnitFUpdateFunction;
    decl.latency = 17;
-   decl.delayType = DELAY_TYPE_IMPLEMENTS_DELAY;
 
    return RegisterFU(versat,decl);
 }
@@ -169,7 +168,7 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    PREAMBLE(VxunitM);
 
    // Update config
-   self->delay0 = inst->delay;
+   self->delay0 = inst->delay[0];
 
    START_RUN(self);
 
@@ -191,7 +190,7 @@ static int32_t* UnitMUpdateFunction(FUInstance* inst){
    return &out;
 }
 
-EXPORT FUDeclaration* RegisterUnitM(Versat* versat){
+FUDeclaration* RegisterUnitM(Versat* versat){
    FUDeclaration decl = {};
 
    strcpy(decl.name.str,"xunitM");
@@ -202,7 +201,6 @@ EXPORT FUDeclaration* RegisterUnitM(Versat* versat){
    decl.startFunction = UnitMStartFunction;
    decl.updateFunction = UnitMUpdateFunction;
    decl.latency = 17;
-   decl.delayType = DELAY_TYPE_IMPLEMENTS_DELAY;
 
    return RegisterFU(versat,decl);
 }
