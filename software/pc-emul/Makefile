@@ -42,6 +42,9 @@ all: build run
 
 ifeq ($(AUTOMATIC_TEST),1)
 run: firmware.out
+	mkdir -p debug
+	mkdir -p src
+	mkdir -p trace_out
 	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
@@ -53,8 +56,12 @@ run: firmware.out
 	cp src/sigma.v $(HW_DIR)/src/
 	cp src/M_Stage.v $(HW_DIR)/src/
 	cp src/Test_M_Stage.v $(HW_DIR)/src/
+	cp src/M.v $(HW_DIR)/src/
 else
 run: firmware.out
+	mkdir -p debug
+	mkdir -p src
+	mkdir -p trace_out
 	./firmware.out $(TEST_LOG)
 	cp versat_instance.v $(HW_DIR)/src/
 	cp versat_defs.vh $(HW_DIR)/include/
@@ -62,6 +69,7 @@ run: firmware.out
 	cp src/sigma.v $(HW_DIR)/src/
 	cp src/M_Stage.v $(HW_DIR)/src/
 	cp src/Test_M_Stage.v $(HW_DIR)/src/
+	cp src/M.v $(HW_DIR)/src/
 endif
 
 build: firmware.out

@@ -32,14 +32,12 @@ wire [9:0] unitDone;
 
 assign done = &unitDone;
 
-wire [31:0] output_0_0, output_0_1, output_0_2, output_1_0, output_2_0, output_3_0, output_4_0, output_5_0, output_6_0, output_7_0, output_8_0;
+wire [31:0] output_0_0 , output_1_0 , output_2_0 , output_3_0 , output_4_0 , output_5_0 , output_6_0 , output_7_0 , output_8_0 , unused_9 ;
 
 // Memory mapped
 circuitInput circuitInput_0 (
       .in0(in0),
       .out0(output_0_0),
-      .out1(output_0_1),
-      .out2(output_0_2),
       .run(run),
       .done(unitDone[0]),
       .clk(clk),

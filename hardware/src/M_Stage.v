@@ -38,7 +38,7 @@ wire [10:0] unitDone;
 
 assign done = &unitDone;
 
-wire [31:0] output_0_0, output_1_0, output_2_0, output_3_0, output_4_0, output_5_0, output_6_0, output_7_0, output_8_0, output_9_0;
+wire [31:0] output_0_0 , output_1_0 , output_2_0 , output_3_0 , output_4_0 , output_5_0 , output_6_0 , output_7_0 , output_8_0 , output_9_0 , unused_10 ;
 
 // Memory mapped
 circuitInput circuitInput_0 (
@@ -79,7 +79,7 @@ circuitInput circuitInput_3 (
 
 sigma sigma_4 (
       .out0(output_4_0),
-      .in0(output_1_0),
+      .in0(output_3_0),
       .constant_0(constant_0),
       .constant_1(constant_1),
       .constant_2(constant_2),
@@ -91,7 +91,7 @@ sigma sigma_4 (
 
 sigma sigma_5 (
       .out0(output_5_0),
-      .in0(output_3_0),
+      .in0(output_1_0),
       .constant_0(constant_3),
       .constant_1(constant_4),
       .constant_2(constant_5),
@@ -112,7 +112,7 @@ pipeline_register pipeline_register_6 (
 
 ADD ADD_7 (
       .out0(output_7_0),
-      .in0(output_4_0),
+      .in0(output_5_0),
       .in1(output_2_0),
       .run(run),
       .done(unitDone[7]),
@@ -122,7 +122,7 @@ ADD ADD_7 (
 
 ADD ADD_8 (
       .out0(output_8_0),
-      .in0(output_5_0),
+      .in0(output_4_0),
       .in1(output_0_0),
       .run(run),
       .done(unitDone[8]),

@@ -1,3 +1,37 @@
+module RegAdder(x,y){
+   pipeline_register r;
+#
+   a = x + y;
+
+   a -> r;
+
+   r -> out;
+}
+
+module TestDelay(x){
+   RegAdder a1;
+   RegAdder a2;
+   RegAdder a3;
+   RegAdder a4;
+#
+   x -> a1:0;
+   x -> a1:1;
+
+   a1 -> a2:0;
+   x ->  a2:1;
+
+   a2 -> a3:0;
+   x ->  a3:1;
+
+   a3 -> a4:0;
+   x ->  a4:1;
+
+   a1 -> out:0;
+   a2 -> out:1;
+   a3 -> out:2;
+   a4 -> out:3;
+}
+
 module sigma(x){
    xconst const1;
    xconst const2;
@@ -73,8 +107,8 @@ module Maj (x,y,z){
 }
 
 module M_Stage(w0,w14,w9,w1){
-   sigma sigma1;
    sigma sigma0;
+   sigma sigma1;
    pipeline_register r;
 #
    w14 -> sigma1;
@@ -88,22 +122,6 @@ module M_Stage(w0,w14,w9,w1){
    b -> r;
 
    r -> out;
-}
-
-module Test_M_Stage(){
-   xreg r0;
-   xreg r1;
-   xreg r2;
-   xreg r3;
-   xreg r4;
-   M_Stage unit;
-#
-   r0 -> unit:0;
-   r1 -> unit:1;
-   r2 -> unit:2;
-   r3 -> unit:3;
-
-   unit -> r4;
 }
 
 module M(w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,wa,wb,wc,wd,we,wf){
@@ -778,38 +796,4 @@ module SHA(){
    M1:0.15 -> M2:0.15;
    
    F3:0.7 -> State:0.7;
-}
-
-module TestDelay(){
-   xmem mem1;
-   delay d11;
-   delay d22;
-   delay d21;
-   delay d33;
-   delay d32;
-   delay d31;
-   delay d44;
-   delay d43;
-   delay d42;
-   delay d41;
-   debug d;
-#
-   mem1:0 -> d11;
-
-   mem1:0 -> d22;
-   d22 -> d21;
-
-   mem1:0 -> d33;
-   d33 -> d32;
-   d32 -> d31;
-
-   mem1:0 -> d44;
-   d44 -> d43;
-   d43 -> d42;
-   d42 -> d41;
-
-   d41 -> d:3;
-   d31 -> d:2;
-   d21 -> d:1;
-   d11 -> d:0;
 }

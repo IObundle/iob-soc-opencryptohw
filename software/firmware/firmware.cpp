@@ -97,17 +97,6 @@ static int* writeMemory;
 Accelerator* accel;
 bool initVersat = false;
 
-// Versat specific units
-FUDeclaration* ADD;
-FUDeclaration* REG;
-FUDeclaration* CONST;
-FUDeclaration* VREAD;
-FUDeclaration* VWRITE;
-FUDeclaration* MEM;
-FUDeclaration* DEBUG;
-
-FUDeclaration* M_32;
-
 void ClearCache(){
     int count = 0;
 
@@ -119,142 +108,66 @@ void ClearCache(){
 }
 
 void ParseVersatSpecification(Versat* versat,FILE* file);
+FUDeclaration* REG;
 
-int32_t* UnaryNot(FUInstance* inst){
-    static uint32_t out;
-    out = ~GetInputValue(inst,0);
-    return (int32_t*) &out;
-}
-
-int32_t* BinaryXOR(FUInstance* inst){
-    static uint32_t out;
-    out = GetInputValue(inst,0) ^ GetInputValue(inst,1);
-    return (int32_t*) &out;
-}
-
-int32_t* BinaryADD(FUInstance* inst){
-    static uint32_t out;
-    out = GetInputValue(inst,0) + GetInputValue(inst,1);
-    return (int32_t*) &out;
-}
-int32_t* BinaryAND(FUInstance* inst){
-    static uint32_t out;
-    out = GetInputValue(inst,0) & GetInputValue(inst,1);
-    return (int32_t*) &out;
-}
-int32_t* BinaryOR(FUInstance* inst){
-    static uint32_t out;
-    out = GetInputValue(inst,0) | GetInputValue(inst,1);
-    return (int32_t*) &out;
-}
-int32_t* BinaryRHR(FUInstance* inst){
-    static uint32_t out;
-    uint32_t value = GetInputValue(inst,0);
-    uint32_t shift = GetInputValue(inst,1);
-    out = (value >> shift) | (value << (32 - shift));
-    return (int32_t*) &out;
-}
-int32_t* BinaryRHL(FUInstance* inst){
-    static uint32_t out;
-    uint32_t value = GetInputValue(inst,0);
-    uint32_t shift = GetInputValue(inst,1);
-    out = (value << shift) | (value >> (32 - shift));
-    return (int32_t*) &out;
-}
-int32_t* BinarySHR(FUInstance* inst){
-    static uint32_t out;
-    uint32_t value = GetInputValue(inst,0);
-    uint32_t shift = GetInputValue(inst,1);
-    out = (value >> shift);
-    return (int32_t*) &out;
-}
-int32_t* BinarySHL(FUInstance* inst){
-    static uint32_t out;
-    uint32_t value = GetInputValue(inst,0);
-    uint32_t shift = GetInputValue(inst,1);
-    out = (value << shift);
-    return (int32_t*) &out;
-}
-
-void RegisterOperators(Versat* versat){
-    #ifdef PC
-    const char* unary[] = {"NOT"};
-    FUFunction unaryF[] = {UnaryNot};
-    const char* binary[] = {"XOR","ADD","AND","OR","RHR","SHR","RHL","SHL"};
-    FUFunction binaryF[] = {BinaryXOR,BinaryADD,BinaryAND,BinaryOR,BinaryRHR,BinarySHR,BinaryRHL,BinarySHL};
-
-    FUDeclaration decl = {};
-    decl.nOutputs = 1;
-    decl.nInputs = 1;
-    for(int i = 0; i < ARRAY_SIZE(unary); i++){
-        FixedStringCpy(decl.name.str,MakeSizedString(unary[i]));
-        decl.updateFunction = unaryF[i];
-        RegisterFU(versat,decl);
-    }
-
-    decl.nInputs = 2;
-    for(int i = 0; i < ARRAY_SIZE(binary); i++){
-        FixedStringCpy(decl.name.str,MakeSizedString(binary[i]));
-        decl.updateFunction = binaryF[i];
-        RegisterFU(versat,decl);
-    }
-    #endif
-}
-
-int32_t* TestInstance(Accelerator* accel,FUInstance* inst,...){
+int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
     static int32_t out[99];
     FUInstance* inputs[99];
     FUInstance* outputs[99];
 
     va_list args;
-    va_start(args,inst);
+    va_start(args,numberOutputs);
 
     #ifdef PC
     Assert(accel->instances.Size() == 1);
     #endif
 
-    printf("1\n");
+    int registersAdded = 0;
+    for(int i = 0; i < numberInputs; i++){
 
-    for(int i = 0; i < inst->declaration->nInputs; i++){
-        inputs[i] = CreateFUInstance(accel,REG);
+        char buffer[128];
+        int size = snprintf(buffer,128,"regIn%d",registersAdded++);
 
-        printf("1.1\n");
+        inputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
+
         int32_t val = va_arg(args,int32_t);
 
-        printf("1.2\n");
         VersatUnitWrite(inputs[i],0,val);
 
-        printf("1.3\n");
         ConnectUnits(inputs[i],0,inst,i);
     }
 
-    printf("2\n");
-
-    for(int i = 0; i < inst->declaration->nOutputs; i++){
-        outputs[i] = CreateFUInstance(accel,REG);
+    registersAdded = 0;
+    for(int i = 0; i < numberOutputs; i++){
+        char buffer[128];
+        int size = snprintf(buffer,128,"regOut%d",registersAdded++);
+        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
 
         ConnectUnits(inst,i,outputs[i],0);
     }
 
-    printf("3\n");
     CalculateDelay(accel->versat,accel);
 
-    printf("4\n");
-    #ifdef PC
-    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+    #if 0
+    Accelerator* flatten = Flatten(accel->versat,accel,1);
+
+    {
+    FILE* dotFile = fopen("flatten.dot","w");
+    OutputGraphDotFile(flatten,dotFile,1);
+    fclose(dotFile);
+    }
     #endif
 
-    AcceleratorRun(accel);
+    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
-    printf("5\n");
+    AcceleratorRun(accel);
     accel->locked = false;
-    for(int i = 0; i < inst->declaration->nInputs; i++){
+    for(int i = 0; i < numberInputs; i++){
         RemoveFUInstance(accel,inputs[i]);
     }
 
-    printf("6\n");
-    for(int i = 0; i < inst->declaration->nOutputs; i++){
-        out[i] = VersatUnitRead(outputs[i],0);
+    for(int i = 0; i < numberOutputs; i++){
+        out[i] = outputs[i]->state[0];
 
         RemoveFUInstance(accel,outputs[i]);
     }
@@ -269,107 +182,57 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,...){
 }
 
 void TestMStage(Versat* versat){
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Test_M_Stage"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"),nullptr);
 
-    FUInstance* r[5];
-    for(int i = 0; i < 5; i++){
-        r[i] = GetInstanceByName(accel,"Test","r%d",i); // value of i is not being appended to string
+    int constants[] = {7,18,3,17,19,10};
+    for(int ii = 0; ii < ARRAY_SIZE(constants); ii++){
+        inst->config[ii] = constants[ii];
     }
 
-    FUInstance* const1 = GetInstanceByName(accel,"Test","unit","sigma1","const1");
-    FUInstance* const2 = GetInstanceByName(accel,"Test","unit","sigma1","const2");
-    FUInstance* const3 = GetInstanceByName(accel,"Test","unit","sigma1","const3");
-    FUInstance* Const1 = GetInstanceByName(accel,"Test","unit","sigma0","const1");
-    FUInstance* Const2 = GetInstanceByName(accel,"Test","unit","sigma0","const2");
-    FUInstance* Const3 = GetInstanceByName(accel,"Test","unit","sigma0","const3");
-
-    printf("%x\n",VERSAT_BASE);
-    printf("1 %x\n",(int)const1->config);
-    printf("2 %x\n",(int)const2->config);
-    printf("3 %x\n",(int)const3->config);
-    printf("4 %x\n",(int)Const1->config);
-    printf("5 %x\n",(int)Const2->config);
-    printf("6 %x\n",(int)Const3->config);
-    printf("0 %x\n",(int)r[0]->memMapped);
-    printf("1 %x\n",(int)r[1]->memMapped);
-    printf("2 %x\n",(int)r[2]->memMapped);
-    printf("3 %x\n",(int)r[3]->memMapped);
-    printf("4 %x\n",(int)r[4]->memMapped);
-
-    const1->config[0] = 17;
-    const2->config[0] = 19;
-    const3->config[0] = 10;
-    Const1->config[0] = 7;
-    Const2->config[0] = 18;
-    Const3->config[0] = 3;
-
-    VersatUnitWrite(r[0],0,0x5a86b737);
-    VersatUnitWrite(r[1],0,0xa9f9be83);
-    VersatUnitWrite(r[2],0,0x08251f6d);
-    VersatUnitWrite(r[3],0,0xeaea8ee9);
-
-    CalculateDelay(accel->versat,accel);
-
-    #if 1
-    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
-    #endif
-
-    printf("1\n");
-    AcceleratorRun(accel);
-    printf("2\n");
+    int32_t* out = TestInstance(accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
 
     printf("Expected: 0xb89ab4ca\n");
-    printf("Got:      0x%x\n",r[4]->state[0]); // not working on pc-emul. Probably because xreg lose their value immediatly, instead of the next cycle. (Check the verilator macros)
+    printf("Got:      0x%x\n",out[0]);
 }
 
 void TestM(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M"));
     accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"),nullptr);
 
+    int constants[] = {7,18,3,17,19,10};
+
+    // Set constants to every entity (memcpy is slower, does byte a byte)
     for(int i = 0; i < 16; i++){
-        FUInstance* const1 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const1");
-        FUInstance* const2 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const2");
-        FUInstance* const3 = GetInstanceByName(accel,"M","m%x",i,"sigma1","const3");
-        FUInstance* Const1 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const1");
-        FUInstance* Const2 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const2");
-        FUInstance* Const3 = GetInstanceByName(accel,"M","m%x",i,"sigma0","const3");
-
-        const1->config[0] = 17;
-        const2->config[0] = 19;
-        const3->config[0] = 10;
-        Const1->config[0] = 7;
-        Const2->config[0] = 18;
-        Const3->config[0] = 3;
+        for(int ii = 0; ii < ARRAY_SIZE(constants); ii++){
+            inst->config[i*6+ii] = constants[ii];
+        }
     }
 
     printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
 
-    int32_t* out = TestInstance(accel,inst,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
+    int32_t* out = TestInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
 
     for(int i = 0; i < inst->declaration->nOutputs; i++){
         printf("%08x ",out[i]);
     }
     printf("\n");
-
 }
 
 void TestDelay(Versat* versat){
+    #if 0
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("TestDelay"));
     accel = CreateAccelerator(versat);
     FUInstance* inst = CreateFUInstance(accel,type);
 
     CalculateDelay(versat,accel);
 
-    Accelerator* flatten = Flatten(versat,accel,1);
+    int32_t* out = TestInstance(accel,inst,0x2);
 
-    #ifdef PC
-    {
-    FILE* dotFile = fopen("flatten.dot","w");
-    OutputGraphDotFile(flatten,dotFile,1);
-    fclose(dotFile);
+    for(int i = 0; i < inst->declaration->nOutputs; i++){
+        printf("%08x ",out[i]);
     }
     #endif
 }
@@ -456,38 +319,28 @@ int main(int argc,const char* argv[])
     // Force alignment on a 64 byte boundary
     Versat versatInst = {};
     Versat* versat = &versatInst;
-
     InitVersat(versat,VERSAT_BASE,1);
 
-    // Versat specific units
-    ADD = RegisterAdd(versat);
-    REG = RegisterReg(versat);
-    VREAD = RegisterVRead(versat);
-    VWRITE = RegisterVWrite(versat);
-    MEM = RegisterMem(versat,10);
-    DEBUG = RegisterDebug(versat);
-    CONST = RegisterConst(versat);
+    REG = GetTypeByName(versat,MakeSizedString("xreg"));
 
-    RegisterOperators(versat);
-
+    #ifdef PC
     // Sha specific units
     FUDeclaration* UNIT_F = RegisterUnitF(versat);
     FUDeclaration* UNIT_M = RegisterUnitM(versat);
 
-    #ifdef PC
     FILE* file = fopen("testVersatSpecification.txt","r");
 
     ParseVersatSpecification(versat,file);
     #endif
 
-    #if 1
+    #if 0
     TestMStage(versat);
 
     uart_finish();
     return 0;
     #endif
 
-    #if 0
+    #if 1
     TestM(versat);
 
     uart_finish();
@@ -669,11 +522,7 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Currently:
 
-    Debug by VCD. It appears to lock up on the write to memory
-
-*/
-
-/*
+1) Figure out where the trap condition is happening
 
 Things to do:
 
@@ -694,21 +543,25 @@ Overall:
 
 Software:
 
+    Change hierarchical name from a char[] to a char* (Otherwise will bleed embedded memory dry)
+        Software for now will simply malloc and forget, but eventually I should probably implement string interning
+        NOTE: After adding perfect hashing, name information is no longer required. Might not need to change afterall, for now hold on.
+
     Add true hierarchical naming for Flatten units
         - Simply get the full hierarchical representation and store it as the name of the unit, with parent set to null
         - Might need to change hierarchical name from array to char*
         - Need to take care about where strings end up. Do not want to fill embedded with useless data if possible
 
-    Add config/state/mapped memory allocation to the Accelerator.
-        Have units not allocate but have pointers to memory allocated on the Accelerator.
     Take a look at compute units that need delay information (think multiply accumulate, not delay but acts same way) [should simple by set inputDelay as delay]
     Support the output of a module not starting at zero. (Maybe weird thing to do for now)
         More complex, but take a pass at anything that depends on order of instancing/declarating (a lot of assumptions are being made right now)
     Go back and check the output memory map for individual accelerators, there is some bugs for the memory allocation right now
+    Lock accelerator can resize memory allocated to fit exactly with amount of memory needed
 
 Embedded:
 
     Write source code containing info for the embedded side using template engine
+    Implement a FSK hashing scheme to accelerate simulation. GetInstanceByName
 
 Hardware:
 
@@ -726,6 +579,10 @@ Struct Parser:
 
     Rewrite the dumb stuff from the struct parser
 
+Verilog Parser:
+
+    Parse units interfaces to generate unitWrappers automatically and register units automatically (do not know how to handle latency, though)
+
 Flatten:
 
     Give every declaration a "level" variable. simple = 0, composite = max(instancesLevel) + 1, special = 0.
@@ -734,7 +591,14 @@ Merge:
 
     Do merge of units in same "level". Iterate down while repeating
 
+Improvements:
+
+    Empty functions in the embed code occupy space and do nothing but cluter source code file. Replace functions with macros that expand to nothing in the embed side,
+
 */
+
+
+
 
 
 
