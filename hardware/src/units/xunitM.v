@@ -11,7 +11,6 @@ module xunitM #(
     input               rst,
     
     input               run,
-    output              done,
 
     //input / output data
     input [DATA_W-1:0]  in0,
@@ -43,8 +42,6 @@ wire [31:0] w12 = w[12];
 wire [31:0] w13 = w[13];
 wire [31:0] w14 = w[14];
 wire [31:0] w15 = w[15];
-
-assign done = (latency == 0);
 
 function [31:0] ROTR_32(input [31:0] x,input [4:0] c);
 begin

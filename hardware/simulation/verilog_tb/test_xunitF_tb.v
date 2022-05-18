@@ -5,6 +5,9 @@
 `define INPUT_SIZE (8+(2*16))
 `define OUTPUT_SIZE (16)
 
+// Implicitly know FU latency
+`define XUNITF_LATENCY (2)
+
 module xunitF_tb;
 
   parameter realtime clk_per = 1s/`FREQ;
@@ -16,9 +19,8 @@ module xunitF_tb;
   //reset
   reg reset = 0;
 
-  // run/done
+  // run
   reg run = 0;
-  wire done;
 
   // in/out
   reg [31:0] in0;
@@ -57,6 +59,8 @@ module xunitF_tb;
 
   // validation
   reg check_done = 0;
+  reg valid_out = 0;
+  reg [7:0] latency_cnt;
   integer nerrors = 0;
   reg [4:0] result_addr = 0;
   reg [8*32-1:0] expected;
@@ -121,7 +125,7 @@ module xunitF_tb;
     // write test results
     if(nerrors) begin
         $display("xunitF test FAILED with %d errors out of %d\n", nerrors, `OUTPUT_SIZE);
-        $fatal; // return non-zero error value
+        $fatal; // return non-zero exit status
     end else begin
         $display("xunitF test PASSED with %d errors out of %d\n", nerrors, `OUTPUT_SIZE);
     end
@@ -135,7 +139,6 @@ module xunitF_tb;
         .rst(reset),
 
         .run(run),
-        .done(done),
 
         .in0(in0),
         .in1(in1),
@@ -166,7 +169,7 @@ module xunitF_tb;
     // verification process
     always @(posedge clk) begin
         expected = test_data_out[result_addr];
-        if(done & check_done) begin
+        if(valid_out & check_done) begin
             expected = test_data_out[result_addr];
             if(expected != out) begin
                 nerrors = nerrors + 1;
@@ -175,6 +178,24 @@ module xunitF_tb;
             if (result_addr == `OUTPUT_SIZE) begin
                 check_done = 0;
             end
+        end
+    end
+
+    // valid_out state machine
+    always @(posedge clk) begin
+        if (reset) begin
+            valid_out <= 0;
+            latency_cnt <= 1;
+        end else if (run) begin
+            latency_cnt <= delay_cfg + `XUNITF_LATENCY;
+            valid_out <= 0;
+        end else begin
+            if (|latency_cnt) begin
+                latency_cnt <= latency_cnt - 1;
+            end else begin
+                latency_cnt <= latency_cnt;
+            end
+            valid_out <= (latency_cnt <= 1);
         end
     end
 

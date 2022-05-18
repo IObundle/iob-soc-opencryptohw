@@ -6,6 +6,9 @@
 `define INPUT_SIZE (64/4)
 `define OUTPUT_SIZE (64/4)
 
+// Implicitly know FU latency
+`define XUNITM_LATENCY (17)
+
 module xunitM_tb;
 
   parameter realtime clk_per = 1s/`FREQ;
@@ -17,9 +20,8 @@ module xunitM_tb;
   //reset
   reg reset = 0;
 
-  // run/done
+  // run
   reg run = 0;
-  wire done;
 
   // in/out
   reg [31:0] in;
@@ -40,6 +42,8 @@ module xunitM_tb;
 
   // validation
   reg check_done = 0;
+  reg valid_out = 0;
+  reg [7:0] latency_cnt;
   integer nerrors = 0;
   reg [4:0] result_addr = 0;
   reg [31:0] expected;
@@ -104,7 +108,6 @@ module xunitM_tb;
         .rst(reset),
 
         .run(run),
-        .done(done),
 
         .in0(in),
         .out0(out),
@@ -115,7 +118,7 @@ module xunitM_tb;
     // verification process
     always @(posedge clk) begin
         expected = test_data_out[result_addr];
-        if(done & check_done) begin
+        if(valid_out & check_done) begin
             expected = test_data_out[result_addr];
             if(expected != out) begin
                 nerrors = nerrors + 1;
@@ -124,6 +127,24 @@ module xunitM_tb;
             if (result_addr == `OUTPUT_SIZE) begin
                 check_done = 0;
             end
+        end
+    end
+
+    // valid_out state machine
+    always @(posedge clk) begin
+        if (reset) begin
+            valid_out <= 0;
+            latency_cnt <= 1;
+        end else if (run) begin
+            latency_cnt <= delay_cfg + `XUNITM_LATENCY;
+            valid_out <= 0;
+        end else begin
+            if (|latency_cnt) begin
+                latency_cnt <= latency_cnt - 1;
+            end else begin
+                latency_cnt <= latency_cnt;
+            end
+            valid_out <= (latency_cnt <= 1);
         end
     end
 

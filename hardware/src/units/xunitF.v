@@ -11,7 +11,6 @@ module xunitF #(
     input               rst,
     
     input               run,
-    output              done,
 
     //input / output data
     input [DATA_W-1:0]  in0,
@@ -51,8 +50,6 @@ assign out4 = e;
 assign out5 = f;
 assign out6 = g;
 assign out7 = h;
-
-assign done = (latency == 0);
 
 wire [31:0] w = in8;
 wire [31:0] k = in9;
