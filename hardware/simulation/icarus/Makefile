@@ -27,6 +27,18 @@ exec:
 clean: clean-remote
 	@rm -f $(SIM_PROC)
 
+# xunitM tests
+XUNITM_VSRC=$(HW_DIR)/src/units/xunitM.v
+XUNITM_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitM_tb.v
+
+xunitM:
+	make -C $(SW_TEST_DIR) gen_xunitM_bin
+	cp $(SW_TEST_DIR)/xunitM_*.bin .
+	touch xversat.vh
+	$(VLOG) $(XUNITM_VSRC)
+	./$(SIM_PROC)
+
+
 debug:
 	@echo $(SUBMODULES)
 	@echo $(MODULES)
@@ -43,4 +55,4 @@ debug:
 	@echo $(DEFINE)
 	@echo $(MODULE)
 
-.PHONY: comp exec clean debug
+.PHONY: comp exec clean debug xunitM
