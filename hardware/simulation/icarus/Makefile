@@ -38,6 +38,16 @@ xunitM:
 	$(VLOG) $(XUNITM_VSRC)
 	./$(SIM_PROC)
 
+# xunitF tests
+XUNITF_VSRC=$(HW_DIR)/src/units/xunitF.v
+XUNITF_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitF_tb.v
+
+xunitF:
+	make -C $(SW_TEST_DIR) gen_xunitF_bin
+	cp $(SW_TEST_DIR)/xunitF_*.bin .
+	touch xversat.vh
+	$(VLOG) $(XUNITF_VSRC)
+	./$(SIM_PROC)
 
 debug:
 	@echo $(SUBMODULES)

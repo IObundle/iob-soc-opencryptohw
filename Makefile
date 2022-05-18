@@ -50,6 +50,7 @@ sim-test:
 
 sim-versat-fus:
 	make -C $(SIM_DIR) xunitM SIMULATOR=icarus
+	make -C $(SIM_DIR) xunitF SIMULATOR=icarus
 
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
