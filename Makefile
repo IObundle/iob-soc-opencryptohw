@@ -48,6 +48,10 @@ sim-clean: fw-clean
 sim-test:
 	make -C $(SIM_DIR) test
 
+sim-versat-fus:
+	make -C $(SIM_DIR) xunitM SIMULATOR=icarus
+	make -C $(SIM_DIR) xunitF SIMULATOR=icarus
+
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
@@ -85,6 +89,8 @@ doc-clean:
 #
 # TEST ON SIMULATORS AND BOARDS
 #
+test-versat-fus:
+	make sim-versat-fus SIMULATOR=icarus
 
 test-pc-emul: pc-emul-test
 
@@ -113,6 +119,8 @@ test: test-clean
 	make test-fpga
 	make fpga-run-profile
 	make test-fpga-clean
+	make test-versat-fus
+	make test-sim-clean
 
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
@@ -123,9 +131,10 @@ clean-all: test-clean
 
 .PHONY: fw-build fw-clean \
 	pc-emul-build pc-emul-run pc-emul-test pc-emul-clean pc-emul-profile \
-	sim-build sim-run sim-clean sim-test \
+	sim-build sim-run sim-clean sim-test sim-versat-fus \
 	fpga-build fpga-run fpga-run-profile fpga-test fpga-clean \
 	doc-accel-plan doc-accel-plan-clean doc-clean \
+	test-versat-fus \
 	test-pc-emul test-pc-emul-clean \
 	test-sim test-sim-clean \
 	test-fpga test-fpga-clean \

@@ -1,5 +1,14 @@
 ROOT_DIR:=../..
+include $(ROOT_DIR)/config.mk
+
 TEST_VECTOR_RSP?=SHA256ShortMsg.rsp
+
+# xunitM tests
+XUNITM_SRC=$(SW_TEST_DIR)/gen_test_xunitM.c
+
+# xunitF tests
+XUNITF_SRC=$(SW_TEST_DIR)/gen_test_xunitF.c
+
 
 gen_test_data: $(TEST_VECTOR_RSP)
 	./gen_test_data.py $(TEST_VECTOR_RSP)
@@ -21,9 +30,19 @@ $(SOC_OUT_BIN):
 	$(eval SOC_OUT_BIN_PATH = $(shell find $(ROOT_DIR) -name "$@"))
 	cp $(SOC_OUT_BIN_PATH) $@
 
+gen_xunitM_bin: $(XUNITM_SRC)
+	gcc $(XUNITM_SRC) -o $@
+	./$@
+
+gen_xunitF_bin: $(XUNITF_SRC)
+	gcc $(XUNITF_SRC) -o $@
+	./$@
 
 clean:
 	@rm -rf *.bin
 	@rm -rf read_bin read_bin.log
+	@rm -rf gen_xunitM_bin xunitM_*.bin 
+	@rm -rf gen_xunitF_bin xunitF_*.bin 
 
-.PHONY: clean gen_test_data read_bin read_bin_run
+.PHONY: clean gen_test_data read_bin read_bin_run \
+	gen_xunitM_bin gen_xunitF_bin
