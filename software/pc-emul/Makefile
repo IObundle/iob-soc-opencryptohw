@@ -1,9 +1,6 @@
 ROOT_DIR:=../..
-include ../software.mk
 
-#default baud and freq for pc emulation
-BAUD=5000000
-FREQ=100000000
+include ../software.mk
 
 #additional compiler flags
 CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
@@ -12,7 +9,7 @@ CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 DEFINE+=-DPC
 
 SOC_LOG:=soc.log
-HOST_LOG:=host.log
+ETH_LOG:=ethernet.log
 EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
@@ -38,29 +35,31 @@ INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
 #CONSOLE
-CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
+CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
 #RULES
 
-all: clean build run
-	
+build: gen_data fw_emul
 
-build: gen_data firmware.out
-
-run: firmware.out
-	@rm -f soc2cnsl cnsl2soc
-	$(CONSOLE_CMD) $(TEST_LOG) &
-	./firmware.out $(TEST_LOG)
-
-firmware.out: $(HDR) $(SRC)
+fw_emul: $(HDR) $(SRC)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
 
+run: build
+	@rm -f soc2cnsl cnsl2soc
+	$(CONSOLE_CMD) $(TEST_LOG) &
+	./fw_emul $(TEST_LOG)
+
+clean:
+	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+	@make -C $(SW_DIR)/python clean
+	@make -C $(SW_TEST_DIR) clean
+
 test: 
-	make all
+	make run
 	make validate
 
 validate:
-	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 profile: clean $(EMUL_PROFILE_LOG)
@@ -69,16 +68,11 @@ profile: clean $(EMUL_PROFILE_LOG)
 	@printf "=== PROFILE LOG ===\n"
 
 $(SOC_LOG): 
-	make all PROFILE=1
+	make run PROFILE=1 TEST_LOG="> $(SOC_LOG)"
 
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
-clean:
-	make -C $(SW_TEST_DIR) clean
-	@rm -rf firmware.out periphs.h test.log *swreg*.h *swreg*.c \
-		test.log $(EMUL_PROFILE_LOG) \
-		*d_in.bin $(SOC_LOG) $(HOST_LOG) $(SOC_OUT_BIN)
-
-.PHONY: all build run run-parallel run-soc-int run-python-int run-python \
-	validate profile 
+.PHONY: build run \
+	test validate profile \
+	clean

@@ -14,7 +14,7 @@ git clone --recursive https://github.com/IObundle/iob-soc-sha.git
 # PC Emulation
 The iob-soc-sha system can build and run an environment for PC with:
 ```
-make pc-emul
+make pc-emul-run
 ```
 This target performs the Short Message Test for Byte-Oriented `sha256()` 
 implementations from the 
@@ -131,3 +131,12 @@ The system supports ethernet communication using the
 
 Check [IO-Eth's README](https://github.com/IObundle/iob-eth#readme) for setup 
 instructions and further details.
+
+# Versat
+### Versat Custom Functional Units
+The acceleration of SHA application requires the design of custom functional
+units (FUs). These FUs can be validated with unit tests by running the command:
+```
+make test-versat-fus
+```
+The custom FUs are in `hardware/src/units/`.

@@ -21,10 +21,8 @@ software/*/*
 !software/firmware/profile.h
 !software/firmware/crypto/
 
-!software/console/console.c
-!software/console/console.h
-!software/console/rs232comm.c
-!software/console/socketcomm.c
+!software/console/console
+!software/console/eth_console
 
 #HARDWARE
 #sources
@@ -33,7 +31,7 @@ hardware/testbench/system_tb.v
 
 #simulation
 hardware/simulation/*/*
-!hardware/simulation/verilog_tb
+!hardware/simulation/verilog_tb/*
 !hardware/simulation/simulation.mk
 !hardware/simulation/*/Makefile
 !hardware/simulation/*/*.expected

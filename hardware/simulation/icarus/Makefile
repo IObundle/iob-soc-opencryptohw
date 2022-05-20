@@ -13,17 +13,41 @@ include ../simulation.mk
 #simulator flags
 VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE)
 
-#simulator object
+comp: $(SIM_PROC)
+
+#simulation executable
 $(SIM_PROC):
 	$(VLOG) $(VSRC)
 
 .PHONY: run clean debug
 
-run:
+exec:
 	./$(SIM_PROC)
 
 clean: clean-remote
 	@rm -f $(SIM_PROC)
+
+# xunitM tests
+XUNITM_VSRC=$(HW_DIR)/src/units/xunitM.v
+XUNITM_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitM_tb.v
+
+xunitM:
+	make -C $(SW_TEST_DIR) gen_xunitM_bin
+	cp $(SW_TEST_DIR)/xunitM_*.bin .
+	touch xversat.vh
+	$(VLOG) $(XUNITM_VSRC)
+	./$(SIM_PROC)
+
+# xunitF tests
+XUNITF_VSRC=$(HW_DIR)/src/units/xunitF.v
+XUNITF_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitF_tb.v
+
+xunitF:
+	make -C $(SW_TEST_DIR) gen_xunitF_bin
+	cp $(SW_TEST_DIR)/xunitF_*.bin .
+	touch xversat.vh
+	$(VLOG) $(XUNITF_VSRC)
+	./$(SIM_PROC)
 
 debug:
 	@echo $(SUBMODULES)
@@ -40,3 +64,5 @@ debug:
 	@echo $(INCLUDE)
 	@echo $(DEFINE)
 	@echo $(MODULE)
+
+.PHONY: comp exec clean debug xunitM
