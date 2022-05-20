@@ -131,3 +131,24 @@ The system supports ethernet communication using the
 
 Check [IO-Eth's README](https://github.com/IObundle/iob-eth#readme) for setup 
 instructions and further details.
+
+# Versat
+### Versat Custom Functional Units
+The acceleration of SHA application requires the design of custom functional
+units (FUs). These FUs can be validated with unit tests by running the command:
+```
+make test-versat-fus
+```
+The custom FUs are in `hardware/src/units/`.
+
+### Spinal HDL Version
+Alternatively, the same FUs can be generated from SpinalHDL using the command:
+```
+make test-versat-fus SPINAL=1
+```
+The SpinalHDL sources and in `hardware/src/spinalHDL`.
+
+#### SpinalHDL Setup
+Check `hardware/src/spinalHDL/README.md` for more details to setup the
+requirements to use SpinalHDL.
+

@@ -121,6 +121,8 @@ test: test-clean
 	make test-fpga-clean
 	make test-versat-fus
 	make test-sim-clean
+	make test-versat-fus SPINAL=1
+	make test-sim-clean
 
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 

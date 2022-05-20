@@ -60,12 +60,6 @@ begin
 end
 endfunction
 
-function [31:0] SHR(input [31:0] x,input [4:0] c); 
-begin
-   SHR = ((x) >> (c));
-end
-endfunction
-
 function [31:0] Ch(input [31:0] x,y,z);
 begin
    Ch = (((x) & (y)) ^ (~(x) & (z)));
