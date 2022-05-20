@@ -1,5 +1,5 @@
 PACKAGE=units
-XUNITM=SpinalxunitM
+XUNITM=xunitM
 RTL_DIR=rtl
 SCALA_DIR=src/main/scala/$(PACKAGE)
 

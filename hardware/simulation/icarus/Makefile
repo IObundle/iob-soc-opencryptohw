@@ -28,7 +28,11 @@ clean: clean-remote
 	@rm -f $(SIM_PROC)
 
 # xunitM tests
+ifeq ($(SPINAL),)
 XUNITM_VSRC=$(HW_DIR)/src/units/xunitM.v
+else
+XUNITM_VSRC=$(HW_DIR)/src/spinalHDL/rtl/xunitM.v
+endif
 XUNITM_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitM_tb.v
 
 xunitM:
