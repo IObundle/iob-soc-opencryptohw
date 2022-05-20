@@ -1,9 +1,11 @@
 PACKAGE=units
 XUNITM=xunitM
+XUNITF=xunitF
 RTL_DIR=rtl
 SCALA_DIR=src/main/scala/$(PACKAGE)
 
 VSRC=$(RTL_DIR)/$(XUNITM).v
+VSRC+=$(RTL_DIR)/$(XUNITF).v
 
 all: $(VSRC)
 

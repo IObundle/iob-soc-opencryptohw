@@ -31,8 +31,6 @@ class xunitM(data_w: Int) extends Component {
   // All logic inside this area uses the same Clocking Area
   val coreArea = new ClockingArea(xunitMClockDomain) {
 
-    // val w = Vec(Reg(UInt(data_w bits)), 16) init(0)
-
     val w = ArrayBuffer[UInt]()
     for(i <- 0 to 15) {
       w += Reg(UInt(data_w bits)) init(0)

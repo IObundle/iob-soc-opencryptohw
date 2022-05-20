@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.7.0a    git head : 150a9b9067020722818dfb17df4a23ac712a7af8
 // Component : xunitM
-// Git hash  : 00cb19cba7d674adce6d157ac47ae56cc2bb2a12
+// Git hash  : 1d673651fb49ca91712670e3c33b4781f4ec47b0
 
 `timescale 1ns/1ps
 
@@ -37,18 +37,18 @@ module xunitM (
   reg        [7:0]    coreArea_delay;
   reg        [4:0]    coreArea_latency;
   reg        [31:0]   coreArea_out0_reg;
-  wire                when_xunitM_l54;
-  wire                when_xunitM_l62;
-  wire                when_xunitM_l51;
+  wire                when_xunitM_l52;
+  wire                when_xunitM_l60;
+  wire                when_xunitM_l49;
 
   assign _zz_coreArea_next_w_16 = (_zz_coreArea_next_w_17 + (({_zz_coreArea_next_w_1[6 : 0],_zz_coreArea_next_w_1[31 : 7]} ^ {_zz_coreArea_next_w_1[17 : 0],_zz_coreArea_next_w_1[31 : 18]}) ^ _zz_coreArea_next_w_19));
   assign _zz_coreArea_next_w_17 = ((({_zz_coreArea_next_w_14[16 : 0],_zz_coreArea_next_w_14[31 : 17]} ^ {_zz_coreArea_next_w_14[18 : 0],_zz_coreArea_next_w_14[31 : 19]}) ^ _zz_coreArea_next_w_18) + _zz_coreArea_next_w_9);
   assign _zz_coreArea_next_w_18 = (_zz_coreArea_next_w_14 >>> 10);
   assign _zz_coreArea_next_w_19 = (_zz_coreArea_next_w_1 >>> 3);
   assign coreArea_next_w = (_zz_coreArea_next_w_16 + _zz_coreArea_next_w);
-  assign when_xunitM_l54 = (5'h0 < coreArea_latency);
-  assign when_xunitM_l62 = (5'h01 < coreArea_latency);
-  assign when_xunitM_l51 = (8'h0 < coreArea_delay);
+  assign when_xunitM_l52 = (5'h0 < coreArea_latency);
+  assign when_xunitM_l60 = (5'h01 < coreArea_latency);
+  assign when_xunitM_l49 = (8'h0 < coreArea_delay);
   assign out0 = coreArea_out0_reg;
   always @(posedge clk or posedge rst) begin
     if(rst) begin
@@ -75,10 +75,10 @@ module xunitM (
         coreArea_delay <= delay0;
         coreArea_latency <= 5'h11;
       end else begin
-        if(when_xunitM_l51) begin
+        if(when_xunitM_l49) begin
           coreArea_delay <= (coreArea_delay - 8'h01);
         end else begin
-          if(when_xunitM_l54) begin
+          if(when_xunitM_l52) begin
             coreArea_latency <= (coreArea_latency - 5'h01);
           end
           _zz_coreArea_next_w <= _zz_coreArea_next_w_1;
@@ -96,7 +96,7 @@ module xunitM (
           _zz_coreArea_next_w_12 <= _zz_coreArea_next_w_13;
           _zz_coreArea_next_w_13 <= _zz_coreArea_next_w_14;
           _zz_coreArea_next_w_14 <= _zz_coreArea_next_w_15;
-          if(when_xunitM_l62) begin
+          if(when_xunitM_l60) begin
             _zz_coreArea_next_w_15 <= in0;
           end else begin
             _zz_coreArea_next_w_15 <= coreArea_next_w;
