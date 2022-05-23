@@ -26,7 +26,7 @@ ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
 
-FW_SIZE=$(shell wc -l firmware.hex | awk '{print $$1}')
+FW_SIZE=$(shell if [ -f firmware.hex ]; then wc -l firmware.hex | awk '{print $$1}'; else echo "0"; fi)
 
 DEFINE+=$(defmacro)FW_SIZE=$(FW_SIZE)
 SIM=1
