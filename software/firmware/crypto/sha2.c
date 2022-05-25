@@ -180,102 +180,74 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         uint32_t w15 = load_bigendian_32(in + 60);
 
         F_32(w0, 0x428a2f98)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w0);
         F_32(w1, 0x71374491)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w1);
         F_32(w2, 0xb5c0fbcf)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w2);
         F_32(w3, 0xe9b5dba5)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w3);
         F_32(w4, 0x3956c25b)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w4);
         F_32(w5, 0x59f111f1)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w5);
         F_32(w6, 0x923f82a4)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w6);
         F_32(w7, 0xab1c5ed5)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w7);
         F_32(w8, 0xd807aa98)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w8);
         F_32(w9, 0x12835b01)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w9);
         F_32(w10, 0x243185be)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w10);
         F_32(w11, 0x550c7dc3)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w11);
         F_32(w12, 0x72be5d74)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w12);
         F_32(w13, 0x80deb1fe)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w13);
         F_32(w14, 0x9bdc06a7)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w14);
         F_32(w15, 0xc19bf174)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w15);
 
-        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15);
-
-        #if 0
         EXPAND_32
-        #else
-        printf("%08x %08x %08x %08x\n",w0, w14, w9, w1);
-        #if 0
-        M_32(w0, w14, w9, w1)
-        #else
-        #if 0
-        int x1 = sigma1_32(w14);
-        #else
-        int y11 = ROTR_32(w14,17);
-        int y12 = ROTR_32(w14,19);
-        int y13 = SHR(w14,10);
 
-        int z11 = y11 ^ y12;
-
-        int x1 = z11 ^ y13;
-        printf(">%08x %08x %08x %08x %08x\n",y11,y12,y13,z11,x1);
-        #endif
-        #if 0
-        int x2 = sigma0_32(w1);
-        #else
-        int y21 = ROTR_32(w1,7);
-        int y22 = ROTR_32(w1,18);
-        int y23 = SHR(w1,3);
-
-        int z21 = y21 ^ y22;
-
-        int x2 = z21 ^ y23;
-        printf("<%08x %08x %08x %08x %08x\n",y21,y22,y23,z21,x2);
-        #endif
-        int x3 = x1 + w9;
-        int x4 = x2 + w0;
-
-        printf("====== %08x %08x %08x %08x\n",x1,x2,x3,x4);
-
-        w0 = x3 + x4;
-        #endif
-        printf("%08x %08x %08x %08x\n",w0, w14, w9, w1);
-        M_32(w1, w15, w10, w2)
-        M_32(w2, w0, w11, w3)
-        M_32(w3, w1, w12, w4)
-        M_32(w4, w2, w13, w5)
-        M_32(w5, w3, w14, w6)
-        M_32(w6, w4, w15, w7)
-        M_32(w7, w5, w0, w8)
-        M_32(w8, w6, w1, w9)
-        M_32(w9, w7, w2, w10)
-        M_32(w10, w8, w3, w11)
-        M_32(w11, w9, w4, w12)
-        M_32(w12, w10, w5, w13)
-        M_32(w13, w11, w6, w14)
-        M_32(w14, w12, w7, w15)
-        printf("%08x %08x %08x %08x\n",w15,w13,w8,w0);
-        M_32(w15, w13, w8, w0)
-        printf("%08x %08x %08x %08x\n",w15,w13,w8,w0);
-        #endif
-
-        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x %08x\n",w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15);
-
-        exit(0);
+        printf("\n");
 
         F_32(w0, 0xe49b69c1)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w0);
         F_32(w1, 0xefbe4786)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w1);
         F_32(w2, 0x0fc19dc6)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w2);
         F_32(w3, 0x240ca1cc)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w3);
         F_32(w4, 0x2de92c6f)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w4);
         F_32(w5, 0x4a7484aa)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w5);
         F_32(w6, 0x5cb0a9dc)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w6);
         F_32(w7, 0x76f988da)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w7);
         F_32(w8, 0x983e5152)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w8);
         F_32(w9, 0xa831c66d)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w9);
         F_32(w10, 0xb00327c8)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w10);
         F_32(w11, 0xbf597fc7)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w11);
         F_32(w12, 0xc6e00bf3)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w12);
         F_32(w13, 0xd5a79147)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w13);
         F_32(w14, 0x06ca6351)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w14);
         F_32(w15, 0x14292967)
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h,w15);
 
         EXPAND_32
 
@@ -314,6 +286,11 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w13, 0xa4506ceb)
         F_32(w14, 0xbef9a3f7)
         F_32(w15, 0xc67178f2)
+
+        printf("\n\n");
+        printf("%08x %08x %08x %08x %08x %08x %08x %08x\n",a,b,c,d,e,f,g,h);
+
+        exit(0);
 
         a += state[0];
         b += state[1];

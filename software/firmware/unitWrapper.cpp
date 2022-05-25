@@ -42,6 +42,8 @@
    type* self = &data->unit; \
    VCDData* vcd = &data->vcd;
 
+static int zeros[] = {0,0};
+
 static int Mcounter = 0;
 static int Fcounter = 0;
 
@@ -120,8 +122,12 @@ static int32_t* UnitFUpdateFunction(FUInstance* inst){
    results[6] = self->out6;
    results[7] = self->out7;
 
+   inst->done = self->done;
+
    return results;
 }
+
+static int unitFLatencies[] = {16,16,16,16,16,16,16,16};
 
 FUDeclaration* RegisterUnitF(Versat* versat){
    FUDeclaration decl = {};
@@ -129,11 +135,13 @@ FUDeclaration* RegisterUnitF(Versat* versat){
    strcpy(decl.name.str,"xunitF");
    decl.nInputs = 10;
    decl.nOutputs = 8;
+   decl.latencies = unitFLatencies;
+   decl.inputDelays = zeros;
    decl.extraDataSize = sizeof(UnitFData);
    decl.initializeFunction = UnitFInitializeFunction;
    decl.startFunction = UnitFStartFunction;
    decl.updateFunction = UnitFUpdateFunction;
-   decl.latency = 17;
+   decl.nDelays = 1;
 
    return RegisterFU(versat,decl);
 }
@@ -186,21 +194,25 @@ static int32_t* UnitMUpdateFunction(FUInstance* inst){
    UPDATE(self);
 
    out = self->out0;
+   inst->done = self->done;
 
    return &out;
 }
 
 FUDeclaration* RegisterUnitM(Versat* versat){
+   static int latency = 17;
    FUDeclaration decl = {};
 
    strcpy(decl.name.str,"xunitM");
    decl.nInputs = 1;
    decl.nOutputs = 1;
+   decl.inputDelays = zeros;
+   decl.latencies = &latency;
    decl.extraDataSize = sizeof(UnitMData);
    decl.initializeFunction = UnitMInitializeFunction;
    decl.startFunction = UnitMStartFunction;
    decl.updateFunction = UnitMUpdateFunction;
-   decl.latency = 17;
+   decl.nDelays = 1;
 
    return RegisterFU(versat,decl);
 }

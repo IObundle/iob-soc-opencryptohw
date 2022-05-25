@@ -4,7 +4,7 @@ include ../software.mk
 SUB_DIR:=$(SUBMODULES_DIR)
 
 #additional compiler flags
-CFLAGS+= -Os --specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
+CFLAGS+= -O2 -fno-exceptions --specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
 
 #SUBMODULES
 

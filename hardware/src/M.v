@@ -185,18 +185,6 @@ module M #(
    input [31:0]                    delay41,
    input [31:0]                    delay42,
    input [31:0]                    delay43,
-   input [31:0]                    delay44,
-   input [31:0]                    delay45,
-   input [31:0]                    delay46,
-   input [31:0]                    delay47,
-   input [31:0]                    delay48,
-   input [31:0]                    delay49,
-   input [31:0]                    delay50,
-   input [31:0]                    delay51,
-   input [31:0]                    delay52,
-   input [31:0]                    delay53,
-   input [31:0]                    delay54,
-   input [31:0]                    delay55,
    input                           clk,
    input                           rst
    );
@@ -207,11 +195,11 @@ wire [31:0] unitRdataFinal;
 reg [31:0] stateRead;
 
 // Memory access
-wire [88:0] unitDone;
+wire [76:0] unitDone;
 
 assign done = &unitDone;
 
-wire [31:0] output_0_0 , output_1_0 , output_2_0 , output_3_0 , output_4_0 , output_5_0 , output_6_0 , output_7_0 , output_8_0 , output_9_0 , output_10_0 , output_11_0 , output_12_0 , output_13_0 , output_14_0 , output_15_0 , output_16_0 , output_17_0 , output_18_0 , output_19_0 , output_20_0 , output_21_0 , output_22_0 , output_23_0 , output_24_0 , output_25_0 , output_26_0 , output_27_0 , output_28_0 , output_29_0 , output_30_0 , output_31_0 , unused_32 , output_33_0 , output_34_0 , output_35_0 , output_36_0 , output_37_0 , output_38_0 , output_39_0 , output_40_0 , output_41_0 , output_42_0 , output_43_0 , output_44_0 , output_45_0 , output_46_0 , output_47_0 , output_48_0 , output_49_0 , output_50_0 , output_51_0 , output_52_0 , output_53_0 , output_54_0 , output_55_0 , output_56_0 , output_57_0 , output_58_0 , output_59_0 , output_60_0 , output_61_0 , output_62_0 , output_63_0 , output_64_0 , output_65_0 , output_66_0 , output_67_0 , output_68_0 , output_69_0 , output_70_0 , output_71_0 , output_72_0 , output_73_0 , output_74_0 , output_75_0 , output_76_0 , output_77_0 , output_78_0 , output_79_0 , output_80_0 , output_81_0 , output_82_0 , output_83_0 , output_84_0 , output_85_0 , output_86_0 , output_87_0 , output_88_0 ;
+wire [31:0] output_0_0 , output_1_0 , output_2_0 , output_3_0 , output_4_0 , output_5_0 , output_6_0 , output_7_0 , output_8_0 , output_9_0 , output_10_0 , output_11_0 , output_12_0 , output_13_0 , output_14_0 , output_15_0 , output_16_0 , output_17_0 , output_18_0 , output_19_0 , output_20_0 , output_21_0 , output_22_0 , output_23_0 , output_24_0 , output_25_0 , output_26_0 , output_27_0 , output_28_0 , output_29_0 , output_30_0 , output_31_0 , unused_32 , output_33_0 , output_34_0 , output_35_0 , output_36_0 , output_37_0 , output_38_0 , output_39_0 , output_40_0 , output_41_0 , output_42_0 , output_43_0 , output_44_0 , output_45_0 , output_46_0 , output_47_0 , output_48_0 , output_49_0 , output_50_0 , output_51_0 , output_52_0 , output_53_0 , output_54_0 , output_55_0 , output_56_0 , output_57_0 , output_58_0 , output_59_0 , output_60_0 , output_61_0 , output_62_0 , output_63_0 , output_64_0 , output_65_0 , output_66_0 , output_67_0 , output_68_0 , output_69_0 , output_70_0 , output_71_0 , output_72_0 , output_73_0 , output_74_0 , output_75_0 , output_76_0 ;
 
 // Memory mapped
 circuitInput circuitInput_0 (
@@ -397,9 +385,9 @@ M_Stage M_Stage_17 (
 M_Stage M_Stage_18 (
       .out0(output_18_0),
       .in0(output_16_0),
-      .in1(output_69_0),
-      .in2(output_86_0),
-      .in3(output_88_0),
+      .in1(output_11_0),
+      .in2(output_3_0),
+      .in3(output_76_0),
       .constant_0(constant_12),
       .constant_1(constant_13),
       .constant_2(constant_14),
@@ -414,10 +402,10 @@ M_Stage M_Stage_18 (
 
 M_Stage M_Stage_19 (
       .out0(output_19_0),
-      .in0(output_17_0),
-      .in1(output_66_0),
-      .in2(output_84_0),
-      .in3(output_87_0),
+      .in0(output_3_0),
+      .in1(output_17_0),
+      .in2(output_12_0),
+      .in3(output_4_0),
       .constant_0(constant_18),
       .constant_1(constant_19),
       .constant_2(constant_20),
@@ -433,9 +421,9 @@ M_Stage M_Stage_19 (
 M_Stage M_Stage_20 (
       .out0(output_20_0),
       .in0(output_18_0),
-      .in1(output_63_0),
-      .in2(output_82_0),
-      .in3(output_85_0),
+      .in1(output_13_0),
+      .in2(output_5_0),
+      .in3(output_75_0),
       .constant_0(constant_24),
       .constant_1(constant_25),
       .constant_2(constant_26),
@@ -450,10 +438,10 @@ M_Stage M_Stage_20 (
 
 M_Stage M_Stage_21 (
       .out0(output_21_0),
-      .in0(output_19_0),
-      .in1(output_60_0),
-      .in2(output_80_0),
-      .in3(output_83_0),
+      .in0(output_5_0),
+      .in1(output_19_0),
+      .in2(output_6_0),
+      .in3(output_60_0),
       .constant_0(constant_30),
       .constant_1(constant_31),
       .constant_2(constant_32),
@@ -469,9 +457,9 @@ M_Stage M_Stage_21 (
 M_Stage M_Stage_22 (
       .out0(output_22_0),
       .in0(output_20_0),
-      .in1(output_57_0),
-      .in2(output_78_0),
-      .in3(output_81_0),
+      .in1(output_7_0),
+      .in2(output_57_0),
+      .in3(output_74_0),
       .constant_0(constant_36),
       .constant_1(constant_37),
       .constant_2(constant_38),
@@ -486,10 +474,10 @@ M_Stage M_Stage_22 (
 
 M_Stage M_Stage_23 (
       .out0(output_23_0),
-      .in0(output_21_0),
-      .in1(output_54_0),
-      .in2(output_76_0),
-      .in3(output_79_0),
+      .in0(output_7_0),
+      .in1(output_21_0),
+      .in2(output_8_0),
+      .in3(output_54_0),
       .constant_0(constant_42),
       .constant_1(constant_43),
       .constant_2(constant_44),
@@ -506,8 +494,8 @@ M_Stage M_Stage_24 (
       .out0(output_24_0),
       .in0(output_22_0),
       .in1(output_52_0),
-      .in2(output_74_0),
-      .in3(output_77_0),
+      .in2(output_71_0),
+      .in3(output_73_0),
       .constant_0(constant_48),
       .constant_1(constant_49),
       .constant_2(constant_50),
@@ -524,8 +512,8 @@ M_Stage M_Stage_25 (
       .out0(output_25_0),
       .in0(output_23_0),
       .in1(output_50_0),
-      .in2(output_72_0),
-      .in3(output_75_0),
+      .in2(output_69_0),
+      .in3(output_72_0),
       .constant_0(constant_54),
       .constant_1(constant_55),
       .constant_2(constant_56),
@@ -542,8 +530,8 @@ M_Stage M_Stage_26 (
       .out0(output_26_0),
       .in0(output_24_0),
       .in1(output_48_0),
-      .in2(output_70_0),
-      .in3(output_73_0),
+      .in2(output_67_0),
+      .in3(output_70_0),
       .constant_0(constant_60),
       .constant_1(constant_61),
       .constant_2(constant_62),
@@ -560,8 +548,8 @@ M_Stage M_Stage_27 (
       .out0(output_27_0),
       .in0(output_25_0),
       .in1(output_46_0),
-      .in2(output_67_0),
-      .in3(output_71_0),
+      .in2(output_65_0),
+      .in3(output_68_0),
       .constant_0(constant_66),
       .constant_1(constant_67),
       .constant_2(constant_68),
@@ -578,8 +566,8 @@ M_Stage M_Stage_28 (
       .out0(output_28_0),
       .in0(output_26_0),
       .in1(output_44_0),
-      .in2(output_64_0),
-      .in3(output_68_0),
+      .in2(output_63_0),
+      .in3(output_66_0),
       .constant_0(constant_72),
       .constant_1(constant_73),
       .constant_2(constant_74),
@@ -597,7 +585,7 @@ M_Stage M_Stage_29 (
       .in0(output_27_0),
       .in1(output_42_0),
       .in2(output_61_0),
-      .in3(output_65_0),
+      .in3(output_64_0),
       .constant_0(constant_78),
       .constant_1(constant_79),
       .constant_2(constant_80),
@@ -1007,7 +995,7 @@ delay delay_64 (
 
 delay delay_65 (
       .out0(output_65_0),
-      .in0(output_13_0),
+      .in0(output_12_0),
       .delay0(delay32),
       .run(run),
       .done(unitDone[65]),
@@ -1027,7 +1015,7 @@ delay delay_66 (
 
 delay delay_67 (
       .out0(output_67_0),
-      .in0(output_12_0),
+      .in0(output_11_0),
       .delay0(delay34),
       .run(run),
       .done(unitDone[67]),
@@ -1037,7 +1025,7 @@ delay delay_67 (
 
 delay delay_68 (
       .out0(output_68_0),
-      .in0(output_12_0),
+      .in0(output_11_0),
       .delay0(delay35),
       .run(run),
       .done(unitDone[68]),
@@ -1047,7 +1035,7 @@ delay delay_68 (
 
 delay delay_69 (
       .out0(output_69_0),
-      .in0(output_11_0),
+      .in0(output_10_0),
       .delay0(delay36),
       .run(run),
       .done(unitDone[69]),
@@ -1057,7 +1045,7 @@ delay delay_69 (
 
 delay delay_70 (
       .out0(output_70_0),
-      .in0(output_11_0),
+      .in0(output_10_0),
       .delay0(delay37),
       .run(run),
       .done(unitDone[70]),
@@ -1067,7 +1055,7 @@ delay delay_70 (
 
 delay delay_71 (
       .out0(output_71_0),
-      .in0(output_11_0),
+      .in0(output_9_0),
       .delay0(delay38),
       .run(run),
       .done(unitDone[71]),
@@ -1077,7 +1065,7 @@ delay delay_71 (
 
 delay delay_72 (
       .out0(output_72_0),
-      .in0(output_10_0),
+      .in0(output_9_0),
       .delay0(delay39),
       .run(run),
       .done(unitDone[72]),
@@ -1087,7 +1075,7 @@ delay delay_72 (
 
 delay delay_73 (
       .out0(output_73_0),
-      .in0(output_10_0),
+      .in0(output_8_0),
       .delay0(delay40),
       .run(run),
       .done(unitDone[73]),
@@ -1097,7 +1085,7 @@ delay delay_73 (
 
 delay delay_74 (
       .out0(output_74_0),
-      .in0(output_9_0),
+      .in0(output_6_0),
       .delay0(delay41),
       .run(run),
       .done(unitDone[74]),
@@ -1107,7 +1095,7 @@ delay delay_74 (
 
 delay delay_75 (
       .out0(output_75_0),
-      .in0(output_9_0),
+      .in0(output_4_0),
       .delay0(delay42),
       .run(run),
       .done(unitDone[75]),
@@ -1117,130 +1105,10 @@ delay delay_75 (
 
 delay delay_76 (
       .out0(output_76_0),
-      .in0(output_8_0),
+      .in0(output_2_0),
       .delay0(delay43),
       .run(run),
       .done(unitDone[76]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_77 (
-      .out0(output_77_0),
-      .in0(output_8_0),
-      .delay0(delay44),
-      .run(run),
-      .done(unitDone[77]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_78 (
-      .out0(output_78_0),
-      .in0(output_7_0),
-      .delay0(delay45),
-      .run(run),
-      .done(unitDone[78]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_79 (
-      .out0(output_79_0),
-      .in0(output_7_0),
-      .delay0(delay46),
-      .run(run),
-      .done(unitDone[79]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_80 (
-      .out0(output_80_0),
-      .in0(output_6_0),
-      .delay0(delay47),
-      .run(run),
-      .done(unitDone[80]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_81 (
-      .out0(output_81_0),
-      .in0(output_6_0),
-      .delay0(delay48),
-      .run(run),
-      .done(unitDone[81]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_82 (
-      .out0(output_82_0),
-      .in0(output_5_0),
-      .delay0(delay49),
-      .run(run),
-      .done(unitDone[82]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_83 (
-      .out0(output_83_0),
-      .in0(output_5_0),
-      .delay0(delay50),
-      .run(run),
-      .done(unitDone[83]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_84 (
-      .out0(output_84_0),
-      .in0(output_4_0),
-      .delay0(delay51),
-      .run(run),
-      .done(unitDone[84]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_85 (
-      .out0(output_85_0),
-      .in0(output_4_0),
-      .delay0(delay52),
-      .run(run),
-      .done(unitDone[85]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_86 (
-      .out0(output_86_0),
-      .in0(output_3_0),
-      .delay0(delay53),
-      .run(run),
-      .done(unitDone[86]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_87 (
-      .out0(output_87_0),
-      .in0(output_3_0),
-      .delay0(delay54),
-      .run(run),
-      .done(unitDone[87]),
-      .clk(clk),
-      .rst(rst)
-   );
-
-delay delay_88 (
-      .out0(output_88_0),
-      .in0(output_2_0),
-      .delay0(delay55),
-      .run(run),
-      .done(unitDone[88]),
       .clk(clk),
       .rst(rst)
    );

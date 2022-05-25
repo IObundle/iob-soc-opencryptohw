@@ -18,6 +18,35 @@ int printf_(const char* format, ...);
 
 #define printf printf_
 
+// Automatically times a block in number of counts
+struct TimeIt{
+    int line;
+    char fileId;
+
+    TimeIt(int line,char fileId);
+    ~TimeIt();
+};
+
+TimeIt::TimeIt(int line,char fileId){
+    timer_stop();
+    this->line = line;
+    this->fileId = fileId;
+    timer_reset();
+    timer_start();
+}
+
+TimeIt::~TimeIt(){
+    timer_stop();
+    unsigned long long end = timer_get_count();
+    printf("%c:%d %lu\n",fileId,line,end);
+}
+
+#if 1
+#define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
+#else
+#define TIME_IT(ID) do{}while(0)
+#endif
+
 #include "versat.hpp"
 #include "utils.hpp"
 
@@ -108,6 +137,7 @@ void ClearCache(){
 }
 
 void ParseVersatSpecification(Versat* versat,FILE* file);
+FUDeclaration* MEM;
 FUDeclaration* REG;
 
 int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
@@ -181,14 +211,89 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     return out;
 }
 
+int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues,int numberOutputs,...){
+    static int32_t out[99];
+    FUInstance* outputs[99];
+
+    va_list args;
+    va_start(args,numberOutputs);
+
+    FUInstance* input = CreateNamedFUInstance(accel,MEM,MAKE_SIZED_STRING("memIn"),nullptr);
+
+    ConnectUnits(input,0,inst,0);
+
+    {
+        volatile MemConfig* c = (volatile MemConfig*) input->config;
+
+        c->iterA = 1;
+        c->incrA = 1;
+        c->perA = numberValues;
+        c->dutyA = numberValues;
+    }
+
+    int registersAdded = 0;
+    {
+    TIME_IT('F');
+    for(int i = 0; i < numberValues; i++){
+        int32_t val = va_arg(args,int32_t);
+
+        VersatUnitWrite(input,i,val);
+    }
+
+    registersAdded = 0;
+    for(int i = 0; i < numberOutputs; i++){
+        char buffer[128];
+        int size = snprintf(buffer,128,"regOut%d",registersAdded++);
+        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
+
+        ConnectUnits(inst,i,outputs[i],0);
+    }
+    }
+
+    CalculateDelay(accel->versat,accel);
+
+    #if 1
+    OutputGraphDotFile(accel,true,"circuit.dot");
+
+    Accelerator* flatten = Flatten(accel->versat,accel,1);
+
+    OutputGraphDotFile(flatten,true,"flatten.dot");
+    #endif
+
+    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+
+    #if 0
+    OutputMemoryMap(accel->versat,accel);
+    #endif
+
+    {
+    TIME_IT('F');
+    AcceleratorRun(accel);
+    }
+
+    RemoveFUInstance(accel,input);
+
+    for(int i = 0; i < numberOutputs; i++){
+        out[i] = outputs[i]->state[0];
+
+        RemoveFUInstance(accel,outputs[i]);
+    }
+
+    va_end(args);
+
+    return out;
+}
+
 void TestMStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"),nullptr);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+
+    SetDelayRecursive(inst,0);
 
     int constants[] = {7,18,3,17,19,10};
-    for(int ii = 0; ii < ARRAY_SIZE(constants); ii++){
-        inst->config[ii] = constants[ii];
+    for(int i = 0; i < ARRAY_SIZE(constants); i++){
+        inst->config[i] = constants[i];
     }
 
     int32_t* out = TestInstance(accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
@@ -197,47 +302,64 @@ void TestMStage(Versat* versat){
     printf("Got:      0x%x\n",out[0]);
 }
 
-void TestM(Versat* versat){
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M"));
+void TestFStage(Versat* versat){
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
+    Accelerator* accel = CreateAccelerator(versat);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+
+    SetDelayRecursive(inst,0);
+
+    int constants[] = {6,11,25,2,13,22};
+    for(int i = 0; i < ARRAY_SIZE(constants); i++){
+        inst->config[i] = constants[i];
+    }
+
+    int32_t* out = TestInstance(accel,inst,10,8,0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19,0x428a2f98,0x5a86b737);
+
+    printf("0x568f3f84 0x6a09e667 0xbb67ae85 0x3c6ef372 0xf34e99d9 0x510e527f 0x9b05688c 0x1f83d9ab 0x428a2f98 0x5a86b737\n");
+    for(int i = 0; i < 8; i++){
+        printf("0x%08x ",out[i]);
+    }
+    printf("\n");
+}
+
+void TestInputM(Versat* versat){
+    FUInstance* inst;
+    {
+    TIME_IT('F');
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Input_M"));
     accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"),nullptr);
+    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+
+    SetDelayRecursive(inst,0);
+
+    #if 1
+    OutputGraphDotFile(type->circuit,true,"circuit.dot");
+    #endif
+    }
 
     int constants[] = {7,18,3,17,19,10};
 
-    // Set constants to every entity (memcpy is slower, does byte a byte)
+    // Set constants to every entity
+    {
+    TIME_IT('F');
     for(int i = 0; i < 16; i++){
         for(int ii = 0; ii < ARRAY_SIZE(constants); ii++){
             inst->config[i*6+ii] = constants[ii];
         }
     }
+    }
+
+    int32_t* out = TestSequentialInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
 
     printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
-
-    int32_t* out = TestInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
-
-    for(int i = 0; i < inst->declaration->nOutputs; i++){
+    for(int i = 0; i < 16; i++){
         printf("%08x ",out[i]);
     }
     printf("\n");
 }
 
-void TestDelay(Versat* versat){
-    #if 0
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("TestDelay"));
-    accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type);
-
-    CalculateDelay(versat,accel);
-
-    int32_t* out = TestInstance(accel,inst,0x2);
-
-    for(int i = 0; i < inst->declaration->nOutputs; i++){
-        printf("%08x ",out[i]);
-    }
-    #endif
-}
-
-void TestSHA(Versat* versat){
+void InstantiateSHA(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
     FUInstance* inst = CreateFUInstance(accel,type);
@@ -279,16 +401,36 @@ void TestSHA(Versat* versat){
         }
     }
 
-    for(int i = 0; i < 8; i++){
-        FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
+    CalculateDelay(versat,accel);
+    SetDelayRecursive(inst,0);
+}
 
-        VersatUnitWrite(inst,0,initialStateValues[i]);
+void TestSHA(Versat* versat){
+    InstantiateSHA(versat);
+
+    for(FUInstance* inst : accel->instances){
+        printf("%s %d %d\n",inst->name.str,inst->delay[0],inst->baseDelay);
+        for(FUInstance* inst2 : inst->compositeAccel->instances){
+            printf("%s %d %d\n",inst2->name.str,inst2->delay[0],inst2->baseDelay);
+        }
     }
 
-    CalculateDelay(versat,accel);
+    #if 1
+    Accelerator* flatten = Flatten(versat,accel,1);
+    OutputGraphDotFile(flatten,true,"flatten.dot");
+    #endif
+
+    unsigned char digest[256];
+    for(int i = 0; i < 256; i++){
+        digest[i] = 0;
+    }
+
+    printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+    versat_sha256(digest,msg_64,64);
+    printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
 
     // Gera o versat.
-    //OutputVersatSource(versat,"versat_instance.v");
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 }
 
 void RegisterTypes();
@@ -308,10 +450,6 @@ int main(int argc,const char* argv[])
     return 0;
     #endif
 
-    #ifdef PC
-    printf("%s\n",argv[0]);
-    #endif
-
     for(int i = 0; i < 256; i++){
         digest[i] = 0;
     }
@@ -321,6 +459,7 @@ int main(int argc,const char* argv[])
     Versat* versat = &versatInst;
     InitVersat(versat,VERSAT_BASE,1);
 
+    MEM = GetTypeByName(versat,MakeSizedString("xmem"));
     REG = GetTypeByName(versat,MakeSizedString("xreg"));
 
     #ifdef PC
@@ -340,8 +479,15 @@ int main(int argc,const char* argv[])
     return 0;
     #endif
 
-    #if 1
-    TestM(versat);
+    #if 0
+    TestFStage(versat);
+
+    uart_finish();
+    return 0;
+    #endif
+
+    #if 0
+    TestInputM(versat);
 
     uart_finish();
     return 0;
@@ -358,6 +504,13 @@ int main(int argc,const char* argv[])
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     sha256(digest,msg_64,64);
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
+    #endif
+
+    #if 0
+    TestDelayImprove(versat);
+
+    uart_finish();
+    return 0;
     #endif
 
     #if 0
@@ -390,6 +543,8 @@ int main(int argc,const char* argv[])
 
 #ifdef AUTOMATIC_TEST
     int i = 0;
+
+    InstantiateSHA(versat);
 
     printf("[L = %d]\n", HASH_SIZE);
 
@@ -522,7 +677,20 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Currently:
 
-1) Figure out where the trap condition is happening
+Important thing to keep track off: The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives. Care
+
+Get more examples. In theory, a time shift inside a module or a time shift outside a module (to many ports) should produce the same result.
+Start getting more examples where you know exactly the results that the algorithm should give
+
+Define in more mathmatical terms the role and purpose of each signal and how they work.
+Try to define the algorithm and what each thing actually is: (delay, input delay, time shift and so on)
+
+The base delay of a input is not actually a time shift but it's a propagated delay.
+
+Changes required are:
+
+    Change FUDeclaration to store two vectors, one of delays for inputs and one of delays for outputs.
+
 
 Things to do:
 
@@ -535,6 +703,12 @@ Fix makefile dependencies, make it proper (defines (like -DPC) only for firmware
 /*
 
 Implementation to do:
+
+High importance:
+
+    Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of xreg?
+    Also, is there any SinkAndSource instance that would implement DELAY_TYPE_SOURCE_DELAY? Because how would they know when they have valid data?
+    Also also, when changing delays from instance based to port based, the concept of delay type will probably end. In that case, the different delay types would only serve as an "extra" to optimize away the delay wires to units that do not need them
 
 Overall:
 
@@ -557,6 +731,9 @@ Software:
         More complex, but take a pass at anything that depends on order of instancing/declarating (a lot of assumptions are being made right now)
     Go back and check the output memory map for individual accelerators, there is some bugs for the memory allocation right now
     Lock accelerator can resize memory allocated to fit exactly with amount of memory needed
+    [Type] Change ouput memory map and functions alike to use type system and simple output structs directly (Simpler and less error prone)
+    [CalculateVersatData] naked memory allocation, add it to the accelerator locking mechanism
+    Change accel reallocation to, instead of ordered, go to each unit, subtract original, then realloc and add offset to each unit. This completely removes order from the reallocation procedure and should make it easier to implement a RemoveUnit for allocated units, if needed
 
 Embedded:
 
@@ -567,6 +744,15 @@ Hardware:
 
     Remove done/run/clk if not needed
     Take another look at circuit input and output, instanciating units only to pass data through seems wrong way to go about it.
+
+CalculateDelay:
+
+    Maybe add a way to indicate that a given output is not dependent on a given input (Think dual port ram)
+
+Type:
+
+    Rewrite the portions of the type system that you wanted too. Standerdize type info, type collapse into simpler types and automatic type casting (I have x, I want y)
+    Implement object instrospection, printing of members and data automatically
 
 Template Engine:
 
@@ -586,6 +772,8 @@ Verilog Parser:
 Flatten:
 
     Give every declaration a "level" variable. simple = 0, composite = max(instancesLevel) + 1, special = 0.
+    Flatten is currently broken, only creating shallow instances. Useful for outputting graph, but not possible to simulate
+        The fix is to create a function that copies and changes shallow instances and, in the end, it fixes memory allocation and instance pointers and initialization
 
 Merge:
 
