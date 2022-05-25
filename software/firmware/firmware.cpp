@@ -385,22 +385,6 @@ void InstantiateSHA(Versat* versat){
         c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
     }
 
-    for(int i = 0; i < 4; i++){
-        FUInstance* inst = GetInstanceByName(accel,"SHA","cMem%d",i);
-
-        volatile MemConfig* c = (volatile MemConfig*) inst->config;
-
-        c->iterA = 1;
-        c->incrA = 1;
-        c->perA = 16;
-        c->dutyA = 16;
-
-        for (int ii = 0; ii < 16; ii++)
-        {
-            VersatUnitWrite(inst,ii,kConstants[i][ii]);
-        }
-    }
-
     CalculateDelay(versat,accel);
     SetDelayRecursive(inst,0);
 }
@@ -513,7 +497,7 @@ int main(int argc,const char* argv[])
     return 0;
     #endif
 
-    #if 0
+    #if 1
     TestSHA(versat);
 
     uart_finish();
@@ -541,7 +525,7 @@ int main(int argc,const char* argv[])
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
     #endif
 
-#ifdef AUTOMATIC_TEST
+#if AUTOMATIC_TEST == 1
     int i = 0;
 
     InstantiateSHA(versat);
