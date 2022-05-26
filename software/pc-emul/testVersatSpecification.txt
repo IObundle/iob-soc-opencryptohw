@@ -163,7 +163,7 @@ module M_Stage(w0,w14,w9,w1){
    r -> out;
 }
 
-module Input_M(w){
+module M(w){
    M_Stage m0;
    M_Stage m1;
    M_Stage m2;
@@ -180,6 +180,7 @@ module Input_M(w){
    M_Stage md;
    M_Stage me;
    M_Stage mf;
+   Merge merge;
 #
    w[0] -> m0:0;
    w[14] -> m0:1;
@@ -261,138 +262,24 @@ module Input_M(w){
    m8 -> mf:2;
    m0 -> mf:3;
 
-   m0 -> out:0;
-   m1 -> out:1;
-   m2 -> out:2;
-   m3 -> out:3;
-   m4 -> out:4;
-   m5 -> out:5;
-   m6 -> out:6;
-   m7 -> out:7;
-   m8 -> out:8;
-   m9 -> out:9;
-   ma -> out:10;
-   mb -> out:11;
-   mc -> out:12;
-   md -> out:13;
-   me -> out:14;
-   mf -> out:15;
-}
+   m0 -> merge:0;
+   m1 -> merge:1;
+   m2 -> merge:2;
+   m3 -> merge:3;
+   m4 -> merge:4;
+   m5 -> merge:5;
+   m6 -> merge:6;
+   m7 -> merge:7;
+   m8 -> merge:8;
+   m9 -> merge:9;
+   ma -> merge:10;
+   mb -> merge:11;
+   mc -> merge:12;
+   md -> merge:13;
+   me -> merge:14;
+   mf -> merge:15;
 
-module M(w0,w1,w2,w3,w4,w5,w6,w7,w8,w9,w10,w11,w12,w13,w14,w15){
-   M_Stage m0;
-   M_Stage m1;
-   M_Stage m2;
-   M_Stage m3;
-   M_Stage m4;
-   M_Stage m5;
-   M_Stage m6;
-   M_Stage m7;
-   M_Stage m8;
-   M_Stage m9;
-   M_Stage ma;
-   M_Stage mb;
-   M_Stage mc;
-   M_Stage md;
-   M_Stage me;
-   M_Stage mf;
-#
-   w0 -> m0:0;
-   w14 -> m0:1;
-   w9 -> m0:2;
-   w1 -> m0:3;
-
-   w1 -> m1:0;
-   w15 -> m1:1;
-   w10 -> m1:2;
-   w2 -> m1:3;
-   
-   w2 -> m2:0;
-   m0 -> m2:1;
-   w11 -> m2:2;
-   w3 -> m2:3;
-   
-   w3 -> m3:0;
-   m1 -> m3:1;
-   w12 -> m3:2;
-   w4 -> m3:3;
-   
-   w4 -> m4:0;
-   m2 -> m4:1;
-   w13 -> m4:2;
-   w5 -> m4:3;
-   
-   w5 -> m5:0;
-   m3 -> m5:1;
-   w14 -> m5:2;
-   w6 -> m5:3;
-   
-   w6 -> m6:0;
-   m4 -> m6:1;
-   w15 -> m6:2;
-   w7 -> m6:3;
-   
-   w7 -> m7:0;
-   m5 -> m7:1;
-   m0 -> m7:2;
-   w8 -> m7:3;
-   
-   w8 -> m8:0;
-   m6 -> m8:1;
-   m1 -> m8:2;
-   w9 -> m8:3;
-   
-   w9 -> m9:0;
-   m7 -> m9:1;
-   m2 -> m9:2;
-   w10 -> m9:3;
-   
-   w10 -> ma:0;
-   m8 -> ma:1;
-   m3 -> ma:2;
-   w11 -> ma:3;
-   
-   w11 -> mb:0;
-   m9 -> mb:1;
-   m4 -> mb:2;
-   w12 -> mb:3;
-   
-   w12 -> mc:0;
-   ma -> mc:1;
-   m5 -> mc:2;
-   w13 -> mc:3;
-   
-   w13 -> md:0;
-   mb -> md:1;
-   m6 -> md:2;
-   w14 -> md:3;
-   
-   w14 -> me:0;
-   mc -> me:1;
-   m7 -> me:2;
-   w15 -> me:3;
-   
-   w15 -> mf:0;
-   md -> mf:1;
-   m8 -> mf:2;
-   m0 -> mf:3;
-
-   m0 -> out:0;
-   m1 -> out:1;
-   m2 -> out:2;
-   m3 -> out:3;
-   m4 -> out:4;
-   m5 -> out:5;
-   m6 -> out:6;
-   m7 -> out:7;
-   m8 -> out:8;
-   m9 -> out:9;
-   ma -> out:10;
-   mb -> out:11;
-   mc -> out:12;
-   md -> out:13;
-   me -> out:14;
-   mf -> out:15;
+   merge -> out;
 }
 
 module T1(e,f,g,h,k,w){
@@ -598,13 +485,13 @@ module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
 
 module SHA(){
    vread MemRead;
-   xunitF F0;
-   xunitF F1;
-   xunitF F2;
-   xunitF F3;
-   xunitM M0;
-   xunitM M1;
-   xunitM M2;
+   F F0;
+   F F1;
+   F F2;
+   F F3;
+   M M0;
+   M M1;
+   M M2;
    xmem cMem0(1,16,16,0,0,1){0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
    xmem cMem1(1,16,16,0,0,1){0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967};
    xmem cMem2(1,16,16,0,0,1){0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070};
@@ -628,8 +515,8 @@ module SHA(){
    M2         -> F3:9;
 
    MemRead  -> M0;
-   M0       -> M1;
-   M1       -> M2;
+   M0 -> M1;
+   M1 -> M2;
    
    F3:0..7 -> State:0..7;
 }
