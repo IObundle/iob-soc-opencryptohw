@@ -63,10 +63,8 @@ SIMULATOR ?=icarus
 #check the respective Makefile in hardware/fpga/$(BOARD) for specific settings
 BOARD ?=AES-KU040-DB-G
 
-#ASIC COMPILATION
-#default asic node running locally or remotely
-#check the respective Makefile in hardware/asic/$(ASIC_NODE) for specific settings
-ASIC_NODE ?=umc130
+#IOB LIBRARY
+UART_HW_DIR:=$(UART_DIR)/hardware
 
 ####################################################################
 # DERIVED FROM PRIMARY PARAMETERS: DO NOT CHANGE BELOW THIS POINT
@@ -106,7 +104,6 @@ SW_TEST_DIR:=$(SW_DIR)/test
 #hw paths
 HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
-ASIC_DIR=$(HW_DIR)/asic/$(ASIC_NODE)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
 DOC_DIR=$(ROOT_DIR)/document
 
@@ -145,7 +142,7 @@ DEFINE+=$(defmacro)N_SLAVES_W=$(N_SLAVES_W)
 
 
 #default baud and system clock freq
-BAUD ?=115200
+BAUD ?=5000000 #simulation default
 FREQ ?=100000000
 
 SHELL = /bin/bash
