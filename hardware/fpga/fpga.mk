@@ -96,6 +96,8 @@ queue-out-remote:
 ifeq ($(BOARD_SERVER),)
 	@if [ "`ps aux | grep $(USER) | grep console | grep python3 | grep -v grep`" ]; then \
 	kill -9 $$(ps aux | grep $(USER) | grep console | grep python3 | grep -v grep | awk '{print $$2}'); fi
+	@if [ "`ps aux | grep $(USER) | grep sha256_test | grep python3 | grep -v grep`" ]; then \
+	kill -9 $$(ps aux | grep $(USER) | grep sha256_test | grep python3 | grep -v grep | awk '{print $$2}'); fi
 	make queue-out
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
