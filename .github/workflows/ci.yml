@@ -41,8 +41,8 @@ jobs:
   verilator:
     runs-on: self-hosted
     timeout-minutes: 30
-    # run even if previous job failed
-    if: ${{ always() }}
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
     # run after indicated job
     needs: pc-emul
 
@@ -58,7 +58,8 @@ jobs:
   icarus:
     runs-on: self-hosted
     timeout-minutes: 90
-    if: ${{ always() }}
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
     needs: verilator
 
     steps:
@@ -73,7 +74,8 @@ jobs:
   fpga:
     runs-on: self-hosted
     timeout-minutes: 90
-    if: ${{ always() }}
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
     needs: icarus
 
     steps:
@@ -90,7 +92,8 @@ jobs:
   versat-FUs:
     runs-on: self-hosted
     timeout-minutes: 15
-    if: ${{ always() }}
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
     needs: fpga
 
     steps:
