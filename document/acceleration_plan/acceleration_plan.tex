@@ -1,0 +1,70 @@
+\documentclass{plan}
+\usepackage{float}
+\usepackage{color, colortbl}
+\usepackage[section]{placeins}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{amsmath}
+%\usepackage[T1]{helvet}
+\usepackage[OT1]{fontenc} 
+\usepackage{array}
+\usepackage[binary-units=true]{siunitx}
+\usepackage{subcaption}
+\usepackage{caption,tabularx,booktabs}
+\usepackage{longtable}
+\usepackage[all]{nowidow}
+\widowpenalty10000
+\clubpenalty10000
+
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+% \graphicspath{ {./figures/} {}
+
+\title{IOb-SoC-SHA Acceleration  Plan}
+\category{OpenCryptoHW Project Report}
+%\confidential{}
+
+\input{\TEX/color}
+
+\begin{document}
+\maketitle
+\cleardoublepage
+\tableofcontents
+\listoftables
+\listoffigures
+\cleardoublepage
+
+\section{Introduction}
+\label{sec:intro}
+\input{intro}
+
+\section{SHA256 Algorithm}
+\label{sec:sha256}
+\input{sha256_algo}
+
+\section{IOb-Versat CGRA}
+\label{sec:versat_CGRA}
+\input{versat_CGRA}
+
+\section{Profiling Assessment}
+\label{sec:profiling}
+\input{profile}
+
+\section{Acceleration Proposal}
+\label{sec:accel_proposal}
+\input{proposal}
+
+\section{Expected Results}
+\label{sec:expected_results}
+\input{expected_results}
+
+\section{Conclusion}
+\label{sec:conclusion}
+\input{conclusion}
+
+\phantomsection
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{unsrt}
+\bibliography{refs}
+
+\end{document}

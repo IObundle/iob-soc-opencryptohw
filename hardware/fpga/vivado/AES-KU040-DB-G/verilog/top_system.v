@@ -26,8 +26,57 @@ module top_system(
                   inout [3:0]   c0_ddr4_dqs_c,
                   inout [3:0]   c0_ddr4_dqs_t, 
 `endif                  
+                //
+                // 1. top_system module ports for ethernet interface
+                //
+                output ENET_RESETN,
+                input  ENET_RX_CLK,
+
+                output ENET_GTX_CLK,
+                input  ENET_RX_D0,
+                input  ENET_RX_D1,
+                input  ENET_RX_D2,
+                input  ENET_RX_D3,
+                input  ENET_RX_DV,
+                output ENET_TX_D0,
+                output ENET_TX_D1,
+                output ENET_TX_D2,
+                output ENET_TX_D3,
+                output ENET_TX_EN,
 		  output        trap
 		  );
+
+    // 
+    // 2. Logic to contatenate data pins and ethernet clock
+    //
+
+    //buffered eth clock
+    wire            ETH_CLK;
+
+    //PLL
+    wire            locked;
+
+    //MII
+    wire [3:0]      TX_DATA;   
+    wire [3:0]      RX_DATA;
+
+    assign {ENET_TX_D3, ENET_TX_D2, ENET_TX_D1, ENET_TX_D0} = TX_DATA;
+    assign RX_DATA = {ENET_RX_D3, ENET_RX_D2, ENET_RX_D1, ENET_RX_D0};
+
+    //eth clock
+    IBUFG rxclk_buf (
+          .I (ENET_RX_CLK),
+          .O (ETH_CLK)
+          );
+    ODDRE1 ODDRE1_inst (
+             .Q  (ENET_GTX_CLK),
+             .C  (ETH_CLK),
+             .D1 (1'b1),
+             .D2 (1'b0),
+             .SR (~ENET_RESETN)
+             );
+
+    assign locked = 1'b1; 
 
 `ifdef USE_DDR
    //
@@ -36,47 +85,47 @@ module top_system(
                          
    // SYSTEM/SLAVE SIDE
    // address write
-   wire [2*1-1:0]           sys_awid;
-   wire [2*`DDR_ADDR_W-1:0] sys_awaddr;
-   wire [2*8-1:0]        sys_awlen;
-   wire [2*3-1:0]        sys_awsize;
-   wire [2*2-1:0]        sys_awburst;
-   wire [2*1-1:0]        sys_awlock;
-   wire [2*4-1:0]        sys_awcache;
-   wire [2*3-1:0]        sys_awprot;
-   wire [2*4-1:0]        sys_awqos;
-   wire [2*1-1:0]        sys_awvalid;
-   wire [2*1-1:0]        sys_awready;
+   wire [0:0]			sys_awid;
+   wire [`DDR_ADDR_W-1:0]       sys_awaddr;
+   wire [7:0] 			sys_awlen;
+   wire [2:0] 			sys_awsize;
+   wire [1:0] 			sys_awburst;
+   wire 			sys_awlock;
+   wire [3:0]			sys_awcache;
+   wire [2:0] 			sys_awprot;
+   wire [3:0] 			sys_awqos;
+   wire 			sys_awvalid;
+   wire 			sys_awready;
    //write
-   wire [2*32-1:0]        sys_wdata;
-   wire [2*4-1:0]         sys_wstrb;
-   wire [2*1-1:0]         sys_wlast;
-   wire [2*1-1:0]         sys_wvalid;
-   wire [2*1-1:0]         sys_wready;
+   wire [31:0]                  sys_wdata;
+   wire [3:0] 			sys_wstrb;
+   wire 			sys_wlast;
+   wire 			sys_wvalid;
+   wire 			sys_wready;
    //write response
-   wire [2*1-1:0]         sys_bid;
-   wire [2*2-1:0]         sys_bresp;
-   wire [2*1-1:0]         sys_bvalid;
-   wire [2*1-1:0]         sys_bready;
+   wire [0:0]			sys_bid;
+   wire [1:0] 			sys_bresp;
+   wire 			sys_bvalid;
+   wire 			sys_bready;
    //address read
-   wire [2*1-1:0]         sys_arid;
-   wire [2*`DDR_ADDR_W-1:0]  sys_araddr;
-   wire [2*8-1:0]         sys_arlen;
-   wire [2*3-1:0]         sys_arsize;
-   wire [2*2-1:0]         sys_arburst;
-   wire [2*1-1:0]         sys_arlock;
-   wire [2*4-1:0]         sys_arcache;
-   wire [2*3-1:0]         sys_arprot;
-   wire [2*4-1:0]         sys_arqos;
-   wire [2*1-1:0]         sys_arvalid;
-   wire [2*1-1:0]         sys_arready;
+   wire [0:0]			sys_arid;
+   wire [`DDR_ADDR_W-1:0]       sys_araddr;
+   wire [7:0] 			sys_arlen;
+   wire [2:0] 			sys_arsize;
+   wire [1:0] 			sys_arburst;
+   wire 			sys_arlock;
+   wire [3:0] 			sys_arcache;
+   wire [2:0] 			sys_arprot;
+   wire [3:0] 			sys_arqos;
+   wire 			sys_arvalid;
+   wire 			sys_arready;
    //read
-   wire [2*1-1:0]         sys_rid;
-   wire [2*`DATA_W-1:0]   sys_rdata;   
-   wire [2*2-1:0]         sys_rresp;   
-   wire [2*1-1:0]         sys_rlast;
-   wire [2*1-1:0]         sys_rvalid;
-   wire [2*1-1:0]         sys_rready;
+   wire [0:0]			sys_rid;
+   wire [`DATA_W-1:0]           sys_rdata;   
+   wire [1:0]                   sys_rresp;   
+   wire 			sys_rlast;
+   wire 			sys_rvalid;
+   wire 			sys_rready;
 
    // DDR/MASTER SIDE
    //Write address
@@ -131,9 +180,7 @@ module top_system(
    //system clock
    wire 			sys_clk;
    
-`ifdef USE_DDR
-   wire                         ddr_aclk;
-`else 
+`ifndef USE_DDR
    clock_wizard #(
 		  .OUTPUT_PER(10),
 		  .INPUT_PER(4)
@@ -158,7 +205,6 @@ module top_system(
    wire                         sys_rst;
 
 `ifdef USE_DDR
-   wire                         init_calib_complete;
    wire                         sys_rstn;
 
    assign sys_rst  = ~sys_rstn;
@@ -216,7 +262,7 @@ module top_system(
       .c0_ddr4_dq             (c0_ddr4_dq),
       .c0_ddr4_dqs_c          (c0_ddr4_dqs_c),
       .c0_ddr4_dqs_t          (c0_ddr4_dqs_t),
-      .c0_init_calib_complete (init_calib_complete),
+      .c0_init_calib_complete (),
       
       //generated clocks and resets
       .c0_ddr4_ui_clk         (ddr_ui_clk),
@@ -277,7 +323,7 @@ module top_system(
    axi_interconnect_0 cache2ddr 
      (
       .INTERCONNECT_ACLK     (ddr_ui_clk),
-      .INTERCONNECT_ARESETN  (~(ddr_ui_rst | ~init_calib_complete)),
+      .INTERCONNECT_ARESETN  (~ddr_ui_rst),
       
       //
       // SYSTEM SIDE
@@ -285,102 +331,54 @@ module top_system(
       .S00_AXI_ARESET_OUT_N (sys_rstn),
       .S00_AXI_ACLK         (sys_clk),
       
-     //Write address
-      .S00_AXI_AWID         (sys_awid[0*1+:1]),
-      .S00_AXI_AWADDR       (sys_awaddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S00_AXI_AWLEN        (sys_awlen[0*8+:8]),
-      .S00_AXI_AWSIZE       (sys_awsize[0*3+:3]),
-      .S00_AXI_AWBURST      (sys_awburst[0*2+:2]),
-      .S00_AXI_AWLOCK       (sys_awlock[0*1+:1]),
-      .S00_AXI_AWCACHE      (sys_awcache[0*4+:4]),
-      .S00_AXI_AWPROT       (sys_awprot[0*3+:3]),
-      .S00_AXI_AWQOS        (sys_awqos[0*4+:4]),
-      .S00_AXI_AWVALID      (sys_awvalid[0*1+:1]),
-      .S00_AXI_AWREADY      (sys_awready[0*1+:1]),
-
-      //Write data
-      .S00_AXI_WDATA        (sys_wdata[0*32+:32]),
-      .S00_AXI_WSTRB        (sys_wstrb[0*4+:4]),
-      .S00_AXI_WLAST        (sys_wlast[0*1+:1]),
-      .S00_AXI_WVALID       (sys_wvalid[0*1+:1]),
-      .S00_AXI_WREADY       (sys_wready[0*1+:1]),
-      
-      //Write response
-      .S00_AXI_BID           (sys_bid[0*1+:1]),
-      .S00_AXI_BRESP         (sys_bresp[0*2+:2]),
-      .S00_AXI_BVALID        (sys_bvalid[0*1+:1]),
-      .S00_AXI_BREADY        (sys_bready[0*1+:1]),
-      
-      //Read address
-      .S00_AXI_ARID         (sys_arid[0*1+:1]),
-      .S00_AXI_ARADDR       (sys_araddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S00_AXI_ARLEN        (sys_arlen[0*8+:8]),
-      .S00_AXI_ARSIZE       (sys_arsize[0*3+:3]),
-      .S00_AXI_ARBURST      (sys_arburst[0*2+:2]),
-      .S00_AXI_ARLOCK       (sys_arlock[0*1+:1]),
-      .S00_AXI_ARCACHE      (sys_arcache[0*4+:4]),
-      .S00_AXI_ARPROT       (sys_arprot[0*3+:3]),
-      .S00_AXI_ARQOS        (sys_arqos[0*4+:4]),
-      .S00_AXI_ARVALID      (sys_arvalid[0*1+:1]),
-      .S00_AXI_ARREADY      (sys_arready[0*1+:1]),
-      
-      //Read data
-      .S00_AXI_RID          (sys_rid[0*1+:1]),
-      .S00_AXI_RDATA        (sys_rdata[0*`DATA_W+:`DATA_W]),
-      .S00_AXI_RRESP        (sys_rresp[0*2+:2]),
-      .S00_AXI_RLAST        (sys_rlast[0*1+:1]),
-      .S00_AXI_RVALID       (sys_rvalid[0*1+:1]),
-      .S00_AXI_RREADY       (sys_rready[0*1+:1]),
-
-      .S01_AXI_ARESET_OUT_N (),
-      .S01_AXI_ACLK         (sys_clk),
-      
       //Write address
-      .S01_AXI_AWID         (sys_awid[1*1+:1]),
-      .S01_AXI_AWADDR       (sys_awaddr[1*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S01_AXI_AWLEN        (sys_awlen[1*8+:8]),
-      .S01_AXI_AWSIZE       (sys_awsize[1*3+:3]),
-      .S01_AXI_AWBURST      (sys_awburst[1*2+:2]),
-      .S01_AXI_AWLOCK       (sys_awlock[1*1+:1]),
-      .S01_AXI_AWCACHE      (sys_awcache[1*4+:4]),
-      .S01_AXI_AWPROT       (sys_awprot[1*3+:3]),
-      .S01_AXI_AWQOS        (sys_awqos[1*4+:4]),
-      .S01_AXI_AWVALID      (sys_awvalid[1*1+:1]),
-      .S01_AXI_AWREADY      (sys_awready[1*1+:1]),
+      .S00_AXI_AWID         (sys_awid),
+      .S00_AXI_AWADDR       (sys_awaddr),
+      .S00_AXI_AWLEN        (sys_awlen),
+      .S00_AXI_AWSIZE       (sys_awsize),
+      .S00_AXI_AWBURST      (sys_awburst),
+      .S00_AXI_AWLOCK       (sys_awlock),
+      .S00_AXI_AWCACHE      (sys_awcache),
+      .S00_AXI_AWPROT       (sys_awprot),
+      .S00_AXI_AWQOS        (sys_awqos),
+      .S00_AXI_AWVALID      (sys_awvalid),
+      .S00_AXI_AWREADY      (sys_awready),
 
       //Write data
-      .S01_AXI_WDATA        (sys_wdata[1*32+:32]),
-      .S01_AXI_WSTRB        (sys_wstrb[1*4+:4]),
-      .S01_AXI_WLAST        (sys_wlast[1*1+:1]),
-      .S01_AXI_WVALID       (sys_wvalid[1*1+:1]),
-      .S01_AXI_WREADY       (sys_wready[1*1+:1]),
+      .S00_AXI_WDATA        (sys_wdata),
+      .S00_AXI_WSTRB        (sys_wstrb),
+      .S00_AXI_WLAST        (sys_wlast),
+      .S00_AXI_WVALID       (sys_wvalid),
+      .S00_AXI_WREADY       (sys_wready),
       
       //Write response
-      .S01_AXI_BID           (sys_bid[1*1+:1]),
-      .S01_AXI_BRESP         (sys_bresp[1*2+:2]),
-      .S01_AXI_BVALID        (sys_bvalid[1*1+:1]),
-      .S01_AXI_BREADY        (sys_bready[1*1+:1]),
+      .S00_AXI_BID           (sys_bid),
+      .S00_AXI_BRESP         (sys_bresp),
+      .S00_AXI_BVALID        (sys_bvalid),
+      .S00_AXI_BREADY        (sys_bready),
       
       //Read address
-      .S01_AXI_ARID         (sys_arid[1*1+:1]),
-      .S01_AXI_ARADDR       (sys_araddr[1*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S01_AXI_ARLEN        (sys_arlen[1*8+:8]),
-      .S01_AXI_ARSIZE       (sys_arsize[1*3+:3]),
-      .S01_AXI_ARBURST      (sys_arburst[1*2+:2]),
-      .S01_AXI_ARLOCK       (sys_arlock[1*1+:1]),
-      .S01_AXI_ARCACHE      (sys_arcache[1*4+:4]),
-      .S01_AXI_ARPROT       (sys_arprot[1*3+:3]),
-      .S01_AXI_ARQOS        (sys_arqos[1*4+:4]),
-      .S01_AXI_ARVALID      (sys_arvalid[1*1+:1]),
-      .S01_AXI_ARREADY      (sys_arready[1*1+:1]),
+      .S00_AXI_ARID         (sys_arid),
+      .S00_AXI_ARADDR       (sys_araddr),
+      .S00_AXI_ARLEN        (sys_arlen),
+      .S00_AXI_ARSIZE       (sys_arsize),
+      .S00_AXI_ARBURST      (sys_arburst),
+      .S00_AXI_ARLOCK       (sys_arlock),
+      .S00_AXI_ARCACHE      (sys_arcache),
+      .S00_AXI_ARPROT       (sys_arprot),
+      .S00_AXI_ARQOS        (sys_arqos),
+      .S00_AXI_ARVALID      (sys_arvalid),
+      .S00_AXI_ARREADY      (sys_arready),
       
       //Read data
-      .S01_AXI_RID          (sys_rid[1*1+:1]),
-      .S01_AXI_RDATA        (sys_rdata[1*`DATA_W+:`DATA_W]),
-      .S01_AXI_RRESP        (sys_rresp[1*2+:2]),
-      .S01_AXI_RLAST        (sys_rlast[1*1+:1]),
-      .S01_AXI_RVALID       (sys_rvalid[1*1+:1]),
-      .S01_AXI_RREADY       (sys_rready[1*1+:1]),
+      .S00_AXI_RID          (sys_rid),
+      .S00_AXI_RDATA        (sys_rdata),
+      .S00_AXI_RRESP        (sys_rresp),
+      .S00_AXI_RLAST        (sys_rlast),
+      .S00_AXI_RVALID       (sys_rvalid),
+      .S00_AXI_RREADY       (sys_rready),
+
+
       //
       // DDR SIDE
       //
@@ -468,7 +466,7 @@ module top_system(
       .m_axi_wready  (sys_wready),
       
       //write response
-      //.m_axi_bid     (sys_bid),
+      .m_axi_bid     (sys_bid),
       .m_axi_bresp   (sys_bresp),
       .m_axi_bvalid  (sys_bvalid),
       .m_axi_bready  (sys_bready),
@@ -487,13 +485,31 @@ module top_system(
       .m_axi_arready (sys_arready),
 
       //read   
-      //.m_axi_rid     (sys_rid),
+      .m_axi_rid     (sys_rid),
       .m_axi_rdata   (sys_rdata),
       .m_axi_rresp   (sys_rresp),
       .m_axi_rlast   (sys_rlast),
       .m_axi_rvalid  (sys_rvalid),
       .m_axi_rready  (sys_rready),	
 `endif
+        //
+        // 3. System instance ports for ethernet interface
+        //
+
+        //ETHERNET
+        //PHY
+        .ETH_PHY_RESETN(ENET_RESETN),
+
+        //PLL
+        .PLL_LOCKED(locked),
+
+        //MII
+        .RX_CLK(ETH_CLK),
+        .RX_DATA(RX_DATA),
+        .RX_DV(ENET_RX_DV),
+        .TX_CLK(ETH_CLK),
+        .TX_DATA(TX_DATA),
+        .TX_EN(ENET_TX_EN),
       
       //UART
       .uart_txd      (uart_txd),

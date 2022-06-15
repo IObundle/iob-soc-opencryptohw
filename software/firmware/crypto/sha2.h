@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef PROFILE
+#include "profile.h"
+#endif
+
 /* The incremental API allows hashing of individual input blocks; these blocks
     must be exactly 64 bytes each.
     Use the 'finalize' functions for any remaining bytes (possibly over 64). */

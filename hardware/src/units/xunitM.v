@@ -11,18 +11,18 @@ module xunitM #(
     input               rst,
     
     input               run,
-    output              done,
 
     //input / output data
     input [DATA_W-1:0]  in0,
 
-    output reg [DATA_W-1:0] out0, 
+    output reg [DATA_W-1:0] out0,
 
     //configurations
     input [7:0]         delay0 // Encodes delay
     );
 
 reg [7:0] delay;
+reg [4:0] latency;
 reg [31:0] w[15:0];
 
 // Extract from array to view on gtkwave
@@ -42,8 +42,6 @@ wire [31:0] w12 = w[12];
 wire [31:0] w13 = w[13];
 wire [31:0] w14 = w[14];
 wire [31:0] w15 = w[15];
-
-assign done = (delay == 0);
 
 function [31:0] ROTR_32(input [31:0] x,input [4:0] c);
 begin
@@ -79,10 +77,13 @@ begin
       for(i = 0; i < 16; i = i + 1) 
          w[i] <= 0;
    end else if(run) begin
-      delay <= (delay0 + 8'h10);
+      delay <= delay0; // wait delay0 cycles for valid input data
+      latency <= 5'h11; // cycles from valid input to valid output
+   end else if (|delay) begin
+     delay <= delay - 1;
    end else begin
-      if(|delay) begin
-         delay <= delay - 1;
+      if(|latency) begin
+         latency <= latency - 1;
       end
 
       out0 <= w[0];
@@ -91,7 +92,7 @@ begin
          w[i] <= w[i+1];
       end
 
-      if(delay != 0) begin
+      if(latency[4:1] != 0) begin // latency > 1
          w[15] <= in0;
       end else begin
          w[15] <= val;
