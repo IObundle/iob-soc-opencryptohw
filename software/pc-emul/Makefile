@@ -39,7 +39,6 @@ OBJ+=./build/firmware.o
 
 VERILOG_INCLUDE:= $(ROOT_DIR)/hardware/include/
 
-
 #RULES
 
 all: build run
