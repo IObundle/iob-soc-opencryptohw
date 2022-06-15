@@ -31,10 +31,14 @@ TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
 VALIDATION_LOG:=validation.log
 
 #UNITS TO VERILATE
-VERILATE_UNIT = xunitF xunitM
-UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
+VERILATE_UNITS = xunitF xunitM
+UNIT_VERILOG += $(foreach obj,$(VERILATE_UNITS),$(ROOT_DIR)/hardware/src/units/$(obj).v)
+UNIT_HDR+=$(foreach obj,$(VERILATE_UNITS),./build/V$(obj).h)
 OBJ+=./build/unitWrapper.o
 OBJ+=./build/firmware.o
+
+VERILOG_INCLUDE:= $(ROOT_DIR)/hardware/include/
+
 
 #RULES
 
@@ -45,7 +49,7 @@ run: firmware.out
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
-	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
+	./firmware.out > $(EMUL_LOG)
 	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
 	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
 	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
@@ -53,28 +57,22 @@ run: firmware.out
 	cp versat_instance.v $(HW_DIR)/src/
 	cp versat_defs.vh $(HW_DIR)/include/
 	cp versat_data.inc $(FIRM_DIR)/
-	cp src/sigma.v $(HW_DIR)/src/
-	cp src/M_Stage.v $(HW_DIR)/src/
-	cp src/Test_M_Stage.v $(HW_DIR)/src/
-	cp src/M.v $(HW_DIR)/src/
+	cp src/* $(HW_DIR)/src/GeneratedUnits/
 else
 run: firmware.out
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
-	./firmware.out $(TEST_LOG)
+	./firmware.out
 	cp versat_instance.v $(HW_DIR)/src/
 	cp versat_defs.vh $(HW_DIR)/include/
 	cp versat_data.inc $(FIRM_DIR)/
-	cp src/sigma.v $(HW_DIR)/src/
-	cp src/M_Stage.v $(HW_DIR)/src/
-	cp src/Test_M_Stage.v $(HW_DIR)/src/
-	cp src/M.v $(HW_DIR)/src/
+	cp src/* $(HW_DIR)/src/GeneratedUnits/
 endif
 
 build: firmware.out
 
-firmware.out: $(HDR) $(UNIT_HDR) $(SRC) $(CPP_OBJ) $(OBJ)
+firmware.out: $(HDR) $(UNIT_HDR) $(SRC) $(CPP_OBJ) $(OBJ) $(CPP_FILES) ./build/typeInfo.inc ./build/verilogWrapper.inc
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
 
 ./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)

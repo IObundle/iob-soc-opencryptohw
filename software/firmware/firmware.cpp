@@ -1,5 +1,11 @@
 #include <cstdio>
 
+#include "versat.hpp"
+#include "utils.hpp"
+
+#include "unitWrapper.hpp"
+#include "unitVerilogWrappers.hpp"
+
 extern "C"{
 #include "system.h"
 #include "periphs.h"
@@ -46,12 +52,6 @@ TimeIt::~TimeIt(){
 #else
 #define TIME_IT(ID) do{}while(0)
 #endif
-
-#include "versat.hpp"
-#include "utils.hpp"
-
-#include "unitWrapper.hpp"
-#include "unitVerilogWrappers.hpp"
 
 #define HASH_SIZE (256/8)
 
@@ -136,7 +136,6 @@ void ClearCache(){
     printf("Clear cache: %d [ignore]\n\n",count);
 }
 
-void ParseVersatSpecification(Versat* versat,FILE* file);
 FUDeclaration* MEM;
 FUDeclaration* REG;
 
@@ -158,7 +157,7 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
         char buffer[128];
         int size = snprintf(buffer,128,"regIn%d",registersAdded++);
 
-        inputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
+        inputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         int32_t val = va_arg(args,int32_t);
 
@@ -171,7 +170,7 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     for(int i = 0; i < numberOutputs; i++){
         char buffer[128];
         int size = snprintf(buffer,128,"regOut%d",registersAdded++);
-        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
+        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         ConnectUnits(inst,i,outputs[i],0);
     }
@@ -191,7 +190,7 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
     AcceleratorRun(accel);
-    accel->locked = false;
+
     for(int i = 0; i < numberInputs; i++){
         RemoveFUInstance(accel,inputs[i]);
     }
@@ -218,7 +217,7 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
     va_list args;
     va_start(args,numberOutputs);
 
-    FUInstance* input = CreateNamedFUInstance(accel,MEM,MAKE_SIZED_STRING("memIn"),nullptr);
+    FUInstance* input = CreateNamedFUInstance(accel,MEM,MAKE_SIZED_STRING("memIn"));
 
     ConnectUnits(input,0,inst,0);
 
@@ -244,7 +243,7 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
     for(int i = 0; i < numberOutputs; i++){
         char buffer[128];
         int size = snprintf(buffer,128,"regOut%d",registersAdded++);
-        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size),nullptr);
+        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         ConnectUnits(inst,i,outputs[i],0);
     }
@@ -287,7 +286,7 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
 void TestMStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
     SetDelayRecursive(inst,0);
 
@@ -305,7 +304,7 @@ void TestMStage(Versat* versat){
 void TestFStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
     SetDelayRecursive(inst,0);
 
@@ -329,7 +328,7 @@ void TestInputM(Versat* versat){
     TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Input_M"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"),nullptr);
+    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
     SetDelayRecursive(inst,0);
 
@@ -360,9 +359,14 @@ void TestInputM(Versat* versat){
 }
 
 void InstantiateSHA(Versat* versat){
+    FUInstance* inst = nullptr;
+    {
+    TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type);
+    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("SHA"));
+
+    OutputUnitInfo(inst);
 
     FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
     {
@@ -384,6 +388,7 @@ void InstantiateSHA(Versat* versat){
         c->pingPong = 1;
         c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
     }
+    }
 
     CalculateDelay(versat,accel);
     SetDelayRecursive(inst,0);
@@ -392,22 +397,12 @@ void InstantiateSHA(Versat* versat){
 void TestSHA(Versat* versat){
     InstantiateSHA(versat);
 
-    for(FUInstance* inst : accel->instances){
-        printf("%s %d %d\n",inst->name.str,inst->delay[0],inst->baseDelay);
-        for(FUInstance* inst2 : inst->compositeAccel->instances){
-            printf("%s %d %d\n",inst2->name.str,inst2->delay[0],inst2->baseDelay);
-        }
-    }
-
-    #if 1
-    Accelerator* flatten = Flatten(versat,accel,1);
-    OutputGraphDotFile(flatten,true,"flatten.dot");
-    #endif
-
     unsigned char digest[256];
     for(int i = 0; i < 256; i++){
         digest[i] = 0;
     }
+
+    //OutputMemoryMap(versat,accel);
 
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     versat_sha256(digest,msg_64,64);
@@ -417,8 +412,6 @@ void TestSHA(Versat* versat){
     OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 }
 
-void RegisterTypes();
-
 int main(int argc,const char* argv[])
 {
     unsigned char digest[256];
@@ -427,8 +420,7 @@ int main(int argc,const char* argv[])
     uart_init(UART_BASE,FREQ/BAUD);
     timer_init(TIMER_BASE);
 
-    RegisterTypes();
-
+    printf("here\n");
     #if 0
     uart_finish();
     return 0;
@@ -438,10 +430,15 @@ int main(int argc,const char* argv[])
         digest[i] = 0;
     }
 
-    // Force alignment on a 64 byte boundary
+    printf("here\n");
     Versat versatInst = {};
     Versat* versat = &versatInst;
     InitVersat(versat,VERSAT_BASE,1);
+
+    printf("here\n");
+    ParseCommandLineOptions(versat,argc,argv);
+
+    printf("here\n");
 
     MEM = GetTypeByName(versat,MakeSizedString("xmem"));
     REG = GetTypeByName(versat,MakeSizedString("xreg"));
@@ -451,9 +448,7 @@ int main(int argc,const char* argv[])
     FUDeclaration* UNIT_F = RegisterUnitF(versat);
     FUDeclaration* UNIT_M = RegisterUnitM(versat);
 
-    FILE* file = fopen("testVersatSpecification.txt","r");
-
-    ParseVersatSpecification(versat,file);
+    ParseVersatSpecification(versat,"testVersatSpecification.txt");
     #endif
 
     #if 0
@@ -494,6 +489,11 @@ int main(int argc,const char* argv[])
     TestDelayImprove(versat);
 
     uart_finish();
+    return 0;
+    #endif
+
+    #if 0
+    Hook(versat);
     return 0;
     #endif
 
@@ -587,7 +587,6 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
         if(!initVersat){
             for(int i = 0; i < 8; i++){
                 FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
-
                 VersatUnitWrite(inst,0,initialStateValues[i]);
             }
             initVersat = true;
@@ -659,22 +658,22 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 /*
 
-Currently:
+Currently plan:
 
-Important thing to keep track off: The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives. Care
+Refactor template engine
+    Extract out commands instead of being hard coded
+    Do the same for filters
+    Allocate memory on a temp arena for expression arrays as well
+    Check how to handle join for, instead of duplicating code
 
-Get more examples. In theory, a time shift inside a module or a time shift outside a module (to many ports) should produce the same result.
-Start getting more examples where you know exactly the results that the algorithm should give
+Need to find a way of reusing small pieces of template code. Both the top and individual accelerators reuse so much stuff that is similar, it's worth to take a look at it.
+    Probably need to implement an include directive
+    Also a defun directive, that takes a name and parameters that defines a piece of reusable template code
+    And a call or insert directive, that takes a name plus arguments and simple outputs the template text (should be easy since we probably only need to store the block and execute it later)
 
-Define in more mathmatical terms the role and purpose of each signal and how they work.
-Try to define the algorithm and what each thing actually is: (delay, input delay, time shift and so on)
-
-The base delay of a input is not actually a time shift but it's a propagated delay.
-
-Changes required are:
-
-    Change FUDeclaration to store two vectors, one of delays for inputs and one of delays for outputs.
-
+Finish the verilog parser
+    Apparently every file is included after a system.vh file, which is where the things are defined. (axi.vh contains the AXI_ADDR_W definition)
+    There is a bug, where the parser cannot differenciate between a macro argument or starting parenthesis in a macro expression (macro expression is also completely fucked, shouldn't be a next token but a peek \n)
 
 Things to do:
 
@@ -682,17 +681,15 @@ SHA implementation with macroinstances
 AES implementation.
 Fix makefile dependencies, make it proper (defines (like -DPC) only for firmware, not for other source files)
 
+Keep track off:
+
+The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives.
+
 */
 
 /*
 
 Implementation to do:
-
-High importance:
-
-    Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of xreg?
-    Also, is there any SinkAndSource instance that would implement DELAY_TYPE_SOURCE_DELAY? Because how would they know when they have valid data?
-    Also also, when changing delays from instance based to port based, the concept of delay type will probably end. In that case, the different delay types would only serve as an "extra" to optimize away the delay wires to units that do not need them
 
 Overall:
 
@@ -722,16 +719,21 @@ Software:
 Embedded:
 
     Write source code containing info for the embedded side using template engine
-    Implement a FSK hashing scheme to accelerate simulation. GetInstanceByName
+    Implement a perfect hashing scheme to accelerate simulation. GetInstanceByName
 
 Hardware:
 
     Remove done/run/clk if not needed
-    Take another look at circuit input and output, instanciating units only to pass data through seems wrong way to go about it.
+    Implement shadow registers
 
-CalculateDelay:
+Delay:
 
-    Maybe add a way to indicate that a given output is not dependent on a given input (Think dual port ram)
+    To improve lantency calculations, should have a indication of which outputs delay depend on which input ports delay (Think how dual port ram has two independent ports)
+        Each output should keep track of exactly which input port it depends upon, and use that information in delay calculation
+    Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of xreg?
+        Also, is there any SinkAndSource instance that would implement DELAY_TYPE_SOURCE_DELAY? Because how would they know when they have valid data?
+            Also also, when changing delays from instance based to port based, the concept of delay type will probably end. In that case, the different delay types would only serve as an "extra" to optimize away the delay wires to units that do not need them
+
 
 Type:
 
@@ -740,8 +742,7 @@ Type:
 
 Template Engine:
 
-    Really need to simply error if identifier not found.
-    Eliminate pointers entirely. You can never use dot access in a pointer anyway. If the dot is used on a pointer, then simply collapse to base type, no matter how many pointers there are
+    Really need to simplify error if identifier not found.
     Add local variables, instead of everything global
     Take another pass at whitespace handling (Some whitespace is being consumed in blocks of text, care, might join together two things that are supposed to be seperated and do error)
 
@@ -751,21 +752,17 @@ Struct Parser:
 
 Verilog Parser:
 
-    Parse units interfaces to generate unitWrappers automatically and register units automatically (do not know how to handle latency, though)
+    Parse units interfaces to generate unitWrappers automatically and register units automatically (latency must be set directly by the user using a comment or attribute)
 
 Flatten:
 
     Give every declaration a "level" variable. simple = 0, composite = max(instancesLevel) + 1, special = 0.
-    Flatten is currently broken, only creating shallow instances. Useful for outputting graph, but not possible to simulate
+    Flatten is currently broken (might have been fixed, check it later?), only creating shallow instances. Useful for outputting graph, but not possible to simulate
         The fix is to create a function that copies and changes shallow instances and, in the end, it fixes memory allocation and instance pointers and initialization
 
 Merge:
 
     Do merge of units in same "level". Iterate down while repeating
-
-Improvements:
-
-    Empty functions in the embed code occupy space and do nothing but cluter source code file. Replace functions with macros that expand to nothing in the embed side,
 
 */
 
