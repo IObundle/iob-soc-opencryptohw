@@ -26,6 +26,7 @@ clean: clean-remote
 	@rm -f $(SIM_PROC)
 	@make -C $(HW_DIR)/src/spinalHDL clean
 
+SPINAL_DIR=$(HW_DIR)/src/spinalHDL
 # xunitM tests
 ifeq ($(SPINAL),)
 XUNITM_VSRC=$(HW_DIR)/src/units/xunitM.v
@@ -57,7 +58,7 @@ xunitF: $(XUNITF_VSRC)
 	./$(SIM_PROC)
 
 $(XUNITM_VSRC) $(XUNITF_VSRC):
-	make -C $(HW_DIR)/src/spinalHDL all
+	make -C $(SPINAL_DIR) rtl/$(notdir $@)
 
 debug:
 	@echo $(SUBMODULES)
