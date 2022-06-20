@@ -16,7 +16,8 @@ fw-clean:
 #
 
 pc-emul-build:
-	make -C $(PC_DIR) build
+	make fw-build
+	make -C $(PC_DIR)
 
 pc-emul-run:
 	make -C $(PC_DIR) run
@@ -36,7 +37,7 @@ pc-emul-profile:
 #
 
 sim-build:
-	make fw-build BAUD=5000000 SIM=1
+	make fw-build SIM=1
 	make -C $(SIM_DIR) build
 
 sim-run: sim-build
@@ -57,7 +58,7 @@ sim-versat-fus:
 #
 
 fpga-build:
-	make fw-build
+	make fw-build BAUD=115200
 	make -C $(BOARD_DIR) build
 
 fpga-run: fpga-build
@@ -74,7 +75,7 @@ fpga-clean: fw-clean
 	make -C $(BOARD_DIR) clean-all
 
 #
-# GENERATE DOCUMENTATION
+# COMPILE DOCUMENTS
 #
 
 doc-accel-plan:
@@ -120,6 +121,8 @@ test: test-clean
 	make fpga-run-profile
 	make test-fpga-clean
 	make test-versat-fus
+	make test-sim-clean
+	make test-versat-fus SPINAL=1
 	make test-sim-clean
 
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean

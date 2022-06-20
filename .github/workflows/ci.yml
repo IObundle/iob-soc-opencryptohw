@@ -1,0 +1,111 @@
+name: CI
+
+# Set default shell as interactive (source ~/.bashrc)
+defaults:
+  run:
+    shell: bash -ieo pipefail {0}
+
+on:
+  push:
+    branches:
+      - main
+      - versat_integration
+  # Don't forget to require approval for all outside collaborators
+  pull_request:
+    branches: '*'
+  # Allow manual workflow runs
+  workflow_dispatch:
+
+# Run only one instance of this workflow at a time
+# cancel-in-progress: stop running workflow and run latest instead
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pc-emul:
+    runs-on: self-hosted
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-pc-emul
+        run: make test-pc-emul
+      - name: pc-emul-profile
+        run: make pc-emul-profile
+
+  verilator:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    # run after indicated job
+    needs: pc-emul
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-verilator
+        run: make sim-test SIMULATOR=verilator
+
+  icarus:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: verilator
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-icarus
+        run: make sim-test SIMULATOR=icarus
+
+  fpga:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: icarus
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-fpga
+        run: make test-fpga
+      - name: fpga-profile
+        run: make fpga-run-profile
+
+  versat-FUs:
+    runs-on: self-hosted
+    timeout-minutes: 15
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: verilator
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: custom verilog FUs
+        run: make test-versat-fus
+      - name: sim-clean
+        run: make test-sim-clean
+      - name: SpinalHDL FUs
+        run: make test-versat-fus SPINAL=1
+

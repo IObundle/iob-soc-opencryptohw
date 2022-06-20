@@ -28,6 +28,9 @@ software/*/*
 #sources
 hardware/src/system.v
 hardware/testbench/system_tb.v
+#scala sources
+hardware/src/spinalHDL/project/*
+hardware/src/spinalHDL/target/*
 
 #simulation
 hardware/simulation/*/*
@@ -47,14 +50,3 @@ hardware/fpga/*/*/*
 !hardware/fpga/*/*/doc
 !hardware/fpga/vivado/*/*.xdc
 !hardware/fpga/quartus/*/*.sdc
-
-#asic
-hardware/asic/*/*
-!hardware/asic/asic.mk
-!hardware/asic/*/Makefile
-!hardware/asic/*/*.tcl
-!hardware/asic/*/*.sh
-!hardware/asic/*/verilog
-!hardware/asic/*/synscript.tcl
-!hardware/asic/*/powscript.tcl
-!hardware/asic/skywater/openram_config.py

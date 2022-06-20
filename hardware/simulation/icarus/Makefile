@@ -19,19 +19,23 @@ comp: $(SIM_PROC)
 $(SIM_PROC):
 	$(VLOG) $(VSRC)
 
-.PHONY: run clean debug
-
 exec:
 	./$(SIM_PROC)
 
 clean: clean-remote
 	@rm -f $(SIM_PROC)
+	@make -C $(HW_DIR)/src/spinalHDL clean
 
+SPINAL_DIR=$(HW_DIR)/src/spinalHDL
 # xunitM tests
+ifeq ($(SPINAL),)
 XUNITM_VSRC=$(HW_DIR)/src/units/xunitM.v
+else
+XUNITM_VSRC=$(HW_DIR)/src/spinalHDL/rtl/xunitM.v
+endif
 XUNITM_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitM_tb.v
 
-xunitM:
+xunitM: $(XUNITM_VSRC)
 	make -C $(SW_TEST_DIR) gen_xunitM_bin
 	cp $(SW_TEST_DIR)/xunitM_*.bin .
 	touch xversat.vh
@@ -39,15 +43,22 @@ xunitM:
 	./$(SIM_PROC)
 
 # xunitF tests
+ifeq ($(SPINAL),)
 XUNITF_VSRC=$(HW_DIR)/src/units/xunitF.v
+else
+XUNITF_VSRC=$(HW_DIR)/src/spinalHDL/rtl/xunitF.v
+endif
 XUNITF_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitF_tb.v
 
-xunitF:
+xunitF: $(XUNITF_VSRC)
 	make -C $(SW_TEST_DIR) gen_xunitF_bin
 	cp $(SW_TEST_DIR)/xunitF_*.bin .
 	touch xversat.vh
 	$(VLOG) $(XUNITF_VSRC)
 	./$(SIM_PROC)
+
+$(XUNITM_VSRC) $(XUNITF_VSRC):
+	make -C $(SPINAL_DIR) rtl/$(notdir $@)
 
 debug:
 	@echo $(SUBMODULES)
@@ -65,4 +76,4 @@ debug:
 	@echo $(DEFINE)
 	@echo $(MODULE)
 
-.PHONY: comp exec clean debug xunitM
+.PHONY: comp exec clean debug xunitM xunitF

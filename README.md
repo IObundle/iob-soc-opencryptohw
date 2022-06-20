@@ -18,15 +18,16 @@ make pc-emul-run
 ```
 This target performs the Short Message Test for Byte-Oriented `sha256()` 
 implementations from the 
-[NIST Cryptograpphic Algorithm Validation Program](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing).
+[NIST Cryptograpphic Algorithm Validation
+Program](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing).
 
 The test vectors are a set of 65 messages from 0 to 64 byte length. The 
 implementation program only receives the messages and outputs the corresponding
 message digests (MD). An external script compares the implementation output with
 the expected MD from the test vectors.
 
-The implementation output can be checked manually in 
-`software/pc-emul/soc.log` and `software/pc-emul/host.log`
+The implementation output can be checked manually from terminal and
+`software/pc-emul/ethernet.log`
 
 ### Clean environment
 To clean the workspace after PC emulation:
@@ -77,9 +78,9 @@ The system can be tested on FPGA with:
 make test-fpga
 ```
 
-The results can be manually checked in 
-`hardware/fpga/<tool>/<board>/test.log_parsed.log`, where `<tool>` is the 
-tool used for synthesis and `<board>` is the board directory name.
+The results can be manually checked in the terminal and in
+`hardware/fpga/<tool>/<board>/ethernet.log`, where `<tool>` is the tool used
+for synthesis and `<board>` is the board directory name.
 
 The system has been tested with the `AES-KU040-DB-G` board from Xilinx. In that
 case the results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
@@ -115,8 +116,8 @@ The profiling is available for `pc-emul` using the following command:
 ```
 make pc-emul-profile
 ```
-The `pc-emul-profile` target outputs an `emul_profile.log` file with the profiling 
-information.
+The `pc-emul-profile` target outputs an `emul_profile.log` file with the
+profiling information.
 
 For `fpga` profiling run the following command:
 ```
@@ -140,3 +141,15 @@ units (FUs). These FUs can be validated with unit tests by running the command:
 make test-versat-fus
 ```
 The custom FUs are in `hardware/src/units/`.
+
+### Spinal HDL Version
+Alternatively, the same FUs can be generated from SpinalHDL using the command:
+```
+make test-versat-fus SPINAL=1
+```
+The SpinalHDL sources are in `hardware/src/spinalHDL`.
+
+#### SpinalHDL Setup
+Check `hardware/src/spinalHDL/README.md` for more details to setup the
+requirements to use SpinalHDL.
+
