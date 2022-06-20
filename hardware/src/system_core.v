@@ -103,7 +103,11 @@ module system
         
         //data bus
         .dbus_req(cpu_d_req),
-        .dbus_resp(cpu_d_resp)
+        .dbus_resp(cpu_d_resp),
+
+        //interrupt
+        .timerInterrupt(1'b0),
+        .softwareInterrupt(1'b0)
         );
 
 

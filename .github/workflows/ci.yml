@@ -55,39 +55,39 @@ jobs:
       - name: test-verilator
         run: make sim-test SIMULATOR=verilator
 
-  # icarus:
-  #   runs-on: self-hosted
-  #   timeout-minutes: 90
-  #   # always run, except when previous job was cancelled
-  #   if: ${{ !cancelled() }}
-  #   needs: verilator
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: test-clean
-  #       run: make test-clean
-  #     - name: test-icarus
-  #       run: make sim-test SIMULATOR=icarus
-  #
-  # fpga:
-  #   runs-on: self-hosted
-  #   timeout-minutes: 90
-  #   # always run, except when previous job was cancelled
-  #   if: ${{ !cancelled() }}
-  #   needs: icarus
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: test-clean
-  #       run: make test-clean
-  #     - name: test-fpga
-  #       run: make test-fpga
-  #     - name: fpga-profile
-  #       run: make fpga-run-profile
+  icarus:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: verilator
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-icarus
+        run: make sim-test SIMULATOR=icarus
+
+  fpga:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: icarus
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: test-fpga
+        run: make test-fpga
+      - name: fpga-profile
+        run: make fpga-run-profile
 
   versat-FUs:
     runs-on: self-hosted
