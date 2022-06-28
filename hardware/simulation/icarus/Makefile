@@ -23,6 +23,7 @@ exec:
 	./$(SIM_PROC)
 
 clean: clean-remote
+	@rm -f *.*
 	@rm -f $(SIM_PROC)
 	@make -C $(HW_DIR)/src/spinalHDL clean
 

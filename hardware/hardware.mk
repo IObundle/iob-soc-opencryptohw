@@ -33,6 +33,12 @@ include $(TIMER_DIR)/hardware/hardware.mk
 #ETHERNET
 include $(ETHERNET_DIR)/hardware/hardware.mk
 
+#VERSAT
+include $(VERSAT_DIR)/hardware/hardware.mk
+
+#AXI
+include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
+
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include
 SRC_DIR:=$(HW_DIR)/src
@@ -57,6 +63,11 @@ endif
 VSRC+=$(SRC_DIR)/boot_ctr.v $(SRC_DIR)/int_mem.v $(SRC_DIR)/sram.v
 VSRC+=system.v
 
+VSRC+=$(wildcard $(SRC_DIR)/GeneratedUnits/*.v)
+VSRC+=$(SRC_DIR)/versat_instance.v
+VSRC+=$(SRC_DIR)/units/xunitF.v
+VSRC+=$(SRC_DIR)/units/xunitM.v
+
 HEXPROGS=boot.hex firmware.hex
 
 # make system.v with peripherals
@@ -80,6 +91,7 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 
 #clean general hardware files
 hw-clean: gen-clean
+	@rm -f $(SRC_DIR)/GeneratedUnits/*.v $(SRC_DIR)/versat_instance.v $(INC_DIR)/versat_defs.vh
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
 
 .PHONY: hw-clean

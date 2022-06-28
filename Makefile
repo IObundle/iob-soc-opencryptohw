@@ -17,7 +17,7 @@ fw-clean:
 
 pc-emul-build:
 	make fw-build
-	make -C $(PC_DIR)
+	make -C $(PC_DIR) build
 
 pc-emul-run:
 	make -C $(PC_DIR) run
@@ -37,10 +37,12 @@ pc-emul-profile:
 #
 
 sim-build:
+	make -C $(PC_DIR) run
 	make fw-build SIM=1
 	make -C $(SIM_DIR) build
 
 sim-run: sim-build
+	make -C $(PC_DIR) run
 	make -C $(SIM_DIR) run
 
 sim-clean: fw-clean

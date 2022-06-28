@@ -52,7 +52,7 @@ struct UnitFData{
    VCDData vcd;
 };
 
-static int32_t* UnitFInitializeFunction(FUInstance* inst){
+static int* UnitFInitializeFunction(FUInstance* inst){
    char buffer[256];
 
    UnitFData* data = new (inst->extraData) UnitFData();
@@ -82,7 +82,7 @@ static int32_t* UnitFInitializeFunction(FUInstance* inst){
    return NULL;
 }
 
-static int32_t* UnitFStartFunction(FUInstance* inst){
+static int* UnitFStartFunction(FUInstance* inst){
    UnitFData* data = (UnitFData*) inst->extraData;
    PREAMBLE(VxunitF);
 
@@ -94,8 +94,8 @@ static int32_t* UnitFStartFunction(FUInstance* inst){
    return NULL;
 }
 
-static int32_t* UnitFUpdateFunction(FUInstance* inst){
-   static int32_t results[8];
+static int* UnitFUpdateFunction(FUInstance* inst){
+   static int results[8];
 
    UnitFData* data = (UnitFData*) inst->extraData;
    PREAMBLE(VxunitF);
@@ -151,7 +151,7 @@ struct UnitMData{
    VCDData vcd;
 };
 
-static int32_t* UnitMInitializeFunction(FUInstance* inst){
+static int* UnitMInitializeFunction(FUInstance* inst){
    char buffer[256];
 
    UnitMData* data = new (inst->extraData) UnitMData();
@@ -171,7 +171,7 @@ static int32_t* UnitMInitializeFunction(FUInstance* inst){
    return NULL;
 }
 
-static int32_t* UnitMStartFunction(FUInstance* inst){
+static int* UnitMStartFunction(FUInstance* inst){
    UnitMData* data = (UnitMData*) inst->extraData;
    PREAMBLE(VxunitM);
 
@@ -183,8 +183,8 @@ static int32_t* UnitMStartFunction(FUInstance* inst){
    return NULL;
 }
 
-static int32_t* UnitMUpdateFunction(FUInstance* inst){
-   static int32_t out;
+static int* UnitMUpdateFunction(FUInstance* inst){
+   static int out;
 
    UnitMData* data = (UnitMData*) inst->extraData;
    PREAMBLE(VxunitM);

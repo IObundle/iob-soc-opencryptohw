@@ -14,7 +14,7 @@ DDR_ADDR_W=$(DCACHE_ADDR_W)
 CONSOLE_CMD=$(CONSOLE_DIR)/console -L
 
 #produce waveform dump
-VCD ?=0
+VCD ?=1
 
 ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
@@ -134,8 +134,9 @@ validate:
 
 $(SIM_IN_BIN):
 	$(eval TEST_VECTOR_RSP_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin)
-	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
-	cp $(TEST_VECTOR_RSP_PATH) $(SIM_IN_BIN)
+	#$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
+	#$(info $(TEST_VECTOR_RSP_PATH))
+	cp ../../../software/test/SHA256ShortMsg_d_in.bin $(SIM_IN_BIN)
 
 #clean target common to all simulators
 clean-remote: hw-clean

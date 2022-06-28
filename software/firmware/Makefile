@@ -18,6 +18,9 @@ include $(TIMER_DIR)/software/embedded/embedded.mk
 #ethernet
 include $(ETHERNET_DIR)/software/embedded/embedded.mk
 
+#versat
+include $(VERSAT_DIR)/software/embedded/embedded.mk
+
 #HEADERS
 HDR+=periphs.h
 
@@ -42,7 +45,7 @@ endif
 build: firmware.elf
 
 firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
-	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
+	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS) -lgcc -lc -lnosys -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
 clean:

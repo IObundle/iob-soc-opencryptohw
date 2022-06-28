@@ -13,7 +13,7 @@ $(RTL_DIR)/%.v: $(SCALA_DIR)/%.scala
 	sbt "runMain $(PACKAGE).$(basename $(@F))"
 
 clean:
-	@sbt clean
+	#@sbt clean
 	@rm -rf target project/
 
 .PHONY: all clean

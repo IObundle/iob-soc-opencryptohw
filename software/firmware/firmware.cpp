@@ -12,7 +12,7 @@ extern "C"{
 #include "iob-uart.h"
 #include "string.h"
 
-#include "iob_timer.h"
+#include "iob-timer.h"
 
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
@@ -22,7 +22,12 @@ extern "C"{
 int printf_(const char* format, ...);
 }
 
+#ifdef PC
+#define uart_finish(...) ((void)0)
+#define uart_init(...) ((void)0)
+#else
 #define printf printf_
+#endif
 
 // Automatically times a block in number of counts
 struct TimeIt{
@@ -34,17 +39,14 @@ struct TimeIt{
 };
 
 TimeIt::TimeIt(int line,char fileId){
-    timer_stop();
     this->line = line;
     this->fileId = fileId;
     timer_reset();
-    timer_start();
 }
 
 TimeIt::~TimeIt(){
-    timer_stop();
     unsigned long long end = timer_get_count();
-    printf("%c:%d %lu\n",fileId,line,end);
+    printf("%c:%d %llu\n",fileId,line,end);
 }
 
 #if 1
@@ -67,13 +69,13 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
     x[0] = (uint8_t) u;
 }
 
-static uint32_t initialStateValues[] = {0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19};
-static uint32_t kConstants0[] = {0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
-static uint32_t kConstants1[] = {0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967};
-static uint32_t kConstants2[] = {0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070};
-static uint32_t kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
+static uint initialStateValues[] = {0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19};
+static uint kConstants0[] = {0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
+static uint kConstants1[] = {0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967};
+static uint kConstants2[] = {0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070};
+static uint kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
 
-static uint32_t* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
+static uint* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
 
 #ifdef PC
     static char mem[1024*1024]; // 1 Mb
@@ -139,8 +141,8 @@ void ClearCache(){
 FUDeclaration* MEM;
 FUDeclaration* REG;
 
-int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
-    static int32_t out[99];
+int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
+    static int out[99];
     FUInstance* inputs[99];
     FUInstance* outputs[99];
 
@@ -159,7 +161,7 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
 
         inputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
 
-        int32_t val = va_arg(args,int32_t);
+        int val = va_arg(args,int);
 
         VersatUnitWrite(inputs[i],0,val);
 
@@ -176,6 +178,7 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     }
 
     CalculateDelay(accel->versat,accel);
+    SetDelayRecursive(inst,0);
 
     #if 0
     Accelerator* flatten = Flatten(accel->versat,accel,1);
@@ -188,6 +191,10 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     #endif
 
     OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+
+    OutputMemoryMap(accel->versat,accel);
+
+    //Hook(accel->versat,accel);
 
     AcceleratorRun(accel);
 
@@ -210,8 +217,8 @@ int32_t* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int n
     return out;
 }
 
-int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues,int numberOutputs,...){
-    static int32_t out[99];
+int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues,int numberOutputs,...){
+    static int out[99];
     FUInstance* outputs[99];
 
     va_list args;
@@ -220,7 +227,6 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
     FUInstance* input = CreateNamedFUInstance(accel,MEM,MAKE_SIZED_STRING("memIn"));
 
     ConnectUnits(input,0,inst,0);
-
     {
         volatile MemConfig* c = (volatile MemConfig*) input->config;
 
@@ -234,7 +240,7 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
     {
     TIME_IT('F');
     for(int i = 0; i < numberValues; i++){
-        int32_t val = va_arg(args,int32_t);
+        int val = va_arg(args,int);
 
         VersatUnitWrite(input,i,val);
     }
@@ -261,7 +267,7 @@ int32_t* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberVa
 
     OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
-    #if 0
+    #if 1
     OutputMemoryMap(accel->versat,accel);
     #endif
 
@@ -295,7 +301,7 @@ void TestMStage(Versat* versat){
         inst->config[i] = constants[i];
     }
 
-    int32_t* out = TestInstance(accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
+    int* out = TestInstance(accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
 
     printf("Expected: 0xb89ab4ca\n");
     printf("Got:      0x%x\n",out[0]);
@@ -313,7 +319,7 @@ void TestFStage(Versat* versat){
         inst->config[i] = constants[i];
     }
 
-    int32_t* out = TestInstance(accel,inst,10,8,0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19,0x428a2f98,0x5a86b737);
+    int* out = TestInstance(accel,inst,10,8,0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19,0x428a2f98,0x5a86b737);
 
     printf("0x568f3f84 0x6a09e667 0xbb67ae85 0x3c6ef372 0xf34e99d9 0x510e527f 0x9b05688c 0x1f83d9ab 0x428a2f98 0x5a86b737\n");
     for(int i = 0; i < 8; i++){
@@ -349,7 +355,7 @@ void TestInputM(Versat* versat){
     }
     }
 
-    int32_t* out = TestSequentialInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
+    int* out = TestSequentialInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
 
     printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
     for(int i = 0; i < 16; i++){
@@ -388,6 +394,43 @@ void InstantiateSHA(Versat* versat){
         c->pingPong = 1;
         c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
     }
+
+    for(int i = 0; i < 4; i++){
+        FUInstance* mem = GetInstanceByName(accel,"SHA","cMem%d",i);
+
+        mem->config[0] = 1;
+        mem->config[1] = 16;
+        mem->config[2] = 16;
+        mem->config[5] = 1;
+
+        for(int ii = 0; ii < 16; ii++){
+            VersatUnitWrite(mem,ii,kConstants[i][ii]);
+        }
+    }
+
+    #if 0
+    for(int i = 0; i < 4; i++){
+        for(int ii = 0; ii < 16; ii++){
+            FUInstance* inst = GetInstanceByName(accel,"SHA","F%d",i,"f%x",ii);
+
+            int constants[] = {6,11,25,2,13,22};
+            for(int i = 0; i < ARRAY_SIZE(constants); i++){
+                inst->config[i] = constants[i];
+            }
+        }
+    }
+
+    for(int i = 0; i < 3; i++){
+        for(int ii = 0; ii < 16; ii++){
+            FUInstance* inst = GetInstanceByName(accel,"SHA","M%d",i,"m%x",ii);
+
+            int constants[] = {7,18,3,17,19,10};
+            for(int i = 0; i < ARRAY_SIZE(constants); i++){
+                inst->config[i] = constants[i];
+            }
+        }
+    }
+    #endif
     }
 
     CalculateDelay(versat,accel);
@@ -401,8 +444,6 @@ void TestSHA(Versat* versat){
     for(int i = 0; i < 256; i++){
         digest[i] = 0;
     }
-
-    //OutputMemoryMap(versat,accel);
 
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     versat_sha256(digest,msg_64,64);
@@ -420,7 +461,6 @@ int main(int argc,const char* argv[])
     uart_init(UART_BASE,FREQ/BAUD);
     timer_init(TIMER_BASE);
 
-    printf("here\n");
     #if 0
     uart_finish();
     return 0;
@@ -430,15 +470,11 @@ int main(int argc,const char* argv[])
         digest[i] = 0;
     }
 
-    printf("here\n");
     Versat versatInst = {};
     Versat* versat = &versatInst;
     InitVersat(versat,VERSAT_BASE,1);
 
-    printf("here\n");
     ParseCommandLineOptions(versat,argc,argv);
-
-    printf("here\n");
 
     MEM = GetTypeByName(versat,MakeSizedString("xmem"));
     REG = GetTypeByName(versat,MakeSizedString("xreg"));
@@ -547,13 +583,13 @@ int main(int argc,const char* argv[])
     return 0;
 }
 
-static uint32_t load_bigendian_32(const uint8_t *x) {
-     return (uint32_t)(x[3]) | (((uint32_t)(x[2])) << 8) |
-                (((uint32_t)(x[1])) << 16) | (((uint32_t)(x[0])) << 24);
+static uint load_bigendian_32(const uint8_t *x) {
+     return (uint)(x[3]) | (((uint)(x[2])) << 8) |
+                (((uint)(x[1])) << 16) | (((uint)(x[0])) << 24);
 }
 
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
-    uint32_t w[16];
+    uint w[16];
 
     {
         FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
@@ -648,7 +684,7 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     for (size_t i = 0; i < 8; ++i) {
         FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
 
-        uint32_t val = *inst->state;
+        uint val = *inst->state;
 
         store_bigendian_32(&out[i*4],val);
     }
@@ -660,21 +696,6 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Currently plan:
 
-Refactor template engine
-    Extract out commands instead of being hard coded
-    Do the same for filters
-    Allocate memory on a temp arena for expression arrays as well
-    Check how to handle join for, instead of duplicating code
-
-Need to find a way of reusing small pieces of template code. Both the top and individual accelerators reuse so much stuff that is similar, it's worth to take a look at it.
-    Probably need to implement an include directive
-    Also a defun directive, that takes a name and parameters that defines a piece of reusable template code
-    And a call or insert directive, that takes a name plus arguments and simple outputs the template text (should be easy since we probably only need to store the block and execute it later)
-
-Finish the verilog parser
-    Apparently every file is included after a system.vh file, which is where the things are defined. (axi.vh contains the AXI_ADDR_W definition)
-    There is a bug, where the parser cannot differenciate between a macro argument or starting parenthesis in a macro expression (macro expression is also completely fucked, shouldn't be a next token but a peek \n)
-
 Things to do:
 
 SHA implementation with macroinstances
@@ -684,6 +705,7 @@ Fix makefile dependencies, make it proper (defines (like -DPC) only for firmware
 Keep track off:
 
 The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives.
+Remove instances doesn't update the config / state / memMapped / delay pointers
 
 */
 
@@ -695,6 +717,13 @@ Overall:
 
     Start implementing error reporting. Some things should give error but the program still goes on, put asserts.
     Errors should be simple: Report the error and then quit. Must errors cannot be carry over. No fail and retry
+
+Static instances:
+
+    Static configuration is nothing more that shared configuration.
+    And static memory mapping is shared memory access (but best to not dweel on this, for now, static should only work on configuration only instances)
+    Probably best to add a different "configuration" type (the same way "delays" work, in fact, delays should be static by default)
+    A individual name can always be given by appending the module name
 
 Software:
 
@@ -718,7 +747,6 @@ Software:
 
 Embedded:
 
-    Write source code containing info for the embedded side using template engine
     Implement a perfect hashing scheme to accelerate simulation. GetInstanceByName
 
 Hardware:
@@ -734,17 +762,24 @@ Delay:
         Also, is there any SinkAndSource instance that would implement DELAY_TYPE_SOURCE_DELAY? Because how would they know when they have valid data?
             Also also, when changing delays from instance based to port based, the concept of delay type will probably end. In that case, the different delay types would only serve as an "extra" to optimize away the delay wires to units that do not need them
 
+    There are two types of delay: the normal delay is the amount of cycles until unit receives valid data on all ports, the delay for delay units indicates how many cycles to wait (this second delay should be general, could be used for the add-accum type of units)
 
 Type:
 
     Rewrite the portions of the type system that you wanted too. Standerdize type info, type collapse into simpler types and automatic type casting (I have x, I want y)
     Implement object instrospection, printing of members and data automatically
+    Redefine what a type is: a pointer or a array are completely different types, (Type(int) != Type(int*))
+    Add multiple names to the same type (have an array of type info and hash names to type info)
 
 Template Engine:
 
     Really need to simplify error if identifier not found.
     Add local variables, instead of everything global
     Take another pass at whitespace handling (Some whitespace is being consumed in blocks of text, care, might join together two things that are supposed to be seperated and do error)
+    Need to find a way of reusing small pieces of template code. Both the top and individual accelerators reuse so much stuff that is similar, it's worth to take a look at it.
+        Probably need to implement an include directive
+        Also a defun directive, that takes a name and parameters that defines a piece of reusable template code
+        And a call or insert directive, that takes a name plus arguments and simple outputs the template text (should be easy since we probably only need to store the block and execute it later)
 
 Struct Parser:
 

@@ -1,12 +1,4 @@
 
-module ShaSingleState(in){
-   xreg reg;
-#
-   a = reg + in;
-   a -> reg;
-   reg -> out;
-}
-
 module sigma(x){
    xconst const1;
    xconst const2;
@@ -39,7 +31,7 @@ module Sigma(x){
    c1 -> out;
 }
 
-module CH (x,y,z){
+module CH(x,y,z){
 #
    a1 = x & y;
    a2 = ~x & z;
@@ -49,7 +41,7 @@ module CH (x,y,z){
    b1 -> out;
 }
 
-module Maj (x,y,z){
+module Maj(x,y,z){
 #
    a1 = x & y;
    a2 = x & z;
@@ -63,8 +55,8 @@ module Maj (x,y,z){
 }
 
 module M_Stage(w0,w14,w9,w1){
-   sigma sigma0(7,18,3);
-   sigma sigma1(17,19,10);
+   static sigma sigma0(7,18,3);
+   static sigma sigma1(17,19,10);
    pipeline_register r;
 #
    w14 -> sigma1;
@@ -369,6 +361,15 @@ module F(a,b,c,d,e,f,g,h,k,w){
 
    ff:0..7 -> out:0..7;
 }
+
+module ShaSingleState(in){
+   xreg reg;
+#
+   a = reg + in;
+   a -> reg;
+   reg -> out;
+}
+
 
 // Simple grouping of state so it appears better on the graphs
 module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
