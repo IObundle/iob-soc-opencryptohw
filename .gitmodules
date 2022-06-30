@@ -22,3 +22,6 @@
 [submodule "submodules/VEXRISCV"]
 	path = submodules/VEXRISCV
 	url = git@github.com:IObundle/iob-vexriscv.git
+[submodule "submodules/VERSAT"]
+	path = submodules/VERSAT
+	url = git@github.com:IObundle/iob-versat
