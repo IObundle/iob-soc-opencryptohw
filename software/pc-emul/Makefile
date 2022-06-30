@@ -2,6 +2,7 @@ ROOT_DIR:=../..
 
 include ../software.mk
 
+BUILD_DIR=build
 #additional compiler flags
 CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
 
@@ -25,6 +26,10 @@ SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 
 SOC_OUT_BIN:=soc-out.bin
+
+#units to verilate
+VERILATE_UNIT = xunitF xunitM
+HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -52,7 +57,8 @@ run: build
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) \
+		$(BUILD_DIR)
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@make clean-eth-socket
@@ -74,6 +80,10 @@ $(SOC_LOG):
 
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
+
+$(BUILD_DIR)/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir $(BUILD_DIR) $<;
+	cd $(BUILD_DIR) && VM_DEFAULT_RULES=0 make -f V$*.mk;
 
 .PHONY: build run \
 	test validate profile \

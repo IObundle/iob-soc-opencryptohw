@@ -20,6 +20,7 @@ software/*/*
 !software/firmware/profile.c
 !software/firmware/profile.h
 !software/firmware/crypto/
+!software/firmware/units/
 
 !software/console/console
 !software/console/eth_console
