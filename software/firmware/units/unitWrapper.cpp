@@ -122,8 +122,6 @@ static int* UnitFUpdateFunction(FUInstance* inst){
    results[6] = self->out6;
    results[7] = self->out7;
 
-   inst->done = self->done;
-
    return results;
 }
 
@@ -194,7 +192,6 @@ static int* UnitMUpdateFunction(FUInstance* inst){
    UPDATE(self);
 
    out = self->out0;
-   inst->done = self->done;
 
    return &out;
 }

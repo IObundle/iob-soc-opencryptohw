@@ -2,9 +2,9 @@ ROOT_DIR:=../..
 
 include ../software.mk
 
-BUILD_DIR=build
+BUILD_DIR=./build
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
+CFLAGS=-Os -std=gnu99 -Wl,--strip-debug -g -m32
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -31,6 +31,9 @@ SOC_OUT_BIN:=soc-out.bin
 VERILATE_UNIT = xunitF xunitM
 HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
 
+#unit wrapper
+CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
+
 #PROFILE
 ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
@@ -46,8 +49,8 @@ CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
 build: gen_data fw_emul
 
-fw_emul: $(HDR) $(SRC)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
+fw_emul: $(HDR) $(SRC) $(CPP_OBJ)
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 
 run: build
 	@rm -f soc2cnsl cnsl2soc
@@ -84,6 +87,9 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 $(BUILD_DIR)/V%.h: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir $(BUILD_DIR) $<;
 	cd $(BUILD_DIR) && VM_DEFAULT_RULES=0 make -f V$*.mk;
+
+$(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp 
+	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
 
 .PHONY: build run \
 	test validate profile \
