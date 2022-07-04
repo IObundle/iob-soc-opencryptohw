@@ -26,7 +26,7 @@ validate: $(SOC_OUT_BIN)
 	@if ./$(SW_TEST_DIR)/validate_test.py $(VALIDATION_OUT_BIN) $(SOC_OUT_BIN); then printf "\n\nShortMessage Test PASSED\n\n"; else printf "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
 
 $(SOC_OUT_BIN):
-	$(eval SOC_OUT_BIN_PATH = $(shell find $(HW_DIR) -name "$@"))
+	$(eval SOC_OUT_BIN_PATH = $(shell find $(HW_DIR) $(SW_DIR)/python -name "$@"))
 	cp $(SOC_OUT_BIN_PATH) $@
 
 gen_xunitM_bin: $(XUNITM_SRC)

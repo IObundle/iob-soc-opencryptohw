@@ -4,7 +4,7 @@ import sys
 import os
 import math
 
-def main():
+if __name__ == "__main__":
     try:
         valid_fname = sys.argv[1]
         eval_fname = sys.argv[2]
@@ -42,9 +42,9 @@ def main():
         valid_blk = f_valid.read(blk_size)
         eval_blk = f_eval.read(blk_size)
         if valid_blk != eval_blk:
-            print(f'Blk {i} differ:\n')
+            print(f'Blk {i} differ:')
             print(f'Valid: {valid_blk.hex()}')
-            print(f'Eval: {eval_blk.hex()}')
+            print(f'Eval: {eval_blk.hex()}\n')
             failed_validation = 1
 
     # Close output files
@@ -57,9 +57,4 @@ def main():
         print("FAILURE: eval and validation file differ")
     print("=================================\n")
 
-
-
     sys.exit(failed_validation)
-
-if __name__ == "__main__":
-    main()
