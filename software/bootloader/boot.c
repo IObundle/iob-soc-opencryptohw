@@ -23,17 +23,17 @@ int main() {
   } while(!IOB_UART_GET_RXREADY());
 
   //welcome message
-  uart_puts (PROGNAME);
-  uart_puts (": connected!\n");
+  //uart_puts (PROGNAME);
+  //uart_puts (": connected!\n");
 
 #ifdef USE_DDR
-    uart_puts (PROGNAME);
-    uart_puts(": DDR in use\n");
+    //uart_puts (PROGNAME);
+    uart_puts("DDR\n");
 #endif
     
 #ifdef RUN_EXTMEM
-    uart_puts (PROGNAME);
-    uart_puts(": program to run from DDR\n");
+    //uart_puts (PROGNAME);
+    uart_puts("extMEM\n");
 #endif
 
   // address to copy firmware to
@@ -49,8 +49,8 @@ int main() {
   char r_fw[] = "firmware.bin";
   if (uart_getc() == FRX) {//file receive: load firmware
     file_size = uart_recvfile(r_fw, &prog_start_addr);
-    uart_puts (PROGNAME);
-    uart_puts (": Loading firmware...\n");
+    //uart_puts (PROGNAME);
+    //uart_puts (": Loading firmware...\n");
   }
 
   //sending firmware back for debug
@@ -60,8 +60,8 @@ int main() {
     uart_sendfile(s_fw, file_size, prog_start_addr);
   
   //run firmware
-  uart_puts (PROGNAME);
-  uart_puts (": Restart CPU to run user program...\n");
+  //uart_puts (PROGNAME);
+  //uart_puts (": Restart CPU to run user program...\n");
   uart_txwait();
 
 #ifdef RUN_EXTMEM

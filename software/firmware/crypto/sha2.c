@@ -211,6 +211,11 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
     PROF_STOP(F_32)
     PROF_START(Expand32)
 #endif
+        int a = sigma1_32(w14);
+        int b = (w9);
+        int c = sigma0_32(w1);
+        int d = (w0);
+
         EXPAND_32
 #ifdef PROFILE
     PROF_STOP(Expand32)
@@ -543,7 +548,7 @@ static const uint8_t iv_512[64] = {
     0x2b, 0x3e, 0x6c, 0x1f, 0x1f, 0x83, 0xd9, 0xab, 0xfb, 0x41, 0xbd,
     0x6b, 0x5b, 0xe0, 0xcd, 0x19, 0x13, 0x7e, 0x21, 0x79
 };
-#endif 
+#endif
 
 void sha224_inc_init(sha224ctx *state) {
     state->ctx = (uint8_t*) malloc(PQC_SHA256CTX_BYTES);
@@ -837,7 +842,7 @@ void sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 #ifdef PROFILE
     PROF_START(sha_init)
-#endif 
+#endif
     sha256_inc_init(&state);
 #ifdef PROFILE
     PROF_STOP(sha_init)

@@ -178,7 +178,7 @@ int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numbe
     }
 
     CalculateDelay(accel->versat,accel);
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 
     #if 0
     Accelerator* flatten = Flatten(accel->versat,accel,1);
@@ -256,6 +256,7 @@ int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues
     }
 
     CalculateDelay(accel->versat,accel);
+    SetDelayRecursive(accel);
 
     #if 1
     OutputGraphDotFile(accel,true,"circuit.dot");
@@ -294,7 +295,7 @@ void TestMStage(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 
     int constants[] = {7,18,3,17,19,10};
     for(int i = 0; i < ARRAY_SIZE(constants); i++){
@@ -312,7 +313,7 @@ void TestFStage(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 
     int constants[] = {6,11,25,2,13,22};
     for(int i = 0; i < ARRAY_SIZE(constants); i++){
@@ -332,11 +333,11 @@ void TestInputM(Versat* versat){
     FUInstance* inst;
     {
     TIME_IT('F');
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Input_M"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M"));
     accel = CreateAccelerator(versat);
     inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
 
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 
     #if 1
     OutputGraphDotFile(type->circuit,true,"circuit.dot");
@@ -355,7 +356,7 @@ void TestInputM(Versat* versat){
     }
     }
 
-    int* out = TestSequentialInstance(accel,inst,16,16,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
+    int* out = TestSequentialInstance(accel,inst,16,1,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
 
     printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
     for(int i = 0; i < 16; i++){
@@ -409,32 +410,30 @@ void InstantiateSHA(Versat* versat){
     }
 
     #if 0
-    for(int i = 0; i < 4; i++){
-        for(int ii = 0; ii < 16; ii++){
-            FUInstance* inst = GetInstanceByName(accel,"SHA","F%d",i,"f%x",ii);
+    {
+        FUInstance* inst = GetInstanceByName(accel,"SHA","M0","m0","sigma");
 
-            int constants[] = {6,11,25,2,13,22};
-            for(int i = 0; i < ARRAY_SIZE(constants); i++){
-                inst->config[i] = constants[i];
-            }
+        int constants[] = {7,18,3,17,19,10};
+        for(int i = 0; i < ARRAY_SIZE(constants); i++){
+            inst->config[i] = constants[i];
         }
     }
+    #endif
 
-    for(int i = 0; i < 3; i++){
-        for(int ii = 0; ii < 16; ii++){
-            FUInstance* inst = GetInstanceByName(accel,"SHA","M%d",i,"m%x",ii);
+    #if 0
+    {
+        FUInstance* inst = GetInstanceByName(accel,"SHA","F0","f0","t");
 
-            int constants[] = {7,18,3,17,19,10};
-            for(int i = 0; i < ARRAY_SIZE(constants); i++){
-                inst->config[i] = constants[i];
-            }
+        int constants[] = {6,11,25,2,13,22};
+        for(int i = 0; i < ARRAY_SIZE(constants); i++){
+            inst->config[i] = constants[i];
         }
     }
     #endif
     }
 
     CalculateDelay(versat,accel);
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 }
 
 void TestSHA(Versat* versat){
@@ -445,12 +444,18 @@ void TestSHA(Versat* versat){
         digest[i] = 0;
     }
 
+    Hook(versat,nullptr,nullptr);
+
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     versat_sha256(digest,msg_64,64);
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
 
     // Gera o versat.
     OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+}
+
+void TestStatic(Versat* versat){
+    Hook(versat,nullptr,nullptr);
 }
 
 int main(int argc,const char* argv[])
@@ -488,6 +493,14 @@ int main(int argc,const char* argv[])
     #endif
 
     #if 0
+    TestStatic(versat);
+
+    uart_finish();
+    return 0;
+    #endif
+
+    #if 0
+    Hook(versat,nullptr,nullptr);
     TestMStage(versat);
 
     uart_finish();
@@ -704,7 +717,7 @@ Fix makefile dependencies, make it proper (defines (like -DPC) only for firmware
 
 Keep track off:
 
-The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives.
+The delay value for delay units is how much to extend latency, while delay for the other units is how many cycles before valid data arrives. (Made more concrete be setting the delay on a delay unit to be a configuration)
 Remove instances doesn't update the config / state / memMapped / delay pointers
 
 */
@@ -801,12 +814,14 @@ Merge:
 
 */
 
+/*
+
+Known bugs:
 
 
 
 
-
-
+*/
 
 
 
