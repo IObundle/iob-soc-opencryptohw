@@ -397,39 +397,12 @@ void InstantiateSHA(Versat* versat){
     }
 
     for(int i = 0; i < 4; i++){
-        FUInstance* mem = GetInstanceByName(accel,"SHA","cMem%d",i);
-
-        mem->config[0] = 1;
-        mem->config[1] = 16;
-        mem->config[2] = 16;
-        mem->config[5] = 1;
+        FUInstance* mem = GetInstanceByName(accel,"SHA","cMem%d",i,"mem");
 
         for(int ii = 0; ii < 16; ii++){
             VersatUnitWrite(mem,ii,kConstants[i][ii]);
         }
     }
-
-    #if 0
-    {
-        FUInstance* inst = GetInstanceByName(accel,"SHA","M0","m0","sigma");
-
-        int constants[] = {7,18,3,17,19,10};
-        for(int i = 0; i < ARRAY_SIZE(constants); i++){
-            inst->config[i] = constants[i];
-        }
-    }
-    #endif
-
-    #if 0
-    {
-        FUInstance* inst = GetInstanceByName(accel,"SHA","F0","f0","t");
-
-        int constants[] = {6,11,25,2,13,22};
-        for(int i = 0; i < ARRAY_SIZE(constants); i++){
-            inst->config[i] = constants[i];
-        }
-    }
-    #endif
     }
 
     CalculateDelay(versat,accel);

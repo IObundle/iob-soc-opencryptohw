@@ -44,7 +44,7 @@ INC_DIR:=$(HW_DIR)/include
 SRC_DIR:=$(HW_DIR)/src
 
 #DEFINES
-DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W)
+DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W) $(defmacro)AXI_ADDR_W=32
 
 #INCLUDES
 INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
