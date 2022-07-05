@@ -365,11 +365,6 @@ int main(int argc, const char* argv[])
     PROF_START(sha256)
 #endif
     // sha256(digest,msg,msg_len);
-    printf("versat_sha56(\n");
-    printf("\tdigest\n");
-    printf("\tmsg: ");
-    print_hex_msg_f(msg_len, msg, msg_len);
-    printf("\tmsg_len: %d\n", msg_len);
     versat_sha256(digest,msg,msg_len);
     print_hex_msg_f(HASH_SIZE, digest, HASH_SIZE);
 #ifdef PROFILE
