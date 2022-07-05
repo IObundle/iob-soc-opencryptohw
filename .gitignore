@@ -12,6 +12,7 @@ software/*/*
 !software/*/*.rsp
 !software/*/*.c
 !software/*/*.cpp
+!software/*/*.hpp
 
 !software/bootloader/boot.c
 !software/bootloader/boot.S

@@ -42,6 +42,7 @@ CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
 
 #firmware object
 CPP_OBJ+=$(BUILD_DIR)/firmware.o
+CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -102,7 +103,7 @@ $(BUILD_DIR)/V%.h: $(HW_DIR)/src/units/%.v
 $(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp 
 	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
 
-$(BUILD_DIR)/%.o: $(FIRM_DIR)/firmware.cpp
+$(BUILD_DIR)/%.o: $(FIRM_DIR)/%.cpp
 	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
 
 .PHONY: build run \
