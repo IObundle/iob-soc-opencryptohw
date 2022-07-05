@@ -8,17 +8,9 @@ extern "C"{
 #include "iob-timer.h"
 #include "iob-eth.h"
 
-#ifdef PROFILE
-#include "profile.h"
-#endif
-
-#include "crypto/sha2.h"
 }
 
-#include <cstdio>
-
 #include "versat.hpp"
-#include "utils.hpp"
 
 #include "unitWrapper.hpp"
 #include "unitVerilogWrappers.hpp"
@@ -32,21 +24,6 @@ extern "C"{
     char *ddr_mem = (char*) EXTRA_BASE;
 #endif
 
-void print_hex_msg_f(int len, uint8_t* msg, int msg_len){
-    int i = 0;
-    int byte_val = 0;
-    char hex_table[] = "0123456789abcdef";
-
-    // printf("Len = %d\n", len*8);
-    // printf("Msg = ");
-    for( i = 0; i < msg_len; i++){
-        byte_val = (int) ((unsigned char) msg[i]);
-        printf("%c%c", hex_table[byte_val >> 4], hex_table[byte_val & 0xF]);
-    }
-    printf("\n");
-
-    return;
-}
 // GLOBALS
 Accelerator* accel;
 bool initVersat = false;
@@ -313,14 +290,11 @@ int main(int argc, const char* argv[])
   Versat versatInst = {};
   Versat* versat = &versatInst;
   InitVersat(versat,VERSAT_BASE,1); 
-  ParseCommandLineOptions(versat,argc,argv);//Note: this function doesn't seem to do anything
 
-  FUDeclaration *MEM = GetTypeByName(versat,MakeSizedString("xmem"));//Note: Not used
-  FUDeclaration *REG = GetTypeByName(versat,MakeSizedString("xreg"));//Note: Not used
   // Sha specific units
   // Need to RegisterFU, can ignore return value
-  FUDeclaration* UNIT_F = RegisterUnitF(versat);
-  FUDeclaration* UNIT_M = RegisterUnitM(versat);
+  RegisterUnitF(versat);
+  RegisterUnitM(versat);
 
   ParseVersatSpecification(versat,"testVersatSpecification.txt");
 
@@ -335,10 +309,6 @@ int main(int argc, const char* argv[])
   din_size = eth_rcv_variable_file(din_fp);
 #endif
   printf("ETHERNET: Received file with %d bytes\n", din_size);
-#ifdef PROFILE
-  PROF_START(global)
-  PROF_START(mem)
-#endif
 
   // Calculate output size and allocate output memory
   din_ptr += get_int(din_fp + din_ptr, &num_msgs);
@@ -348,41 +318,18 @@ int main(int argc, const char* argv[])
 
   uint8_t *msg = NULL;
 
-#ifdef PROFILE
-  PROF_STOP(mem)
-#endif
   //Message test loop
   for(i=0; i< num_msgs; i++){
-#ifdef PROFILE
-    PROF_START(mem)
-#endif
     // Parse message and length
     din_ptr += get_int(din_fp + din_ptr, &msg_len);
     din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
 
-#ifdef PROFILE
-    PROF_STOP(mem)
-    PROF_START(sha256)
-#endif
-    // sha256(digest,msg,msg_len);
     versat_sha256(digest,msg,msg_len);
-    print_hex_msg_f(HASH_SIZE, digest, HASH_SIZE);
-#ifdef PROFILE
-    PROF_STOP(sha256)
-    PROF_START(mem)
-#endif
 
     //save to memory
     dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
-#ifdef PROFILE
-    PROF_STOP(mem)
-#endif
   }
 
-#ifdef PROFILE
-  // Finish profile
-  PROF_STOP(global)
-#endif
 #ifdef SIM
   // send message digests via uart
   uart_sendfile("soc-out.bin", dout_size, dout_fp); 
@@ -391,11 +338,6 @@ int main(int argc, const char* argv[])
   eth_send_variable_file(dout_fp, dout_size);
 #endif
   printf("ETHERNET: Sent file with %d bytes\n", dout_size);
-
-#ifdef PROFILE
-  // report execution times
-  profile_report();
-#endif
 
   uart_finish();
 }
