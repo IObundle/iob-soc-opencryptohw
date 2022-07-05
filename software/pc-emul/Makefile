@@ -41,7 +41,6 @@ HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
 CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
 
 #firmware object
-CPP_OBJ+=$(BUILD_DIR)/firmware.o
 CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
 
 #PROFILE
@@ -61,7 +60,7 @@ build: gen_data fw_emul
 	mkdir -p $(DEBUG_DIR)
 	mkdir -p $(VERSAT_PRG_SRC_DIR)
 
-fw_emul: $(HDR) $(SRC) $(CPP_OBJ)
+fw_emul: $(HDR) $(SRC) $(CPP_OBJ) $(BUILD_DIR)/firmware.o
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 
 run: build
@@ -74,6 +73,7 @@ clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) \
 		$(BUILD_DIR) $(DEBUG_DIR) $(VERSAT_PRG_SRC_DIR) *.dot
+	@rm -rf *.vh *.v *.inc versat_output
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@make clean-eth-socket
@@ -105,6 +105,12 @@ $(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp
 
 $(BUILD_DIR)/%.o: $(FIRM_DIR)/%.cpp
 	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
+
+versat_output: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
+	mkdir -p $(DEBUG_DIR)
+	mkdir -p $(VERSAT_PRG_SRC_DIR)
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
+	./$@
 
 .PHONY: build run \
 	test validate profile \
