@@ -20,10 +20,10 @@ int main(int argc, const char* argv[])
 
   ParseVersatSpecification(versat,"testVersatSpecification.txt");
 
-  InstantiateSHA(versat);
+  Accelerator* accel_SHA = InstantiateSHA(versat);
 
   // Generate versat sources
-  OutputVersatSource(versat,versat->accelerators.Get(0),"versat_instance.v","versat_defs.vh","versat_data.inc");
+  OutputVersatSource(versat,accel_SHA,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
   return 0;
 }

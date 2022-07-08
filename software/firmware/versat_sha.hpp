@@ -6,7 +6,7 @@
 #include "unitWrapper.hpp"
 #include "unitVerilogWrappers.hpp"
 
-void InstantiateSHA(Versat* versat);
+Accelerator* InstantiateSHA(Versat* versat);
 
 static uint load_bigendian_32(const uint8_t *x);
 

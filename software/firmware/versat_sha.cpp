@@ -14,7 +14,7 @@ static uint kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0
 
 static uint* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
 
-void InstantiateSHA(Versat* versat){
+Accelerator* InstantiateSHA(Versat* versat){
     FUInstance* inst = nullptr;
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
@@ -56,6 +56,8 @@ void InstantiateSHA(Versat* versat){
 
     CalculateDelay(versat,accel);
     SetDelayRecursive(accel);
+
+    return accel;
 }
 
 static uint load_bigendian_32(const uint8_t *x) {
