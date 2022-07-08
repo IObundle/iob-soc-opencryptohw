@@ -55,7 +55,7 @@ void InstantiateSHA(Versat* versat){
     }
 
     CalculateDelay(versat,accel);
-    SetDelayRecursive(inst,0);
+    SetDelayRecursive(accel);
 }
 
 static uint load_bigendian_32(const uint8_t *x) {
