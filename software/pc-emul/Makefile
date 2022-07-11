@@ -73,7 +73,7 @@ clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) \
 		$(BUILD_DIR) $(DEBUG_DIR) $(VERSAT_PRG_SRC_DIR) *.dot
-	@rm -rf *.vh *.v *.inc versat_output
+	@rm -rf *.vh *.v *.inc output-versat
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@make clean-eth-socket
@@ -106,12 +106,16 @@ $(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp
 $(BUILD_DIR)/%.o: $(FIRM_DIR)/%.cpp
 	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
 
-versat_output: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
+output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
 	mkdir -p $(DEBUG_DIR)
 	mkdir -p $(VERSAT_PRG_SRC_DIR)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 	./$@
+ifneq ($(OUTPUT_VERSAT_DST),)
+	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
+endif
 
 .PHONY: build run \
 	test validate profile \
+	output-versat \
 	clean

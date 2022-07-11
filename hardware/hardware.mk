@@ -33,9 +33,20 @@ include $(TIMER_DIR)/hardware/hardware.mk
 #ETHERNET
 include $(ETHERNET_DIR)/hardware/hardware.mk
 
+#VERSAT
+include $(VERSAT_DIR)/hardware/hardware.mk
+
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include
 SRC_DIR:=$(HW_DIR)/src
+SPINAL_DIR=$(HW_DIR)/src/spinalHDL
+ifeq ($(SPINAL),1)
+XUNIT_DIR:=$(SRC_DIR)/spinalHDL/rtl
+else
+XUNIT_DIR:=$(SRC_DIR)/units
+endif
+XUNITM_VSRC=$(XUNIT_DIR)/xunitM.v
+XUNITF_VSRC=$(XUNIT_DIR)/xunitF.v
 
 #DEFINES
 DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W)
@@ -52,6 +63,11 @@ VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
 ifeq ($(USE_DDR),1)
 VSRC+=$(SRC_DIR)/ext_mem.v
 endif
+
+#versat accelerator
+VSRC+=versat_instance.v
+VSRC+=$(XUNIT_DIR)/xunitF.v
+VSRC+=$(XUNIT_DIR)/xunitM.v
 
 #system
 VSRC+=$(SRC_DIR)/boot_ctr.v $(SRC_DIR)/int_mem.v $(SRC_DIR)/sram.v
@@ -81,5 +97,13 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 #clean general hardware files
 hw-clean: gen-clean
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
+
+$(XUNIT_DIR)/%.v:
+	make -C $(SIM_DIR) spinal-sources
+
+versat_instance.v:
+	$(eval CURRENT_DIR=$(shell pwd))
+	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
+
 
 .PHONY: hw-clean
