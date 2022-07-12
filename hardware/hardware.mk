@@ -56,6 +56,7 @@ INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
 
 #HEADERS
 VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
+VHDR+=versat_defs.vh
 
 #SOURCES
 
@@ -97,13 +98,13 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 #clean general hardware files
 hw-clean: gen-clean
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
+	@make -C $(ROOT_DIR) pc-emul-clean
 
 $(XUNIT_DIR)/%.v:
 	make -C $(SIM_DIR) spinal-sources
 
-versat_instance.v:
+versat_instance.v versat_defs.vh:
 	$(eval CURRENT_DIR=$(shell pwd))
 	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
-
 
 .PHONY: hw-clean
