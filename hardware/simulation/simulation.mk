@@ -44,6 +44,7 @@ TB_DIR:=$(HW_DIR)/simulation/verilog_tb
 
 #axi memory
 include $(AXI_DIR)/hardware/axiram/hardware.mk
+include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
 
 #TEST OUTPUT
 SOC_OUT_BIN:=soc-out.bin
