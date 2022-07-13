@@ -1,6 +1,8 @@
 ROOT_DIR=../..
 include ../software.mk
 
+BUILD_DIR=./build
+
 #additional linker flag
 LFLAGS+=-Wl,-Map,firmware.map
 
@@ -35,8 +37,8 @@ SRC+=$(UART_DIR)/software/printf.c
 SRC+=$(FIRM_DIR)/crypto/*.c
 
 #firmware object
-CPP_SRC+=versat_sha.cpp
-CPP_SRC+=firmware.cpp
+CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
+CPP_OBJ+=$(BUILD_DIR)/firmware.o
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -54,19 +56,24 @@ endif
 
 build: firmware.elf
 
-firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
-	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(CPP_SRC) $(LLIBS) -fno-exceptions
+firmware.elf: ../template.lds $(HDR) $(SRC) $(CPP_OBJ) gen_data
+	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(CPP_OBJ) $(LLIBS) -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
 versat_data.inc:
 	@$(eval CURRENT_DIR=$(shell pwd))
 	@make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
 
+$(BUILD_DIR)/%.o: %.cpp
+	mkdir -p $(BUILD_DIR)
+	$(TOOLCHAIN_PREFIX)g++ -c -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $< $(LLIBS) -fno-exceptions
+
 clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h \
 		*swreg_emb.c \
 		*d_in.bin *d_out.bin \
 		eth_frame_struct.h \
-		versat_data.inc versat_defs.vh versat_instance.v
+		versat_data.inc versat_defs.vh versat_instance.v \
+		$(BUILD_DIR)
 
 .PHONY: build clean
