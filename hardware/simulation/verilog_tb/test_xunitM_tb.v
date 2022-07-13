@@ -112,6 +112,8 @@ module xunitM_tb;
         .in0(in),
         .out0(out),
 
+        .done(),
+
         .delay0(delay_cfg)
     );
 
