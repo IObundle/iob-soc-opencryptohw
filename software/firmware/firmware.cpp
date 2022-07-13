@@ -114,18 +114,21 @@ int main(int argc, const char* argv[])
   InitVersat(versat,VERSAT_BASE,1); 
 
   // Sha specific units
-  // Need to RegisterFU, can ignore return value
+  // Need to RegisterFU, can ignore return value 
+#ifdef PC
   RegisterUnitF(versat);
   RegisterUnitM(versat);
 
   ParseVersatSpecification(versat,"testVersatSpecification.txt");
+#endif
 
   InstantiateSHA(versat);
   printf("After Instantiation SHA\n");
 
 #ifdef SIM
   //Receive input data from uart
-  din_size = uart_recvfile("sim_in.bin", &din_fp);
+  char input_file_name[] = "sim_in.bin";
+  din_size = uart_recvfile(input_file_name, &din_fp);
 #else
   //Receive input data from ethernet
   din_size = eth_rcv_variable_file(din_fp);
@@ -154,7 +157,8 @@ int main(int argc, const char* argv[])
 
 #ifdef SIM
   // send message digests via uart
-  uart_sendfile("soc-out.bin", dout_size, dout_fp); 
+  char output_file_name[] = "soc-out.bin";
+  uart_sendfile(output_file_name, dout_size, dout_fp); 
 #else
   // send message digests via ethernet
   eth_send_variable_file(dout_fp, dout_size);

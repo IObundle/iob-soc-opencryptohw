@@ -8,7 +8,7 @@ include ./config.mk
 fw-build:
 	make -C $(FIRM_DIR) build-all
 
-fw-clean:
+fw-clean: pc-emul-clean
 	make -C $(FIRM_DIR) clean-all
 
 #

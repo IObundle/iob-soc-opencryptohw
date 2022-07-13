@@ -18,12 +18,25 @@ include $(TIMER_DIR)/software/embedded/embedded.mk
 #ethernet
 include $(ETHERNET_DIR)/software/embedded/embedded.mk
 
+#versat
+include $(VERSAT_DIR)/software/embedded/embedded.mk
+
+
 #HEADERS
 HDR+=periphs.h
+HDR+=versat_data.inc
+
+#INCLUDES
+INCLUDE+=$(incdir)$(FIRM_DIR)/units
 
 #SOURCES
-SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
-SRC+= $(FIRM_DIR)/crypto/*.c
+SRC+=firmware.S 
+SRC+=$(UART_DIR)/software/printf.c
+SRC+=$(FIRM_DIR)/crypto/*.c
+
+#firmware object
+CPP_SRC+=versat_sha.cpp
+CPP_SRC+=firmware.cpp
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -42,13 +55,18 @@ endif
 build: firmware.elf
 
 firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
-	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS)
+	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(CPP_SRC) $(LLIBS) -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
+
+versat_data.inc:
+	@$(eval CURRENT_DIR=$(shell pwd))
+	@make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
 
 clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h *swreg.h \
 		*swreg_emb.c \
 		*d_in.bin *d_out.bin \
-		eth_frame_struct.h
+		eth_frame_struct.h \
+		versat_data.inc versat_defs.vh versat_instance.v
 
 .PHONY: build clean

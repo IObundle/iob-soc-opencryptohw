@@ -114,6 +114,7 @@ output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
 ifneq ($(OUTPUT_VERSAT_DST),)
 	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
 	mv versat_defs.vh $(OUTPUT_VERSAT_DST) 
+	mv versat_data.inc $(OUTPUT_VERSAT_DST) 
 endif
 
 .PHONY: build run \

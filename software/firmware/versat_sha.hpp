@@ -1,10 +1,13 @@
 #ifndef INCLUDED_VERSAT_SHA_HPP
 #define INCLUDED_VERSAT_SHA_HPP
 
+#include <sys/types.h>
+
 #include "versat.hpp"
 
 #include "unitWrapper.hpp"
 #include "unitVerilogWrappers.hpp"
+
 
 Accelerator* InstantiateSHA(Versat* versat);
 
