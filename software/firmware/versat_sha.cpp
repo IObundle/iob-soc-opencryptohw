@@ -23,6 +23,10 @@ Accelerator* InstantiateSHA(Versat* versat){
     OutputUnitInfo(inst);
 
     FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
+    // TODO: fix to mark State registers as used
+    for (size_t i = 0; i < 8; ++i) {
+        FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
+    }
     volatile VReadConfig* c = (volatile VReadConfig*) read->config;
 
     // Versat side
@@ -42,7 +46,7 @@ Accelerator* InstantiateSHA(Versat* versat){
     c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
 
     for(int i = 0; i < 4; i++){
-        FUInstance* mem = GetInstanceByName(accel,"SHA","cMem%d",i);
+        FUInstance* mem = GetInstanceByName(accel,"SHA","cMem%d",i,"mem");
 
         mem->config[0] = 1;
         mem->config[1] = 16;

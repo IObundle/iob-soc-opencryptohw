@@ -40,7 +40,7 @@ module xunitF #(
     input [7:0]         delay0 // Encodes delay
     );
 
-assign done = 1'b1;
+assign done = (delay == 0);
 reg [7:0] delay;
 reg [0:0] latency;
 reg [31:0] a,b,c,d,e,f,g,h;

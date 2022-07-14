@@ -7,7 +7,7 @@ DEBUG_DIR=./debug
 VERSAT_PRG_SRC_DIR=./src
 
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -Wl,--strip-debug -g -m32
+CFLAGS=-Os -std=gnu99 -g -m32
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
