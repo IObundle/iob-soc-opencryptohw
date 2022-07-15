@@ -18,7 +18,11 @@ extern "C"{
 #ifdef PC
     char ddr_mem[100000] = {0};
 #else
-    char *ddr_mem = (char*) EXTRA_BASE;
+#ifndef RUN_EXTMEM
+    char *ddr_mem = (char*) (EXTRA_BASE);
+#else
+    char *ddr_mem = (char*) ((1<<(FIRM_ADDR_W)));
+#endif
 #endif
 
 /* read integer value
@@ -87,7 +91,7 @@ int save_msg(char *ptr, uint8_t* msg, int size){
 int main(int argc, const char* argv[])
 {
   int INPUT_FILE_SIZE = 4096;
-  uint8_t digest[256];
+  uint8_t digest[256] = {0};
   unsigned int num_msgs = 0;
   unsigned int msg_len = 0;
   int i = 0;
