@@ -1,3 +1,34 @@
+#if 1
+
+extern "C"{
+#include "system.h"
+#include "periphs.h"
+#include "iob-uart.h"
+
+#include "iob-timer.h"
+
+int printf_(const char* format, ...);
+}
+
+#define printf printf_
+
+int main(int argc,const char* argv[])
+{
+    //init uart
+    uart_init(UART_BASE,FREQ/BAUD);
+    timer_init(TIMER_BASE);
+
+    printf("Init base modules\n");
+
+    printf("Init Versat\n");
+
+    uart_finish();
+
+    return 0;
+}
+
+#else
+
 #include <cstdio>
 
 #include "versat.hpp"
@@ -22,7 +53,7 @@ extern "C"{
 int printf_(const char* format, ...);
 }
 
-#ifdef PC
+#if 0
 #define uart_finish(...) ((void)0)
 #define uart_init(...) ((void)0)
 #else
@@ -427,8 +458,455 @@ void TestSHA(Versat* versat){
     OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 }
 
-void TestStatic(Versat* versat){
-    Hook(versat,nullptr,nullptr);
+void MatrixMultiplication(){
+    int matA[2][2];
+    int matB[2][2];
+
+    int res[2][2];
+
+    // 2 3 * 6 7
+    // 4 5   8 9
+
+    matA[0][0] = 2;
+    matA[0][1] = 3;
+    matA[1][0] = 4;
+    matA[1][1] = 5;
+
+    matB[0][0] = 6;
+    matB[0][1] = 7;
+    matB[1][0] = 8;
+    matB[1][1] = 9;
+
+    for(int y = 0; y < 2; y++){
+        for(int x = 0; x < 2; x++){
+            int sum = 0;
+            for(int i = 0; i < 2; i++){
+                sum += matA[y][i] * matB[i][x];
+            }
+            res[y][x] = sum;
+        }
+    }
+
+    for(int y = 0; y < 2; y++){
+        for(int x = 0; x < 2; x++){
+            printf("%d ",res[y][x]);
+        }
+        printf("\n");
+    }
+}
+
+void ConfigureSimpleVRead(FUInstance* inst, int numberItems){
+    volatile VReadConfig* c = (volatile VReadConfig*) inst->config;
+
+    // Memory side
+    c->incrA = 1;
+    c->iterA = 1;
+    c->perA = numberItems;
+    c->dutyA = numberItems;
+    c->size = 8;
+    c->int_addr = 0;
+    c->pingPong = 1;
+    c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
+}
+
+void ConfigureLeftSideMatrix(FUInstance* inst,int iterations){
+    volatile MemConfig* config = (volatile MemConfig*) inst->config;
+
+    config->iterA = iterations;
+    config->perA = iterations;
+    config->dutyA = iterations;
+    config->startA = 0;
+    config->shiftA = -iterations;
+    config->incrA = 1;
+    config->reverseA = 0;
+    config->iter2A = 1;
+    config->per2A = iterations;
+    config->shift2A = 0;
+    config->incr2A = iterations;
+}
+
+void ConfigureRightSideMatrix(FUInstance* inst, int iterations){
+    volatile MemConfig* config = (volatile MemConfig*) inst->config;
+
+    config->iterA = iterations;
+    config->perA = iterations;
+    config->dutyA = iterations;
+    config->startA = 0;
+    config->shiftA = -(iterations * iterations - 1);
+    config->incrA = iterations;
+    config->reverseA = 0;
+    config->iter2A = 1;
+    config->per2A = iterations;
+    config->shift2A = 0;
+    config->incr2A = 0;
+}
+
+void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
+    volatile MemConfig* config = (volatile MemConfig*) inst->config;
+
+    config->iterA = 1;
+    config->perA = amountOfData;
+    config->dutyA = amountOfData;
+    config->incrA = 1;
+}
+
+void ConfigureMemoryReceive(FUInstance* inst, int amountOfData,int interdataDelay){
+    volatile MemConfig* config = (volatile MemConfig*) inst->config;
+
+    config->iterA = amountOfData;
+    config->perA = interdataDelay;
+    config->dutyA = 1;
+    config->startA = 0;
+    config->shiftA = 0;
+    config->incrA = 1;
+    config->in0_wr = 1;
+    config->reverseA = 0;
+    config->iter2A = 0;
+    config->per2A = 0;
+    config->shift2A = 0;
+    config->incr2A = 0;
+}
+
+void TestMemory(Versat* versat){
+    Accelerator* accel = CreateAccelerator(versat);
+    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("memViewer"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+
+    FUInstance* mem = GetInstanceByName(accel,"test","memory");
+
+    ConfigureRightSideMatrix(mem,2);
+
+    for(int i = 0; i < 16; i++){
+        VersatUnitWrite(mem,i,i);
+    }
+
+    VersatUnitWrite(mem,1020,0xfc);
+    VersatUnitWrite(mem,1021,0xfd);
+    VersatUnitWrite(mem,1022,0xfe);
+    VersatUnitWrite(mem,1023,0xff);
+
+    CalculateDelay(versat,accel);
+    SetDelayRecursive(accel);
+
+    for(int i = 0; i < 2; i++){
+        for(int j = 0; j < 2; j++){
+            printf("%d\n",VersatUnitRead(mem,i*2+j));
+        }
+    }
+
+    AcceleratorRun(accel);
+
+    #if 0
+    FUInstance* reg = GetInstanceByName(accel,"test","d1");
+    printf("%d\n",reg->state[0]);
+    #endif
+
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+}
+
+void VersatMatrixMultiplication(Versat* versat){
+    Accelerator* accel = CreateAccelerator(versat);
+    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("MatrixMultiplication"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+
+    FUInstance* memA = GetInstanceByName(accel,"test","matA");
+    FUInstance* memB = GetInstanceByName(accel,"test","matB");
+    FUInstance* muladd = GetInstanceByName(accel,"test","ma");
+
+    FUInstance* res = GetInstanceByName(accel,"test","res");
+
+    int dimensions = 4;
+    int size = dimensions * dimensions;
+
+    ConfigureLeftSideMatrix(memA,dimensions);
+    ConfigureRightSideMatrix(memB,dimensions);
+
+    for(int i = 0; i < size; i++){
+        VersatUnitWrite(memA,i,i+1);
+        VersatUnitWrite(memB,i,i+1);
+    }
+
+    volatile MuladdConfig* conf = (volatile MuladdConfig*) muladd->config;
+
+    conf->opcode = 0;
+    conf->iterations = size;
+    conf->period = dimensions;
+    conf->shift = 0;
+
+    CalculateDelay(versat,accel);
+    SetDelayRecursive(accel);
+
+    ConfigureMemoryReceive(res,size,dimensions);
+
+    AcceleratorRun(accel);
+
+    for(int i = 0; i < dimensions; i++){
+        for(int j = 0; j < dimensions; j++){
+        printf("%d ",VersatUnitRead(res,i*dimensions + j));
+        }
+        printf("\n");
+    }
+
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+}
+
+#define nSTAGE 5
+
+void Convolution(){
+    int i, j, k, l, m;
+    int16_t pixels[25 * nSTAGE], weights[9 * nSTAGE], bias = 0, res;
+
+    srand(0);
+    //write data in versat mems
+    for (j = 0; j < nSTAGE; j++){
+        //write 5x5 feature map in mem0
+        for (i = 0; i < 25; i++)
+        {
+            pixels[25 * j + i] = rand() % 50 - 25;
+        }
+
+        //write 3x3 kernel and bias in mem1
+        for (i = 0; i < 9; i++)
+        {
+            weights[9 * j + i] = rand() % 10 - 5;
+        }
+
+        //write bias after weights of VERSAT 0
+        if(j == 0)
+        {
+            bias = rand() % 20 - 10;
+        }
+  }
+  //expected result of 3D convolution
+    for (i = 0; i < 3; i++){
+    for (j = 0; j < 3; j++){
+      res = bias;
+      for (k = 0; k < nSTAGE; k++)
+      {
+        for (l = 0; l < 3; l++)
+        {
+          for (m = 0; m < 3; m++)
+          {
+            res += pixels[i * 5 + j + k * 25 + l * 5 + m] * weights[9 * k + l * 3 + m];
+          }
+        }
+      }
+      printf("%d\t", res);
+    }
+    printf("\n");
+    }
+}
+
+void VersatConvolution(Versat* versat){
+    int16_t pixels[25 * nSTAGE], weights[9 * nSTAGE], bias = 0;
+
+    srand(0);
+    //write data in versat mems
+    for (int j = 0; j < nSTAGE; j++){
+        //write 5x5 feature map in mem0
+        for (int i = 0; i < 25; i++)
+        {
+            pixels[25 * j + i] = rand() % 50 - 25;
+        }
+
+        //write 3x3 kernel and bias in mem1
+        for (int i = 0; i < 9; i++)
+        {
+            weights[9 * j + i] = rand() % 10 - 5;
+        }
+
+        //write bias after weights of VERSAT 0
+        if(j == 0)
+        {
+            bias = rand() % 20 - 10;
+        }
+  }
+
+    Accelerator* accel = CreateAccelerator(versat);
+    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("Convolution"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+
+    int i, j, k, l, m;
+
+    volatile MemConfig* pixelConfig = nullptr;
+    volatile MemConfig* weightsConfig = nullptr;
+    //write data in versat mems
+    volatile VReadConfig* pixelConfigs[5];
+    for (j = 0; j < nSTAGE; j++){
+        FUInstance* pixels = GetInstanceByName(accel,"test","stage%d",j,"pixels");
+
+        ConfigureSimpleVRead(pixels,25);
+        {
+            volatile VReadConfig* config = (volatile VReadConfig*) pixels->config;
+            pixelConfigs[j] = config;
+
+            config->iterB = 3;
+            config->incrB = 1;
+            config->perB = 3;
+            config->dutyB = 3;
+            config->shiftB = 5 - 3;
+            config->ext_addr = (int) &pixels[25*j];
+        }
+
+        #if 0
+        //write 5x5 feature map in mem0
+        for (i = 0; i < 25; i++){
+            //VersatUnitWrite(pixels,i, rand() % 50 - 25);
+        }
+        #endif
+
+        FUInstance* weight = GetInstanceByName(accel,"test","stage%d",j,"weights");
+        //write 3x3 kernel and bias in mem1
+        for (i = 0; i < 9; i++){
+            VersatUnitWrite(weight,i, weights[9*j + i]);
+        }
+
+        //write bias after weights of VERSAT 0
+        if(j == 0){
+            FUInstance* bia = GetInstanceByName(accel,"test","bias");
+            bia->config[0] = bias;
+
+            {
+                volatile MemConfig* config = (volatile MemConfig*) weight->config;
+                weightsConfig = config;
+
+                ConfigureMemoryLinear(weight,9);
+            }
+
+            {
+                FUInstance* muladd = GetInstanceByName(accel,"test","stage0","muladd");
+
+                volatile MuladdConfig* config = (volatile MuladdConfig*) muladd->config;
+
+                config->iterations = 1;
+                config->period = 9;
+            }
+        }
+    }
+
+    FUInstance* res = GetInstanceByName(accel,"test","res");
+
+    volatile MemConfig* resConfig = (volatile MemConfig*) res->config;
+
+    resConfig->iterA = 1;
+    resConfig->incrA = 1;
+    resConfig->perA = 1;
+    resConfig->dutyA = 1;
+    resConfig->in0_wr = 1;
+
+    CalculateDelay(versat,accel);
+    SetDelayRecursive(accel);
+
+    for (i = 0; i < 3; i++)
+    {
+        for (j = 0; j < 3; j++)
+        {
+            for(int x = 0; x < 5; x++){
+                pixelConfigs[x]->startB = i * 5 + j;
+            }
+
+            resConfig->startA = i * 3 + j;
+
+            AcceleratorRun(accel);
+            AcceleratorRun(accel);
+        }
+    }
+
+    for (i = 0; i < 3; i++){
+        for (j = 0; j < 3; j++){
+          printf("%d\t", VersatUnitRead(res,i * 3 + j));
+        }
+        printf("\n");
+    }
+
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+}
+
+int CalculateSum(char* buffer,int* weights){
+   int sum = 0;
+
+   for(int j = 0; j < 5; j++){
+      sum +=  buffer[j] * weights[j];
+   }
+
+   return sum;
+}
+
+//int weights[] = {1,1,0,0,0};
+
+int weights[] = {17,67,109,157,199};
+char testString[] = "123249819835894981389Waldo198239812849825899904924oefhcasjngwoeijfjvakjndcoiqwj";
+
+void StringHasher(){
+    int SumToFind = CalculateSum("Waldo",weights);
+
+    for(int i = 0; i < sizeof(testString) - 5; i++){
+        int sum = CalculateSum(&testString[i],weights);
+
+        if(sum == SumToFind){
+            printf("%d - %.5s\n",i,&testString[i]);
+        }
+    }
+}
+
+void VersatStringHasher(Versat* versat){
+    Accelerator* accel = CreateAccelerator(versat);
+    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("StringHasher"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+
+    FUInstance* muladd = GetInstanceByName(accel,"test","mul1","mul");
+
+    volatile MuladdConfig* conf = (volatile MuladdConfig*) muladd->config;
+    conf->opcode = 0;
+    conf->iterations = 99;
+    conf->period = 1;
+    conf->shift = 0;
+
+    for(int i = 0; i < 5; i++){
+        inst->config[i] = weights[i];
+    }
+
+    FUInstance* bytesIn = GetInstanceByName(accel,"test","bytesIn");
+    FUInstance* bytesOut = GetInstanceByName(accel,"test","bytesOut");
+
+    CalculateDelay(versat,accel);
+    SetDelayRecursive(accel);
+
+    for(int i = 0; i < 5; i++){
+        VersatUnitWrite(bytesIn,i,(int) ("Waldo"[i]));
+    }
+
+    ConfigureMemoryLinear(bytesIn,5);
+    ConfigureMemoryReceive(bytesOut,1,1);
+
+    AcceleratorRun(accel);
+
+    int hash = VersatUnitRead(bytesOut,0);
+
+    for(int i = 0; i < sizeof(testString); i++){
+        VersatUnitWrite(bytesIn,i,(int) testString[i]);
+    }
+
+    ConfigureMemoryLinear(bytesIn,sizeof(testString));
+    ConfigureMemoryReceive(bytesOut,sizeof(testString)-5,1);
+
+    AcceleratorRun(accel);
+
+    #if 0
+    for(int i = 0; i < sizeof(testString) - 5; i++){
+        printf("%d:%d (%d)\n",i,VersatUnitRead(bytesOut,i),CalculateSum(&testString[i],weights));
+    }
+    #endif
+
+    for(int i = 0; i < sizeof(testString) - 5; i++){
+        int val = VersatUnitRead(bytesOut,i);
+
+        if(hash == val){
+            printf("%d - %.5s\n",i,&testString[i]);
+        }
+    }
+
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 }
 
 int main(int argc,const char* argv[])
@@ -439,10 +917,7 @@ int main(int argc,const char* argv[])
     uart_init(UART_BASE,FREQ/BAUD);
     timer_init(TIMER_BASE);
 
-    #if 0
-    uart_finish();
-    return 0;
-    #endif
+    printf("Init base modules\n");
 
     for(int i = 0; i < 256; i++){
         digest[i] = 0;
@@ -451,6 +926,8 @@ int main(int argc,const char* argv[])
     Versat versatInst = {};
     Versat* versat = &versatInst;
     InitVersat(versat,VERSAT_BASE,1);
+
+    printf("Init Versat\n");
 
     ParseCommandLineOptions(versat,argc,argv);
 
@@ -466,39 +943,50 @@ int main(int argc,const char* argv[])
     #endif
 
     #if 0
-    TestStatic(versat);
+    StringHasher();
+    #endif
 
-    uart_finish();
-    return 0;
+    #if 0
+    VersatStringHasher(versat);
+    #endif
+
+    #if 0
+    printf("Before convolution\n");
+    Convolution();
+    #endif
+
+    #if 0
+    printf("Before versat\n");
+    VersatConvolution(versat);
+    #endif
+
+    #if 0
+    MatrixMultiplication();
+    #endif
+
+    #if 0
+    VersatMatrixMultiplication(versat);
+    #endif
+
+    #if 0
+    TestMemory(versat);
     #endif
 
     #if 0
     Hook(versat,nullptr,nullptr);
     TestMStage(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
     TestFStage(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
     TestInputM(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
     TestDelay(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
@@ -509,21 +997,14 @@ int main(int argc,const char* argv[])
 
     #if 0
     TestDelayImprove(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
     Hook(versat);
-    return 0;
     #endif
 
     #if 1
     TestSHA(versat);
-
-    uart_finish();
-    return 0;
     #endif
 
     #if 0
@@ -678,6 +1159,8 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     initVersat = false; // At the end of each run, reset
 }
 
+#endif
+
 /*
 
 Currently plan:
@@ -739,6 +1222,7 @@ Hardware:
 
     Remove done/run/clk if not needed
     Implement shadow registers
+    Delay units with same inputs and delay values should be shared.
 
 Delay:
 

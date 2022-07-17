@@ -16,7 +16,6 @@ fw-clean:
 #
 
 pc-emul-build:
-	make fw-build
 	make -C $(PC_DIR) build
 
 pc-emul-run:
@@ -63,7 +62,7 @@ fpga-build:
 	make fw-build BAUD=115200
 	make -C $(BOARD_DIR) build
 
-fpga-run: fpga-build
+fpga-run:
 	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"
 
 fpga-run-profile:

@@ -61,7 +61,7 @@ int main() {
   
   //run firmware
   //uart_puts (PROGNAME);
-  //uart_puts (": Restart CPU to run user program...\n");
+  uart_puts (":run user program...\n");
   uart_txwait();
 
 #ifdef RUN_EXTMEM

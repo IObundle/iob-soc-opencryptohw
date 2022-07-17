@@ -16,7 +16,7 @@ module system
 
    //address write
    output [2*1-1:0]        m_axi_awid,
-   output [2*32-1:0]  m_axi_awaddr,
+   output [2*`DDR_ADDR_W-1:0]  m_axi_awaddr,
    output [2*8-1:0]        m_axi_awlen,
    output [2*3-1:0]        m_axi_awsize,
    output [2*2-1:0]        m_axi_awburst,

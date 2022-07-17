@@ -1,9 +1,8 @@
 ROOT_DIR:=../..
 
-include ../software.mk
+GLOBAL_CFLAGS:=-g -m32 -Wall
 
-#additional compiler flags
-CFLAGS=-Os -g -m32
+include ../software.mk
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
@@ -35,10 +34,14 @@ INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
 #UNITS TO VERILATE
-VERILATE_UNIT = xunitF xunitM
-UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
-OBJ+=./build/unitWrapper.o
-OBJ+=./build/firmware.o
+#VERILATE_UNIT := xunitF xunitM
+#UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
+
+#UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
+#OBJ+=./build/unitWrapper.o
+#OBJ+=./build/firmware.o
+
+SRC+=$(FIRM_DIR)/firmware.cpp
 
 #CONSOLE
 CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
@@ -51,21 +54,22 @@ build: gen_data fw_emul
 	mkdir -p trace_out
 
 fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o  $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
-
+	#gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lstdc++ -lm -lgcc -lc
+	
 run: build
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
-	./fw_emul $(TEST_LOG)
-	#@rm -f soc2cnsl cnsl2soc
-	#$(CONSOLE_CMD) $(TEST_LOG) &
 	#./fw_emul $(TEST_LOG)
-	#@make clean-eth-socket
-	cp versat_instance.v $(HW_DIR)/src/
-	cp versat_defs.vh $(HW_DIR)/include/
-	cp versat_data.inc $(FIRM_DIR)/
-	cp src/* $(HW_DIR)/src/GeneratedUnits/
+	@rm -f soc2cnsl cnsl2soc
+	$(CONSOLE_CMD) $(TEST_LOG) &
+	./fw_emul $(TEST_LOG)
+	@make clean-eth-socket
+	#cp versat_instance.v $(HW_DIR)/src/
+	#cp versat_defs.vh $(HW_DIR)/include/
+	#cp versat_data.inc $(FIRM_DIR)/
+	#cp src/* $(HW_DIR)/src/GeneratedUnits/
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
@@ -97,10 +101,10 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
 ./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)
-	g++ -std=c++11 -g -c -o ./build/$*.o -m32 $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
+	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
 ./build/V%.h: $(HW_DIR)/src/units/%.v
-	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;
 	mv ./obj/*.h ./build/

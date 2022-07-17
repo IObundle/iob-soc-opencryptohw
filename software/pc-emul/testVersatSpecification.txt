@@ -1,4 +1,89 @@
 
+module StaticMuladd(x,y){
+    static xmuladd mul;   
+#
+    x -> mul:0;
+    y -> mul:1;
+
+    mul -> out;
+}
+
+module StringHasher(){
+   xconst weight1;
+   xconst weight2;
+   xconst weight3;
+   xconst weight4;
+   xconst weight5;
+   StaticMuladd mul1;
+   StaticMuladd mul2;
+   StaticMuladd mul3;
+   StaticMuladd mul4;
+   StaticMuladd mul5;
+   xmem bytesIn;
+   xmem bytesOut;
+#
+   bytesIn[0] -> mul1:0;
+   bytesIn[1] -> mul2:0;
+   bytesIn[2] -> mul3:0;
+   bytesIn[3] -> mul4:0;
+   bytesIn[4] -> mul5:0;
+
+   weight1 -> mul1:1;
+   weight2 -> mul2:1;
+   weight3 -> mul3:1;
+   weight4 -> mul4:1;
+   weight5 -> mul5:1;
+
+   a1 = mul1 + mul2;
+   a2 = mul3 + mul4;
+   a3 = a1 + a2;
+   a4 = a3 + mul5;
+
+   a4[1] -> bytesOut;
+}
+
+module MatrixMultiplication(){ // Can also be used to perform a 
+   xmem matA;
+   xmem matB;
+   xmuladd ma;
+   xmem res;
+#
+   matA -> ma:0;
+   matB -> ma:1;
+
+   ma -> res;
+}
+
+module ConvolutionStage(previous){
+   vread pixels;
+   static xmem weights;
+   static xmuladd muladd;
+#
+   pixels  -> muladd:0;
+   weights -> muladd:1;
+
+   res = muladd + previous;
+
+   res -> out;
+}
+
+module Convolution(){
+   ConvolutionStage stage0;
+   ConvolutionStage stage1;
+   ConvolutionStage stage2;
+   ConvolutionStage stage3;
+   ConvolutionStage stage4;
+   xmem res;
+   xconst bias;
+#
+   bias[-10]  -> stage0;
+   stage0     -> stage1;
+   stage1     -> stage2;
+   stage2     -> stage3;
+   stage3     -> stage4;
+   stage4[9] -> res;
+}
+
 module sigma(x){
    xconst const1;
    xconst const2;
