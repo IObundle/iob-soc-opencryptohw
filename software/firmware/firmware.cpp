@@ -97,8 +97,8 @@ int main(int argc, const char* argv[])
   int i = 0;
 
   int din_size = 0, din_ptr = 0;
-  // input file points to ddr_mem start
-  char *din_fp = (char*) ddr_mem;
+  // input file points after versat sha space
+  char *din_fp = (char*) (ddr_mem + VERSAT_SHA_W_PTR_NBYTES);
 
   int dout_size = 0, dout_ptr = 0;
   char *dout_fp = NULL;

@@ -1,5 +1,16 @@
 #include "versat_sha.hpp"
 
+#ifdef PC
+    uint32_t w_ptr_stack[16];
+    #define VERSAT_SHA_W_PTR (w_ptr_stack)
+#else
+#ifndef RUN_EXTMEM
+    #define VERSAT_SHA_W_PTR ((uint32_t*) (EXTRA_BASE))
+#else
+    #define VERSAT_SHA_W_PTR ((uint32_t*) (1<<(FIRM_ADDR_W))
+#endif
+#endif
+
 // GLOBALS
 static Accelerator* accel;
 static bool initVersat = false;
@@ -80,32 +91,30 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
 }
 
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
-    uint w[16];
+    uint32_t *w_ptr = VERSAT_SHA_W_PTR;
 
-    {
-        FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
+    FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
 
-        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
-        c->ext_addr = (int) w;
-    }
+    volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+    c->ext_addr = (int) w_ptr;
 
     while (inlen >= 64) {
-        w[0]  = load_bigendian_32(in + 0);
-        w[1]  = load_bigendian_32(in + 4);
-        w[2]  = load_bigendian_32(in + 8);
-        w[3]  = load_bigendian_32(in + 12);
-        w[4]  = load_bigendian_32(in + 16);
-        w[5]  = load_bigendian_32(in + 20);
-        w[6]  = load_bigendian_32(in + 24);
-        w[7]  = load_bigendian_32(in + 28);
-        w[8]  = load_bigendian_32(in + 32);
-        w[9]  = load_bigendian_32(in + 36);
-        w[10] = load_bigendian_32(in + 40);
-        w[11] = load_bigendian_32(in + 44);
-        w[12] = load_bigendian_32(in + 48);
-        w[13] = load_bigendian_32(in + 52);
-        w[14] = load_bigendian_32(in + 56);
-        w[15] = load_bigendian_32(in + 60);
+        w_ptr[0]  = load_bigendian_32(in + 0);
+        w_ptr[1]  = load_bigendian_32(in + 4);
+        w_ptr[2]  = load_bigendian_32(in + 8);
+        w_ptr[3]  = load_bigendian_32(in + 12);
+        w_ptr[4]  = load_bigendian_32(in + 16);
+        w_ptr[5]  = load_bigendian_32(in + 20);
+        w_ptr[6]  = load_bigendian_32(in + 24);
+        w_ptr[7]  = load_bigendian_32(in + 28);
+        w_ptr[8]  = load_bigendian_32(in + 32);
+        w_ptr[9]  = load_bigendian_32(in + 36);
+        w_ptr[10] = load_bigendian_32(in + 40);
+        w_ptr[11] = load_bigendian_32(in + 44);
+        w_ptr[12] = load_bigendian_32(in + 48);
+        w_ptr[13] = load_bigendian_32(in + 52);
+        w_ptr[14] = load_bigendian_32(in + 56);
+        w_ptr[15] = load_bigendian_32(in + 60);
 
         // Loads data + performs work
         AcceleratorRun(accel);
