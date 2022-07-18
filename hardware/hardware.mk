@@ -102,8 +102,10 @@ hw-clean: gen-clean
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v *.inc
 	@make -C $(ROOT_DIR) pc-emul-clean
 
-$(XUNIT_DIR)/%.v:
-	make -C $(SIM_DIR) spinal-sources
+gen-spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)
+
+$(XUNITM_VSRC) $(XUNITF_VSRC):
+	make -C $(SPINAL_DIR) rtl/$(notdir $@)
 
 versat_instance.v versat_defs.vh:
 	$(eval CURRENT_DIR=$(shell pwd))
