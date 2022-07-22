@@ -14,6 +14,8 @@ endif
 
 #additional compiler flags
 CFLAGS=-Os -std=gnu99 -g -m32
+GLOBAL_CFLAGS=-Os -g -m32
+
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
