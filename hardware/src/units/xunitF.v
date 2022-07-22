@@ -40,7 +40,6 @@ module xunitF #(
     input [7:0]         delay0 // Encodes delay
     );
 
-assign done = (delay == 0);
 reg [7:0] delay;
 reg [0:0] latency;
 reg [31:0] a,b,c,d,e,f,g,h;
@@ -53,6 +52,8 @@ assign out4 = e;
 assign out5 = f;
 assign out6 = g;
 assign out7 = h;
+
+assign done = (delay == 0);
 
 wire [31:0] w = in8;
 wire [31:0] k = in9;
