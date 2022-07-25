@@ -13,9 +13,10 @@ XUNIT_DIR:=$(HW_SRC_DIR)/units
 endif
 
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -g -m32
-GLOBAL_CFLAGS=-Os -g -m32
+CC_OPTS+=-fno-inline-functions-called-once # exclude optimization
 
+CFLAGS=-O1 -std=gnu99 -g -m32 $(CC_OPTS)
+GLOBAL_CFLAGS=-O1 -g -m32 $(CC_OPTS)
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
