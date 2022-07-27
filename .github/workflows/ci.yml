@@ -25,7 +25,7 @@ concurrency:
 jobs:
   pc-emul:
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v3
@@ -35,16 +35,30 @@ jobs:
         run: make test-clean
       - name: test-pc-emul
         run: make test-pc-emul
-      - name: pc-emul-profile
-        run: make pc-emul-profile
+      # - name: pc-emul-profile
+      #   run: make pc-emul-profile
+
+  versat-sources:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: pc-emul
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-clean
+        run: make test-clean
+      - name: pc-emul-output-versat
+        run: make pc-emul-output-versat
 
   verilator:
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 10
     # always run, except when previous job was cancelled
     if: ${{ !cancelled() }}
-    # run after indicated job
-    needs: pc-emul
+    needs: versat-sources
 
     steps:
       - uses: actions/checkout@v3
@@ -57,7 +71,7 @@ jobs:
 
   icarus:
     runs-on: self-hosted
-    timeout-minutes: 90
+    timeout-minutes: 60
     # always run, except when previous job was cancelled
     if: ${{ !cancelled() }}
     needs: verilator
@@ -71,12 +85,12 @@ jobs:
       - name: test-icarus
         run: make sim-test SIMULATOR=icarus
 
-  fpga:
+  versat-fpga-synthesis:
     runs-on: self-hosted
-    timeout-minutes: 90
+    timeout-minutes: 30
     # always run, except when previous job was cancelled
     if: ${{ !cancelled() }}
-    needs: icarus
+    needs: verilator
 
     steps:
       - uses: actions/checkout@v3
@@ -84,10 +98,26 @@ jobs:
           submodules: 'recursive'
       - name: test-clean
         run: make test-clean
-      - name: test-fpga
-        run: make test-fpga
-      - name: fpga-profile
-        run: make fpga-run-profile
+      - name: versat fpga synthesis
+        run: make test-fpga-versat
+
+  # fpga:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 90
+  #   # always run, except when previous job was cancelled
+  #   if: ${{ !cancelled() }}
+  #   needs: icarus
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: test-clean
+  #       run: make test-clean
+  #     - name: test-fpga
+  #       run: make test-fpga
+  #     - name: fpga-profile
+  #       run: make fpga-run-profile
 
   versat-FUs:
     runs-on: self-hosted
@@ -108,4 +138,3 @@ jobs:
         run: make test-sim-clean
       - name: SpinalHDL FUs
         run: make test-versat-fus SPINAL=1
-
