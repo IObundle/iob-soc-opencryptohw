@@ -76,7 +76,20 @@ else
 endif
 endif
 
+build-versat: $(FPGA_VERSAT_OBJ)
 
+$(FPGA_VERSAT_OBJ): $(wildcard *.sdc) $(VSRC) $(VHDR)
+ifeq ($(FPGA_SERVER),)
+	@rm -f $(FPGA_VERSAT_LOG)
+	../build_versat.sh "$(INCLUDE)" "$(DEFINE)" "$(VSRC)" "$(DEVICE)"
+	make post-build
+else 
+	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
+	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
+	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM)'
+	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_VERSAT_OBJ) .
+	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_VERSAT_LOG) .
+endif
 
 #
 # Board access queue
@@ -135,6 +148,7 @@ profile1:
 
 clean-all: hw-clean
 	@rm -f $(FPGA_OBJ) $(FPGA_LOG) $(SOC_LOG) $(ETH_LOG)
+	@rm -rf $(FPGA_VERSAT_OBJ) $(FPGA_VERSAT_LOG)
 	@make -C $(SW_TEST_DIR) clean
 ifneq ($(FPGA_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"

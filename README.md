@@ -153,3 +153,12 @@ The SpinalHDL sources are in `hardware/src/spinalHDL`.
 Check `hardware/src/spinalHDL/README.md` for more details to setup the
 requirements to use SpinalHDL.
 
+### Versat FPGA Synthesis
+The Versat Accelerator can be synthetized with the command:
+```
+make fpga-build-versat
+```
+The log file can be reviewed in
+`hardware/fpga/vivado/AES-KU040-DB-G/versat.log`.
+The netlist file can be reviewed in
+`hardware/fpga/vivado/AES-KU040-DB-G/iob_versat.edif`.

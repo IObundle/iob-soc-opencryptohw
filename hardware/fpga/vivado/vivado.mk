@@ -1,5 +1,7 @@
 FPGA_OBJ=top_system.bit
 FPGA_LOG=vivado.log
+FPGA_VERSAT_OBJ=iob_versat.edif
+FPGA_VERSAT_LOG=versat.log
 
 FPGA_SERVER=$(VIVADO_SERVER)
 FPGA_USER=$(VIVADO_USER)
