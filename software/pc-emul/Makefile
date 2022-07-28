@@ -125,6 +125,7 @@ ifneq ($(OUTPUT_VERSAT_DST),)
 	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
 	mv versat_defs.vh $(OUTPUT_VERSAT_DST) 
 	mv versat_data.inc $(OUTPUT_VERSAT_DST) 
+	mv $(BUILD_DIR)/verilogWrapper.inc $(OUTPUT_VERSAT_DST) 
 endif
 
 $(XUNIT_DIR)/%.v:

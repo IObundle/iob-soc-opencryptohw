@@ -15,8 +15,6 @@ int main(int argc, const char* argv[])
 
   // Sha specific units
   // Need to RegisterFU, can ignore return value
-  RegisterUnitF(versat);
-  RegisterUnitM(versat);
 
   ParseVersatSpecification(versat,"testVersatSpecification.txt");
 
