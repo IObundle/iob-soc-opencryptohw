@@ -35,7 +35,7 @@ endif
 
 #UNITS TO VERILATE
 VERILATE_UNIT := xunitF xunitM
-#UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
+UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
 
 UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
 OBJ+=./build/unitWrapper.o

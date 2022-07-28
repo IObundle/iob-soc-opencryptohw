@@ -34,8 +34,6 @@ int main(int argc,const char* argv[])
 #include "versat.hpp"
 #include "utils.hpp"
 
-#include "unitWrapper.hpp"
-
 #include "verilogWrapper.inc"
 
 extern "C"{
@@ -1360,10 +1358,6 @@ int main(int argc,const char* argv[])
     REG = GetTypeByName(versat,MakeSizedString("Reg"));
 
     #ifdef PC
-    // Sha specific units
-    FUDeclaration* UNIT_F = RegisterUnitF(versat);
-    FUDeclaration* UNIT_M = RegisterUnitM(versat);
-
     ParseVersatSpecification(versat,"testVersatSpecification.txt");
     #endif
 
