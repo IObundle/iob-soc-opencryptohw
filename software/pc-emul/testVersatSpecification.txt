@@ -1,8 +1,187 @@
 
+module StaticMuladd(x,y){
+   Muladd mul;   
+#
+   x -> mul:0;
+   y -> mul:1;
+
+   mul -> out;
+}
+
+module StringHasher(){
+   Const weight1;
+   Const weight2;
+   Const weight3;
+   Const weight4;
+   Const weight5;
+   StaticMuladd mul1;
+   StaticMuladd mul2;
+   StaticMuladd mul3;
+   StaticMuladd mul4;
+   StaticMuladd mul5;
+   Mem bytesIn; // 0 1 2 3 4 5 6 7
+   Mem bytesOut;
+#
+   bytesIn[0] -> mul1:0; // 0 1 2 3 4 5 6 7 8 9
+   bytesIn[1] -> mul2:0; // 1 2 3 4 5 6  
+   bytesIn[2] -> mul3:0; // 2 3 4 5 6 
+   bytesIn[3] -> mul4:0; // 3 4 5 6 7
+   bytesIn[4] -> mul5:0; // 4 5 6 7 8
+
+   weight1 -> mul1:1;
+   weight2 -> mul2:1;
+   weight3 -> mul3:1;
+   weight4 -> mul4:1;
+   weight5 -> mul5:1;
+
+   a1 = mul1 + mul2;
+   a2 = mul3 + mul4;
+   a3 = a1 + a2;
+   a4 = a3 + mul5;
+
+   a4[1] -> bytesOut;
+}
+
+module MatrixMultiplication(){
+   Mem matA; // 0 1 2 0 1 2 0 1 2 3 4 5 3 4 5 3 4 5
+   Mem matB; // a d g b e h c f i a d 
+   Muladd ma;
+   Mem res;
+#
+   matA -> ma:0;
+   matB -> ma:1;
+
+   ma -> res;
+}
+
+module MatrixMultiplicationVread(){ 
+   VRead matA;
+   VRead matB;
+   Muladd ma;
+   VWrite res;
+#
+   matA -> ma:0;
+   matB -> ma:1;
+
+   ma -> res;
+}
+
+module ConvolutionStage(previous){
+   VRead pixels;
+   Mem weights;
+   Muladd muladd;
+#
+   pixels  -> muladd:0;
+   weights -> muladd:1;
+
+   res = muladd + previous;
+
+   res -> out;
+}
+
+module Convolution(){
+   ConvolutionStage stage0;
+   ConvolutionStage stage1;
+   ConvolutionStage stage2;
+   ConvolutionStage stage3;
+   ConvolutionStage stage4;
+   Mem res;
+   Const bias;
+#
+   bias[-10] -> stage0;
+   stage0    -> stage1;
+   stage1    -> stage2;
+   stage2    -> stage3;
+   stage3    -> stage4;
+   stage4[9] -> res;
+}
+
+module StaticMux(x,y){
+   Mux2 mux;
+#
+   x -> mux:0;
+   y -> mux:1;
+
+   mux -> out;
+}
+
+module Merged(){
+   Mem bytesIn;
+   VRead pixels0; // matA
+   VRead pixels1; // matB
+   VRead pixels2;
+   VRead pixels3;
+   VRead pixels4;
+   Mem weights0; // weight1
+   Mem weights1; // weight2
+   Mem weights2; // weight3
+   Mem weights3; // weight4
+   Mem weights4; // weight5
+   Muladd ma;
+   Muladd muladd0;
+   Muladd muladd1;
+   Muladd muladd2;
+   Muladd muladd3;
+   Muladd muladd4;
+   Mem ConvolutionRes;
+   Const bias;
+   VWrite matrixRes;
+   StaticMux mux0;
+   StaticMux mux1;
+   StaticMux mux2;
+   StaticMux mux3;
+   StaticMux mux4;
+   StaticMux mux5;
+#
+   pixels0 -> mux0:0;
+   bytesIn -> mux0:1;
+
+   mux0  -> muladd0:0;
+   weights0 -> muladd0:1;
+   res0 = muladd0 + bias;
+
+   pixels1 -> mux1:0;
+   bytesIn[1] -> mux1:1;
+
+   mux1    -> muladd1:0;
+   weights1 -> muladd1:1;
+   res1 = muladd1 + res0;
+
+   pixels2 -> mux2:0;
+   bytesIn[2] -> mux2:1;
+
+   mux2  -> muladd2:0;
+   weights2 -> muladd2:1;
+   res2 = muladd2 + res1;
+
+   pixels3 -> mux3:0;
+   bytesIn[3] -> mux3:1;
+
+   mux3  -> muladd3:0;
+   weights3 -> muladd3:1;
+   res3 = muladd3 + res2;
+
+   pixels4 -> mux4:0;
+   bytesIn[4] -> mux4:1;
+
+   mux4  -> muladd4:0;
+   weights4 -> muladd4:1;
+   res4 = muladd4 + res3;
+
+   res4[9]    -> ConvolutionRes;
+
+   // Matrix portion
+   pixels0 -> ma:0;
+   pixels1 -> ma:1;
+
+   ma -> matrixRes;
+}
+
+
 module sigma(x){
-   xconst const1;
-   xconst const2;
-   xconst const3;
+   Const const1;
+   Const const2;
+   Const const3;
 #
    a1 = x >>> const1;
    a2 = x >>> const2;
@@ -16,9 +195,9 @@ module sigma(x){
 }
 
 module Sigma(x){
-   xconst const1;
-   xconst const2;
-   xconst const3;
+   Const const1;
+   Const const2;
+   Const const3;
 #
    a1 = x >>> const1;
    a2 = x >>> const2;
@@ -66,8 +245,8 @@ module sigma_stage(x,y){
 }
 
 module M_Stage(w0,w14,w9,w1){
-   static sigma_stage sigma(7,18,3,17,19,10);
-   pipeline_register r;
+   sigma_stage sigma(7,18,3,17,19,10);
+   PipelineRegister r;
 #
    w1 -> sigma:0;
    w14 -> sigma:1;
@@ -255,15 +434,15 @@ module T_Stage(a,b,c,e,f,g,h,k,w){
 }
 
 module F_Stage(a,b,c,d,e,f,g,h,k,w){
-   static T_Stage t;
-   pipeline_register d0;
-   pipeline_register d1;
-   pipeline_register d2;
-   pipeline_register d3;
-   pipeline_register d4;
-   pipeline_register d5;
-   pipeline_register d6;
-   pipeline_register d7;
+   T_Stage t;
+   PipelineRegister d0;
+   PipelineRegister d1;
+   PipelineRegister d2;
+   PipelineRegister d3;
+   PipelineRegister d4;
+   PipelineRegister d5;
+   PipelineRegister d6;
+   PipelineRegister d7;
 #
    a -> t:0;
    b -> t:1;
@@ -391,13 +570,12 @@ module F(a,b,c,d,e,f,g,h,k,w){
 }
 
 module ShaSingleState(in){
-   xreg reg;
+   Reg reg;
 #
    a = reg + in;
    a -> reg;
    reg -> out;
 }
-
 
 // Simple grouping of state so it appears better on the graphs
 module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
@@ -430,13 +608,13 @@ module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
 }
 
 module Constants(){
-   static xmem mem(1,16,16,0,0,1);
+   Mem mem(1,16,16,0,0,1);
 #
    mem -> out:0;
 }
 
 module SHA(){
-   vread MemRead;
+   VRead MemRead;
    xunitF F0;
    xunitF F1;
    xunitF F2;
@@ -474,8 +652,9 @@ module SHA(){
 }
 
 /*
+
 module 2Box(x0,x1){
-   xmem table;
+   Mem table;
 #
    x0:0 -> table:0;
    x1:1 -> table:1;

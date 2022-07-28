@@ -43,8 +43,9 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 SOC_OUT_BIN:=soc-out.bin
 
 #units to verilate
-VERILATE_UNIT = xunitF xunitM
-HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
+CUSTOM_VERILATE_UNIT = xunitF xunitM
+HDR+=$(foreach obj,$(CUSTOM_VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
+UNIT_VERILOG+=$(foreach unit,$(CUSTOM_VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
 
 #unit wrapper
 CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
