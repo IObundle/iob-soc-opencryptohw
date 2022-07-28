@@ -134,6 +134,7 @@ static uint kConstants3[] = {0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0
 
 static uint* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
 
+#if 0
 #ifdef PC
     static char mem[1024*1024]; // 1 Mb
     #define DDR_MEM mem
@@ -142,6 +143,7 @@ static uint* kConstants[4] = {kConstants0,kConstants1,kConstants2,kConstants3};
     #define DDR_MEM (EXTRA_BASE)
 #else
     #define DDR_MEM ((1<<(FIRM_ADDR_W)))
+#endif
 #endif
 #endif
 
@@ -175,11 +177,7 @@ unsigned char* GetHexadecimal(const unsigned char* text, int str_size){
     return buffer;
 }
 
-static int unitFBits[] = {8};
-static int readMemory_[64];
-static int* readMemory;
-static int writeMemory_[64];
-static int* writeMemory;
+static int readMemory[64];
 
 // GLOBALS
 Accelerator* accel;
@@ -269,7 +267,7 @@ int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues
     va_list args;
     va_start(args,numberOutputs);
 
-    FUInstance* input = CreateNamedFUInstance(accel,MEM,MAKE_SIZED_STRING("memIn"));
+    FUInstance* input = CreateNamedFUInstance(accel,MEM,MakeSizedString("memIn"));
 
     ConnectUnits(input,0,inst,0);
     {
@@ -338,12 +336,12 @@ int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues
 void TestMStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
 
     SetDelayRecursive(accel);
 
     int constants[] = {7,18,3,17,19,10};
-    for(int i = 0; i < ARRAY_SIZE(constants); i++){
+    for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
         inst->config[i] = constants[i];
     }
 
@@ -356,12 +354,12 @@ void TestMStage(Versat* versat){
 void TestFStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
 
     SetDelayRecursive(accel);
 
     int constants[] = {6,11,25,2,13,22};
-    for(int i = 0; i < ARRAY_SIZE(constants); i++){
+    for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
         inst->config[i] = constants[i];
     }
 
@@ -380,7 +378,7 @@ void TestInputM(Versat* versat){
     TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("Test"));
+    inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
 
     SetDelayRecursive(accel);
 
@@ -395,7 +393,7 @@ void TestInputM(Versat* versat){
     {
     TIME_IT('F');
     for(int i = 0; i < 16; i++){
-        for(int ii = 0; ii < ARRAY_SIZE(constants); ii++){
+        for(size_t ii = 0; ii < ARRAY_SIZE(constants); ii++){
             inst->config[i*6+ii] = constants[ii];
         }
     }
@@ -416,7 +414,7 @@ void InstantiateSHA(Versat* versat){
     TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("SHA"));
+    inst = CreateNamedFUInstance(accel,type,MakeSizedString("SHA"));
 
     OutputUnitInfo(inst);
 
@@ -505,10 +503,10 @@ void MatrixMultiplication(){
 
     }
 
-    #if 0
+    #if 1
     for(int y = 0; y < DIM; y++){
         for(int x = 0; x < DIM; x++){
-            printf("%d ",res[y][x]);
+            printf("%d ",res[y * DIM + x]);
         }
         printf("\n");
     }
@@ -590,8 +588,8 @@ void ConfigureMemoryReceive(FUInstance* inst, int amountOfData,int interdataDela
 
 void TestMemory(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("memViewer"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("memViewer"));
+    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* mem = GetInstanceByName(accel,"test","memory");
 
@@ -702,8 +700,8 @@ void VersatMatrixMultiplicationVRead(Versat* versat){
     volatile int* resPtr = (volatile int*) matrixRes;
 
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("MatrixMultiplicationVread"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplicationVread"));
+    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* memA = GetInstanceByName(accel,"test","matA");
     FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -849,8 +847,8 @@ void InstantiateMatrixOverMerge(Versat* versat,Accelerator* accel){
 
 void VersatMatrixMultiplication(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("MatrixMultiplication"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplication"));
+    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* memA = GetInstanceByName(accel,"test","matA");
     FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -965,13 +963,11 @@ void VersatConvolution(Versat* versat){
     ClearCache();
 
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("Convolution"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Convolution"));
+    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
-    int i, j, k, l, m;
+    int i, j;
 
-    volatile MemConfig* pixelConfig = nullptr;
-    volatile MemConfig* weightsConfig = nullptr;
     //write data in versat mems
     volatile VReadConfig* pixelConfigs[5];
     for (j = 0; j < nSTAGE; j++){
@@ -1010,9 +1006,6 @@ void VersatConvolution(Versat* versat){
             bia->config[0] = bias;
 
             {
-                volatile MemConfig* config = (volatile MemConfig*) weight->config;
-                weightsConfig = config;
-
                 ConfigureMemoryLinear(weight,9);
             }
 
@@ -1068,8 +1061,8 @@ void VersatConvolution(Versat* versat){
 
 Accelerator* InstantiateMerge(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("Merged"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Merged"));
+    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
     return accel;
 }
@@ -1126,7 +1119,6 @@ void InstantiateConvolutionOverMerge(Versat* versat,Accelerator* accel){
         }
 
         {
-            volatile MemConfig* config = (volatile MemConfig*) weight->config;
             ConfigureMemoryLinear(weight,9);
         }
 
@@ -1179,7 +1171,7 @@ void InstantiateConvolutionOverMerge(Versat* versat,Accelerator* accel){
     }
 }
 
-int CalculateSum(char* buffer,int* weights){
+int CalculateSum(const char* buffer,int* weights){
    int sum = 0;
 
    for(int j = 0; j < 5; j++){
@@ -1192,24 +1184,10 @@ int CalculateSum(char* buffer,int* weights){
 int weights[] = {17,67,109,157,199};
 char testString[] = "123249819835894981389Waldo198239812849825899904924oefhcasjngwoeijfjvakjndcoiqwj";
 
-void StringHasher(){
-    #ifndef PC
-    MEMSET(VERSAT_BASE,0x0,0);
-    #endif
-    int SumToFind = CalculateSum("Waldo",weights);
-
-    for(int i = 0; i < sizeof(testString) - 5; i++){
-        int sum = CalculateSum(&testString[i],weights);
-    }
-    #ifndef PC
-    MEMSET(VERSAT_BASE,0x0,0);
-    #endif
-}
-
 void VersatStringHasher(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
-    FUDeclaration* type = GetTypeByName(versat,MAKE_SIZED_STRING("StringHasher"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("test"));
+    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("StringHasher"));
+    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* muladd = GetInstanceByName(accel,"test","mul1","mul");
 
@@ -1240,7 +1218,7 @@ void VersatStringHasher(Versat* versat){
 
     int hash = VersatUnitRead(bytesOut,0);
 
-    for(int i = 0; i < sizeof(testString); i++){
+    for(size_t i = 0; i < sizeof(testString); i++){
         VersatUnitWrite(bytesIn,i,(int) testString[i]);
     }
 
@@ -1255,7 +1233,7 @@ void VersatStringHasher(Versat* versat){
     }
     #endif
 
-    for(int i = 0; i < sizeof(testString) - 5; i++){
+    for(size_t i = 0; i < sizeof(testString) - 5; i++){
         int val = VersatUnitRead(bytesOut,i);
 
         if(hash == val){
@@ -1334,21 +1312,19 @@ void InstantiateStringHasherOverMerge(Versat* versat,Accelerator* accel){
 
 int main(int argc,const char* argv[])
 {
-    unsigned char digest[256];
-
     //init uart
     uart_init(UART_BASE,FREQ/BAUD);
     timer_init(TIMER_BASE);
 
     printf("Init base modules\n");
 
-    for(int i = 0; i < 256; i++){
-        digest[i] = 0;
-    }
-
     Versat versatInst = {};
     Versat* versat = &versatInst;
     InitVersat(versat,VERSAT_BASE,1);
+
+    #ifdef PC
+    versat->debug.outputAccelerator = true;
+    #endif
 
     printf("Init Versat\n");
 
@@ -1607,6 +1583,11 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Currently plan:
 
+Overall:
+
+Add logging
+Add error handling for the most common cases (change from assertions to a error + exit) [Maybe keep the assert in debug mode]
+
 Things to do:
 
 SHA implementation with macroinstances
@@ -1625,6 +1606,7 @@ Implementation to do:
 
 Overall:
 
+    Start implementing logging.
     Start implementing error reporting. Some things should give error but the program still goes on, put asserts.
     Errors should be simple: Report the error and then quit. Must errors cannot be carry over. No fail and retry
 
@@ -1639,14 +1621,10 @@ Software:
         - Might need to change hierarchical name from array to char*
         - Need to take care about where strings end up. Do not want to fill embedded with useless data if possible
 
-    Take a look at compute units that need delay information (think multiply accumulate, not delay but acts same way) [should simple by set inputDelay as delay]
     Support the output of a module not starting at zero. (Maybe weird thing to do for now)
         More complex, but take a pass at anything that depends on order of instancing/declarating (a lot of assumptions are being made right now)
-    Go back and check the output memory map for individual accelerators, there is some bugs for the memory allocation right now
-    Lock accelerator can resize memory allocated to fit exactly with amount of memory needed
     [Type] Change ouput memory map and functions alike to use type system and simple output structs directly (Simpler and less error prone)
     [CalculateVersatData] naked memory allocation, add it to the accelerator locking mechanism
-    Change accel reallocation to, instead of ordered, go to each unit, subtract original, then realloc and add offset to each unit. This completely removes order from the reallocation procedure and should make it easier to implement a RemoveUnit for allocated units, if needed
 
 Embedded:
 
@@ -1654,7 +1632,6 @@ Embedded:
 
 Hardware:
 
-    Remove done/run/clk if not needed
     Implement shadow registers
     Delay units with same inputs and delay values should be shared.
 
@@ -1662,28 +1639,23 @@ Delay:
 
     To improve lantency calculations, should have a indication of which outputs delay depend on which input ports delay (Think how dual port ram has two independent ports)
         Each output should keep track of exactly which input port it depends upon, and use that information in delay calculation
-    Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of xreg?
-        Also, is there any SinkAndSource instance that would implement DELAY_TYPE_SOURCE_DELAY? Because how would they know when they have valid data?
-            Also also, when changing delays from instance based to port based, the concept of delay type will probably end. In that case, the different delay types would only serve as an "extra" to optimize away the delay wires to units that do not need them
+    Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of Reg?
+        I think I only need a single value to indicate the difference between a Reg and a Muladd (one produces that, and therefore should act as a source, while the other is a compute unit)
 
-    There are two types of delay: the normal delay is the amount of cycles until unit receives valid data on all ports, the delay for delay units indicates how many cycles to wait (this second delay should be general, could be used for the add-accum type of units)
 
 Type:
 
-    Rewrite the portions of the type system that you wanted too. Standerdize type info, type collapse into simpler types and automatic type casting (I have x, I want y)
-    Implement object instrospection, printing of members and data automatically
-    Redefine what a type is: a pointer or a array are completely different types, (Type(int) != Type(int*))
     Add multiple names to the same type (have an array of type info and hash names to type info)
+    Parse templates types
+        Need to rewrite type parser to be able to reference types already parsed. [The same way type works]
+    Maybe standarize the way the type parser works and the way the type works (use same structs and stuff, instead of having things separated)
 
 Template Engine:
 
     Really need to simplify error if identifier not found.
     Add local variables, instead of everything global
     Take another pass at whitespace handling (Some whitespace is being consumed in blocks of text, care, might join together two things that are supposed to be seperated and do error)
-    Need to find a way of reusing small pieces of template code. Both the top and individual accelerators reuse so much stuff that is similar, it's worth to take a look at it.
-        Probably need to implement an include directive
-        Also a defun directive, that takes a name and parameters that defines a piece of reusable template code
-        And a call or insert directive, that takes a name plus arguments and simple outputs the template text (should be easy since we probably only need to store the block and execute it later)
+    Need to return values from calls
 
 Struct Parser:
 
@@ -1691,11 +1663,11 @@ Struct Parser:
 
 Verilog Parser:
 
-    Parse units interfaces to generate unitWrappers automatically and register units automatically (latency must be set directly by the user using a comment or attribute)
+
 
 Flatten:
 
-    Give every declaration a "level" variable. simple = 0, composite = max(instancesLevel) + 1, special = 0.
+    Give every declaration a "level" . simple = 0, composite = max(level of subunits) + 1, special = 0.
     Flatten is currently broken (might have been fixed, check it later?), only creating shallow instances. Useful for outputting graph, but not possible to simulate
         The fix is to create a function that copies and changes shallow instances and, in the end, it fixes memory allocation and instance pointers and initialization
 
@@ -1709,7 +1681,7 @@ Merge:
 
 Known bugs:
 
-
+PC-Emul is different from Sim-Run when the latency for the Delay unit is set to zero. PC-Emul is still giving correct results when Sim-Run is giving wrong ones.
 
 
 */
