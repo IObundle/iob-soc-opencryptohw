@@ -34,7 +34,7 @@ include $(TIMER_DIR)/hardware/hardware.mk
 include $(ETHERNET_DIR)/hardware/hardware.mk
 
 #VERSAT
-#include $(VERSAT_DIR)/hardware/hardware.mk
+include $(VERSAT_DIR)/hardware/hardware.mk
 
 #AXI
 include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
@@ -63,10 +63,10 @@ endif
 VSRC+=$(SRC_DIR)/boot_ctr.v $(SRC_DIR)/int_mem.v $(SRC_DIR)/sram.v
 VSRC+=system.v
 
-#VSRC+=$(wildcard $(SRC_DIR)/GeneratedUnits/*.v)
-#VSRC+=$(SRC_DIR)/versat_instance.v
-#VSRC+=$(SRC_DIR)/units/xunitF.v
-#VSRC+=$(SRC_DIR)/units/xunitM.v
+VSRC+=$(wildcard $(SRC_DIR)/GeneratedUnits/*.v)
+VSRC+=$(SRC_DIR)/versat_instance.v
+VSRC+=$(SRC_DIR)/units/xunitF.v
+VSRC+=$(SRC_DIR)/units/xunitM.v
 
 HEXPROGS=boot.hex firmware.hex
 

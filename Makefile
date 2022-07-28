@@ -40,8 +40,12 @@ sim-build:
 	make fw-build SIM=1
 	make -C $(SIM_DIR) build
 
-sim-run: sim-build
+./hardware/src/versat_instance.v:
 	make -C $(PC_DIR) run
+	make fw-build SIM=1
+	make -C $(SIM_DIR) build
+
+sim-run: ./hardware/src/versat_instance.v
 	make -C $(SIM_DIR) run
 
 sim-clean: fw-clean
@@ -59,6 +63,7 @@ sim-versat-fus:
 #
 
 fpga-build:
+	make -C $(PC_DIR) run
 	make fw-build BAUD=115200
 	make -C $(BOARD_DIR) build
 
