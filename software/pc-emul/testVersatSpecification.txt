@@ -245,7 +245,7 @@ module sigma_stage(x,y){
 }
 
 module M_Stage(w0,w14,w9,w1){
-   sigma_stage sigma(7,18,3,17,19,10);
+   static sigma_stage sigma(7,18,3,17,19,10);
    PipelineRegister r;
 #
    w1 -> sigma:0;
@@ -434,7 +434,7 @@ module T_Stage(a,b,c,e,f,g,h,k,w){
 }
 
 module F_Stage(a,b,c,d,e,f,g,h,k,w){
-   T_Stage t;
+   static T_Stage t;
    PipelineRegister d0;
    PipelineRegister d1;
    PipelineRegister d2;
@@ -608,7 +608,7 @@ module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
 }
 
 module Constants(){
-   Mem mem(1,16,16,0,0,1);
+   static Mem mem(1,16,16,0,0,1);
 #
    mem -> out:0;
 }
@@ -616,9 +616,9 @@ module Constants(){
 module SHA(){
    VRead MemRead;
    xunitF F0;
+   xunitF F3;
    xunitF F1;
    xunitF F2;
-   xunitF F3;
    xunitM M0;
    xunitM M1;
    xunitM M2;

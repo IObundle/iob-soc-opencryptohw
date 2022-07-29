@@ -15,8 +15,8 @@ endif
 #additional compiler flags
 CC_OPTS+=-fno-inline-functions-called-once # exclude optimization
 
-CFLAGS=-O1 -std=gnu99 -g -m32 $(CC_OPTS)
-GLOBAL_CFLAGS=-O1 -g -m32 $(CC_OPTS)
+CFLAGS=-O0 -std=gnu99 -g -m32 $(CC_OPTS)
+GLOBAL_CFLAGS=-O0 -g -m32 $(CC_OPTS)
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC

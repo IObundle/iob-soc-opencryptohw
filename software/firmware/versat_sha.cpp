@@ -29,7 +29,7 @@ Accelerator* InstantiateSHA(Versat* versat){
     FUInstance* inst = nullptr;
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MAKE_SIZED_STRING("SHA"));
+    inst = CreateNamedFUInstance(accel,type,MakeSizedString("SHA"));
 
     OutputUnitInfo(inst);
 
