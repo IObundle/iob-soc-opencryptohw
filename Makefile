@@ -31,7 +31,7 @@ pc-emul-run:
 pc-emul-test: pc-emul-clean
 	make -C $(PC_DIR) test
 
-pc-emul-clean: fw-clean
+pc-emul-clean:
 	make -C $(PC_DIR) clean
 
 pc-emul-profile:
