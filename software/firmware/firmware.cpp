@@ -187,9 +187,9 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberI
         ConnectUnits(inst,i,outputs[i],0);
     }
 
-    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
-
     AcceleratorRun(accel);
+
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
     for(int i = 0; i < numberInputs; i++){
         RemoveFUInstance(accel,inputs[i]);
@@ -269,8 +269,6 @@ void TestMStage(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
-    SetDelayRecursive(accel);
-
     int constants[] = {7,18,3,17,19,10};
     for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
         inst->config[i] = constants[i];
@@ -286,8 +284,6 @@ void TestFStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
     FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
-
-    SetDelayRecursive(accel);
 
     int constants[] = {6,11,25,2,13,22};
     for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
@@ -1217,8 +1213,9 @@ int main(int argc,const char* argv[])
     printf("Init base modules\n");
 
     Versat* versat = InitVersat(VERSAT_BASE,1);
-
     printf("Init Versat\n");
+
+    EnableDebug(versat);
 
     ParseCommandLineOptions(versat,argc,argv);
 
@@ -1281,7 +1278,6 @@ int main(int argc,const char* argv[])
     #endif
 
     #if 0
-    Hook(versat,nullptr,nullptr);
     TestMStage(versat);
     #endif
 
@@ -1464,6 +1460,8 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 Current plan:
 
+Need to fix simulation before progressing
+
 Change the calculated inputs and outputs on the FUInstances to be full vector likes for the size
     If there isn't a connection, simply store a nullptr
         [Objective] Implement a way so that the memory units that have unconnected inputs can have a zero input
@@ -1489,6 +1487,9 @@ Figure out how to deal with the accelerator in the RegisterSubUnit function
 
 Add a clear function that clears all the resources.
     Otherwise Valgrind becomes kinda of useless as it's impossible to check for memory leaks
+
+Use the instance names as the verilog module names instead of the declaration name
+    Make the generated vcd more readable
 
 Next:
 
@@ -1541,10 +1542,15 @@ Embedded:
 
 Hardware:
 
-    Implement shadow registers
-    Generate units that have variable connections. Like CircuitInput and CircuitOutput
+    Come up with another name to differentiate delays from the delay units
 
+    Implement shadow registers
     Delay units with same inputs and delay values should be shared.
+        In fact, a delay tree should be created. No need to have a delay of X and a delay of X+1, when we can have X and a Register.
+            For now, delays are "fixed". Even thought programmable, the whole module unit only works for a specific delay value and therefore
+
+    Introduce the concept of combinatorial units only
+        These units can be "shared"
 
 Delay:
 
@@ -1553,6 +1559,10 @@ Delay:
         Each output should keep track of exactly which input port it depends upon, and use that information in delay calculation
     Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of Reg?
         I think I only need a single value to indicate the difference between a Reg and a Muladd (one produces that, and therefore should act as a source, while the other is a compute unit)
+    Delay calculation not working if there is a separatation of flow
+        Think adding a new unit to the start that doesn't connect to anywhere.
+        The new unit will have pretty much the full latency as the delay, when it should be only the latency of the previous unit
+            The algorithm doesn't take into account different flows, it works by assuming that everything ends up in a final unit which might not be true
 
 Template Engine:
 
@@ -1560,14 +1570,6 @@ Template Engine:
     Add local variables, instead of everything global
     Take another pass at whitespace handling (Some whitespace is being consumed in blocks of text, care, might join together two things that are supposed to be seperated and do error)
     Need to return values from calls
-
-Struct Parser:
-
-    Rewrite the dumb stuff from the struct parser
-
-Verilog Parser:
-
-
 
 Flatten:
 
@@ -1586,7 +1588,10 @@ Merge:
 Known bugs:
 
 PC-Emul is different from Sim-Run when the latency for the Delay unit is set to zero. PC-Emul is still giving correct results when Sim-Run is giving wrong ones.
-
+There is some disconnect between pc-euml and sim, especially when wrong latency values are given to the base units.
+    Need to create an example that tries to test edge cases, in regards to latency.
+    Work from the generated hardware (check if it does what I think it does) and then change PC-Emul until it gives the exact values on the vcd as the hardware.
+    The values given must be the exact same, if the accelerator is running and producing valid data, I want the PC-Emul to produce the same values, even if those values are useless.
 
 */
 

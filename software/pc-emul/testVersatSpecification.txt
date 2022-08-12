@@ -620,8 +620,8 @@ module SHA(){
    F F2;
    F F3;
    M M0;
-   xunitM M1;
-   xunitM M2;
+   M M1;
+   M M2;
    Constants cMem0;
    Constants cMem1;
    Constants cMem2;
