@@ -615,11 +615,11 @@ module Constants(){
 
 module SHA(){
    VRead MemRead;
-   xunitF F0;
-   xunitF F3;
-   xunitF F1;
-   xunitF F2;
-   xunitM M0;
+   F F0;
+   F F1;
+   F F2;
+   F F3;
+   M M0;
    xunitM M1;
    xunitM M2;
    Constants cMem0;

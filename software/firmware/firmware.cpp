@@ -1,34 +1,3 @@
-#if 0
-
-extern "C"{
-#include "system.h"
-#include "periphs.h"
-#include "iob-uart.h"
-
-#include "iob-timer.h"
-
-int printf_(const char* format, ...);
-}
-
-#define printf printf_
-
-int main(int argc,const char* argv[])
-{
-    //init uart
-    uart_init(UART_BASE,FREQ/BAUD);
-    timer_init(TIMER_BASE);
-
-    printf("Init base modules\n");
-
-    printf("Init Versat\n");
-
-    uart_finish();
-
-    return 0;
-}
-
-#else
-
 #include <cstdio>
 
 #include "versat.hpp"
@@ -186,7 +155,7 @@ bool initVersat = false;
 FUDeclaration* MEM;
 FUDeclaration* REG;
 
-int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
+int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
     static int out[99];
     FUInstance* inputs[99];
     FUInstance* outputs[99];
@@ -194,17 +163,13 @@ int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numbe
     va_list args;
     va_start(args,numberOutputs);
 
-    #ifdef PC
-    Assert(accel->instances.Size() == 1);
-    #endif
-
     int registersAdded = 0;
     for(int i = 0; i < numberInputs; i++){
 
         char buffer[128];
         int size = snprintf(buffer,128,"regIn%d",registersAdded++);
 
-        inputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
+        inputs[i] = CreateFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         int val = va_arg(args,int);
 
@@ -217,27 +182,12 @@ int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numbe
     for(int i = 0; i < numberOutputs; i++){
         char buffer[128];
         int size = snprintf(buffer,128,"regOut%d",registersAdded++);
-        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
+        outputs[i] = CreateFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         ConnectUnits(inst,i,outputs[i],0);
     }
 
-    CalculateDelay(accel->versat,accel);
-    SetDelayRecursive(accel);
-
-    #if 0
-    Accelerator* flatten = Flatten(accel->versat,accel,1);
-
-    {
-    FILE* dotFile = fopen("flatten.dot","w");
-    OutputGraphDotFile(flatten,dotFile,1);
-    fclose(dotFile);
-    }
-    #endif
-
-    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
-
-    //Hook(accel->versat,accel);
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
     AcceleratorRun(accel);
 
@@ -251,23 +201,19 @@ int* TestInstance(Accelerator* accel,FUInstance* inst,int numberInputs,int numbe
         RemoveFUInstance(accel,outputs[i]);
     }
 
-    #ifdef PC
-    Assert(accel->instances.Size() == 1);
-    #endif
-
     va_end(args);
 
     return out;
 }
 
-int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues,int numberOutputs,...){
+int* TestSequentialInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberValues,int numberOutputs,...){
     static int out[99];
     FUInstance* outputs[99];
 
     va_list args;
     va_start(args,numberOutputs);
 
-    FUInstance* input = CreateNamedFUInstance(accel,MEM,MakeSizedString("memIn"));
+    FUInstance* input = CreateFUInstance(accel,MEM,MakeSizedString("memIn"));
 
     ConnectUnits(input,0,inst,0);
     {
@@ -292,28 +238,13 @@ int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues
     for(int i = 0; i < numberOutputs; i++){
         char buffer[128];
         int size = snprintf(buffer,128,"regOut%d",registersAdded++);
-        outputs[i] = CreateNamedFUInstance(accel,REG,MakeSizedString(buffer,size));
+        outputs[i] = CreateFUInstance(accel,REG,MakeSizedString(buffer,size));
 
         ConnectUnits(inst,i,outputs[i],0);
     }
     }
 
-    CalculateDelay(accel->versat,accel);
-    SetDelayRecursive(accel);
-
-    #if 1
-    OutputGraphDotFile(accel,true,"circuit.dot");
-
-    Accelerator* flatten = Flatten(accel->versat,accel,1);
-
-    OutputGraphDotFile(flatten,true,"flatten.dot");
-    #endif
-
-    OutputVersatSource(accel->versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
-
-    #if 1
-    OutputMemoryMap(accel->versat,accel);
-    #endif
+    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
     {
     TIME_IT('F');
@@ -336,7 +267,7 @@ int* TestSequentialInstance(Accelerator* accel,FUInstance* inst,int numberValues
 void TestMStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
     SetDelayRecursive(accel);
 
@@ -345,7 +276,7 @@ void TestMStage(Versat* versat){
         inst->config[i] = constants[i];
     }
 
-    int* out = TestInstance(accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
+    int* out = TestInstance(versat,accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
 
     printf("Expected: 0xb89ab4ca\n");
     printf("Got:      0x%x\n",out[0]);
@@ -354,7 +285,7 @@ void TestMStage(Versat* versat){
 void TestFStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
     SetDelayRecursive(accel);
 
@@ -363,7 +294,7 @@ void TestFStage(Versat* versat){
         inst->config[i] = constants[i];
     }
 
-    int* out = TestInstance(accel,inst,10,8,0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19,0x428a2f98,0x5a86b737);
+    int* out = TestInstance(versat,accel,inst,10,8,0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19,0x428a2f98,0x5a86b737);
 
     printf("0x568f3f84 0x6a09e667 0xbb67ae85 0x3c6ef372 0xf34e99d9 0x510e527f 0x9b05688c 0x1f83d9ab 0x428a2f98 0x5a86b737\n");
     for(int i = 0; i < 8; i++){
@@ -378,13 +309,7 @@ void TestInputM(Versat* versat){
     TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MakeSizedString("Test"));
-
-    SetDelayRecursive(accel);
-
-    #if 1
-    OutputGraphDotFile(type->circuit,true,"circuit.dot");
-    #endif
+    inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
     }
 
     int constants[] = {7,18,3,17,19,10};
@@ -399,7 +324,7 @@ void TestInputM(Versat* versat){
     }
     }
 
-    int* out = TestSequentialInstance(accel,inst,16,1,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
+    int* out = TestSequentialInstance(versat,accel,inst,16,1,0x5a86b737,0xeaea8ee9,0x76a0a24d,0xa63e7ed7,0xeefad18a,0x101c1211,0xe2b3650c,0x5187c2a8,0xa6505472,0x08251f6d,0x4237e661,0xc7bf4c77,0xf3353903,0x94c37fa1,0xa9f9be83,0x6ac28509);
 
     printf("b89ab4ca fc0ba687 6f70775f fd7fcf73 ddc5d5d7 b54ee23e 481631f5 9c325ada 1e01af58 11016b62 465da978 961e5ee7 9860640b 3f309ec4 439e4f9d 14ca5690\n");
     for(int i = 0; i < 16; i++){
@@ -414,7 +339,7 @@ void InstantiateSHA(Versat* versat){
     TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
-    inst = CreateNamedFUInstance(accel,type,MakeSizedString("SHA"));
+    inst = CreateFUInstance(accel,type,MakeSizedString("SHA"));
 
     OutputUnitInfo(inst);
 
@@ -447,9 +372,6 @@ void InstantiateSHA(Versat* versat){
         }
     }
     }
-
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
 }
 
 void TestSHA(Versat* versat){
@@ -459,8 +381,6 @@ void TestSHA(Versat* versat){
     for(int i = 0; i < 256; i++){
         digest[i] = 0;
     }
-
-    Hook(versat,nullptr,nullptr);
 
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     versat_sha256(digest,msg_64,64);
@@ -589,7 +509,7 @@ void ConfigureMemoryReceive(FUInstance* inst, int amountOfData,int interdataDela
 void TestMemory(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("memViewer"));
-    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    CreateFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* mem = GetInstanceByName(accel,"test","memory");
 
@@ -604,8 +524,6 @@ void TestMemory(Versat* versat){
     VersatUnitWrite(mem,1022,0xfe);
     VersatUnitWrite(mem,1023,0xff);
 
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
 
     for(int i = 0; i < 2; i++){
         for(int j = 0; j < 2; j++){
@@ -701,7 +619,7 @@ void VersatMatrixMultiplicationVRead(Versat* versat){
 
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplicationVread"));
-    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    CreateFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* memA = GetInstanceByName(accel,"test","matA");
     FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -737,8 +655,6 @@ void VersatMatrixMultiplicationVRead(Versat* versat){
     conf->period = dimensions;
     conf->shift = 0;
 
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
 
     ConfigureMatrixVWrite(res,size);
     {
@@ -776,11 +692,6 @@ void InstantiateMatrixOverMerge(Versat* versat,Accelerator* accel){
 
     FUInstance* res = GetInstanceByName(accel,"test","matrixRes");
 
-    #if 1
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
-    #endif
-
     #if 0
     memA->delay[0] = 0;
     memB->delay[0] = 0;
@@ -814,7 +725,6 @@ void InstantiateMatrixOverMerge(Versat* versat,Accelerator* accel){
     for(int i = 0; i < size; i++){
         matrixA[i] = i + 1;
         matrixB[i] = i + 1;
-        //matrixRes[i] = 0;
     }
 
     volatile MuladdConfig* conf = (volatile MuladdConfig*) muladd->config;
@@ -848,7 +758,7 @@ void InstantiateMatrixOverMerge(Versat* versat,Accelerator* accel){
 void VersatMatrixMultiplication(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplication"));
-    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    CreateFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* memA = GetInstanceByName(accel,"test","matA");
     FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -873,9 +783,6 @@ void VersatMatrixMultiplication(Versat* versat){
     conf->iterations = size;
     conf->period = dimensions;
     conf->shift = 0;
-
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
 
     ConfigureMemoryReceive(res,size,dimensions);
 
@@ -929,10 +836,13 @@ void Convolution(){
               for (m = 0; m < 3; m++)
               {
                 res += pixels[i * 5 + j + k * 25 + l * 5 + m] * weights[9 * k + l * 3 + m];
+
               }
             }
           }
+          printf("%d\t",res);
         }
+        printf("\n");
     }
 }
 
@@ -964,7 +874,7 @@ void VersatConvolution(Versat* versat){
 
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Convolution"));
-    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    CreateFUInstance(accel,type,MakeSizedString("test"));
 
     int i, j;
 
@@ -1030,9 +940,6 @@ void VersatConvolution(Versat* versat){
     resConfig->dutyA = 1;
     resConfig->in0_wr = 1;
 
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
-
     AcceleratorRun(accel); // Load vreads with initial good data
 
     for (i = 0; i < 3; i++)
@@ -1062,7 +969,7 @@ void VersatConvolution(Versat* versat){
 Accelerator* InstantiateMerge(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Merged"));
-    CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    CreateFUInstance(accel,type,MakeSizedString("test"));
 
     return accel;
 }
@@ -1144,9 +1051,6 @@ void InstantiateConvolutionOverMerge(Versat* versat,Accelerator* accel){
     resConfig->dutyA = 1;
     resConfig->in0_wr = 1;
 
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
-
     AcceleratorRun(accel); // Load vreads with initial good data
 
     for (int i = 0; i < 3; i++)
@@ -1187,7 +1091,7 @@ char testString[] = "123249819835894981389Waldo198239812849825899904924oefhcasjn
 void VersatStringHasher(Versat* versat){
     Accelerator* accel = CreateAccelerator(versat);
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("StringHasher"));
-    FUInstance* inst = CreateNamedFUInstance(accel,type,MakeSizedString("test"));
+    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("test"));
 
     FUInstance* muladd = GetInstanceByName(accel,"test","mul1","mul");
 
@@ -1203,9 +1107,6 @@ void VersatStringHasher(Versat* versat){
 
     FUInstance* bytesIn = GetInstanceByName(accel,"test","bytesIn");
     FUInstance* bytesOut = GetInstanceByName(accel,"test","bytesOut");
-
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
 
     for(int i = 0; i < 5; i++){
         VersatUnitWrite(bytesIn,i,(int) ("Waldo"[i]));
@@ -1270,9 +1171,6 @@ void InstantiateStringHasherOverMerge(Versat* versat,Accelerator* accel){
     FUInstance* bytesIn = GetInstanceByName(accel,"test","bytesIn");
     FUInstance* bytesOut = GetInstanceByName(accel,"test","ConvolutionRes");
 
-    CalculateDelay(versat,accel);
-    SetDelayRecursive(accel);
-
     for(int i = 0; i < 5; i++){
         VersatUnitWrite(bytesIn,i,(int) ("Waldo"[i]));
     }
@@ -1318,13 +1216,7 @@ int main(int argc,const char* argv[])
 
     printf("Init base modules\n");
 
-    Versat versatInst = {};
-    Versat* versat = &versatInst;
-    InitVersat(versat,VERSAT_BASE,1);
-
-    #ifdef PC
-    versat->debug.outputAccelerator = true;
-    #endif
+    Versat* versat = InitVersat(VERSAT_BASE,1);
 
     printf("Init Versat\n");
 
@@ -1333,9 +1225,7 @@ int main(int argc,const char* argv[])
     MEM = GetTypeByName(versat,MakeSizedString("Mem"));
     REG = GetTypeByName(versat,MakeSizedString("Reg"));
 
-    #ifdef PC
     ParseVersatSpecification(versat,"testVersatSpecification.txt");
-    #endif
 
     #if 0
     StringHasher();
@@ -1400,14 +1290,6 @@ int main(int argc,const char* argv[])
     #endif
 
     #if 0
-    TestInputM(versat);
-    #endif
-
-    #if 0
-    TestDelay(versat);
-    #endif
-
-    #if 0
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
     sha256(digest,msg_64,64);
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
@@ -1463,6 +1345,7 @@ int main(int argc,const char* argv[])
     printf("\n");
 #endif
 
+    Hook(versat,nullptr,nullptr);
     uart_finish();
 
     return 0;
@@ -1577,16 +1460,42 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     initVersat = false; // At the end of each run, reset
 }
 
-#endif
-
 /*
 
-Currently plan:
+Current plan:
 
-Overall:
+Change the calculated inputs and outputs on the FUInstances to be full vector likes for the size
+    If there isn't a connection, simply store a nullptr
+        [Objective] Implement a way so that the memory units that have unconnected inputs can have a zero input
+Take a look at hierarchical names (and how would I implemented them for a flatten operation)
+At the very least, the specification parser must have good error reporting, on what is expected from the language
+Need to check the vwrite unit
+Simplify the process of creating FU units.
+    Code a complete realloc routine that can be used at any point to make a valid accelerator
+        Possible use it to implement the Removal of units
+    Move any allocation needed to the Locking interface
+        The units do not need output allocations before running the accelerator
+        Maybe make it so that outputs allocations are allocated globally throught the accelerator
+            Simplify the process of copying the stored outputs (a simple memcpy)
+
+Figure out how to deal with the accelerator in the RegisterSubUnit function
+    The simplest is to use the accelerator copy function
+        But how to deal with the memory allocations?
+            Either let the accelerator work like a normal accelerator (allocates memory even though it will not use it)
+            Or have a non allocating flag that prevents from allocating
+            Or use a smaller more compact structure to store the structures
+                Problematic since I cannot use the same algorithms that I could use in the graph.
+        Also, it should be helpful to add generic configurations, which are stored and handled by Versat
+
+Add a clear function that clears all the resources.
+    Otherwise Valgrind becomes kinda of useless as it's impossible to check for memory leaks
+
+Next:
 
 Add logging
 Add error handling for the most common cases (change from assertions to a error + exit) [Maybe keep the assert in debug mode]
+Add a automatic test suite. PC-Emul + Simulator
+Find a way to paralelize the simulation build and running.
 
 Things to do:
 
@@ -1613,7 +1522,7 @@ Overall:
 Software:
 
     Change hierarchical name from a char[] to a char* (Otherwise will bleed embedded memory dry)
-        Software for now will simply malloc and forget, but eventually I should probably implement string interning
+        Software for now will simply malloc and forget, but eventually I should probably implement some form of string interning
         NOTE: After adding perfect hashing, name information is no longer required. Might not need to change afterall, for now hold on.
 
     Add true hierarchical naming for Flatten units
@@ -1633,22 +1542,17 @@ Embedded:
 Hardware:
 
     Implement shadow registers
+    Generate units that have variable connections. Like CircuitInput and CircuitOutput
+
     Delay units with same inputs and delay values should be shared.
 
 Delay:
 
+    Add a special "Constant" edge, that doesn't have or add any delay regardless of anything (Time agnostic)
     To improve lantency calculations, should have a indication of which outputs delay depend on which input ports delay (Think how dual port ram has two independent ports)
         Each output should keep track of exactly which input port it depends upon, and use that information in delay calculation
     Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of Reg?
         I think I only need a single value to indicate the difference between a Reg and a Muladd (one produces that, and therefore should act as a source, while the other is a compute unit)
-
-
-Type:
-
-    Add multiple names to the same type (have an array of type info and hash names to type info)
-    Parse templates types
-        Need to rewrite type parser to be able to reference types already parsed. [The same way type works]
-    Maybe standarize the way the type parser works and the way the type works (use same structs and stuff, instead of having things separated)
 
 Template Engine:
 
