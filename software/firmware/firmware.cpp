@@ -191,15 +191,19 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberI
 
     OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
+    for(int i = 0; i < numberOutputs; i++){
+        out[i] = outputs[i]->state[0];
+    }
+
+    #if 0
     for(int i = 0; i < numberInputs; i++){
         RemoveFUInstance(accel,inputs[i]);
     }
 
     for(int i = 0; i < numberOutputs; i++){
-        out[i] = outputs[i]->state[0];
-
         RemoveFUInstance(accel,outputs[i]);
     }
+    #endif
 
     va_end(args);
 
@@ -267,14 +271,16 @@ int* TestSequentialInstance(Versat* versat,Accelerator* accel,FUInstance* inst,i
 void TestMStage(Versat* versat){
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* top = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+    FUInstance* inst = GetInstanceByName(accel,"Test","sigma");
 
     int constants[] = {7,18,3,17,19,10};
     for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
         inst->config[i] = constants[i];
     }
 
-    int* out = TestInstance(versat,accel,inst,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
+    int* out = TestInstance(versat,accel,top,4,1,0x5a86b737,0xa9f9be83,0x08251f6d,0xeaea8ee9);
 
     printf("Expected: 0xb89ab4ca\n");
     printf("Got:      0x%x\n",out[0]);
@@ -1213,9 +1219,10 @@ int main(int argc,const char* argv[])
     printf("Init base modules\n");
 
     Versat* versat = InitVersat(VERSAT_BASE,1);
-    printf("Init Versat\n");
 
+    #if 0
     EnableDebug(versat);
+    #endif
 
     ParseCommandLineOptions(versat,argc,argv);
 
@@ -1397,6 +1404,8 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
         inlen -= 64;
     }
 
+
+
     return inlen;
 }
 
@@ -1443,6 +1452,13 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     }
 
     // Does the last run with valid data
+    {
+        FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
+
+        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+        c->ext_addr = (int) readMemory; // Need to put a valid address otherwise address sanitizer will complain of reading previous stack data
+    }
+
     AcceleratorRun(accel);
 
     for (size_t i = 0; i < 8; ++i) {
@@ -1484,9 +1500,6 @@ Figure out how to deal with the accelerator in the RegisterSubUnit function
             Or use a smaller more compact structure to store the structures
                 Problematic since I cannot use the same algorithms that I could use in the graph.
         Also, it should be helpful to add generic configurations, which are stored and handled by Versat
-
-Add a clear function that clears all the resources.
-    Otherwise Valgrind becomes kinda of useless as it's impossible to check for memory leaks
 
 Use the instance names as the verilog module names instead of the declaration name
     Make the generated vcd more readable
@@ -1592,6 +1605,11 @@ There is some disconnect between pc-euml and sim, especially when wrong latency 
     Need to create an example that tries to test edge cases, in regards to latency.
     Work from the generated hardware (check if it does what I think it does) and then change PC-Emul until it gives the exact values on the vcd as the hardware.
     The values given must be the exact same, if the accelerator is running and producing valid data, I want the PC-Emul to produce the same values, even if those values are useless.
+
+
+
+The Pool class shouldn't store all that info, and it makes it a error to copy the class
+    All the info needed is stored in the linked list on the pages, the Pool can pretty much work like a shell and therefore be copied around without a problem
 
 */
 
