@@ -615,6 +615,7 @@ module Constants(){
 
 module SHA(){
    VRead MemRead;
+   SwapEndian Swap(0);
    F F0;
    F F1;
    F F2;
@@ -628,9 +629,11 @@ module SHA(){
    Constants cMem3;
    ShaState State;
 #
+   MemRead -> Swap;
+
    State:0..7 -> F0:0..7;
    cMem0      -> F0:8;
-   MemRead    -> F0:9;
+   Swap       -> F0:9;
 
    F0:0..7    -> F1:0..7;
    cMem1      -> F1:8;
@@ -644,7 +647,7 @@ module SHA(){
    cMem3      -> F3:8;
    M2         -> F3:9;
 
-   MemRead  -> M0;
+   Swap -> M0;
    M0 -> M1;
    M1 -> M2;
    

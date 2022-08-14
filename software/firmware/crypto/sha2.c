@@ -211,10 +211,6 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
     PROF_STOP(F_32)
     PROF_START(Expand32)
 #endif
-        int a = sigma1_32(w14);
-        int b = (w9);
-        int c = sigma0_32(w1);
-        int d = (w0);
 
         EXPAND_32
 #ifdef PROFILE

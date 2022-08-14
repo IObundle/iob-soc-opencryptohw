@@ -150,6 +150,8 @@ static int readMemory[64];
 
 // GLOBALS
 Accelerator* accel;
+FUInstance* registers[8];
+volatile VReadConfig* readConfig;
 bool initVersat = false;
 
 FUDeclaration* MEM;
@@ -337,8 +339,6 @@ void TestInputM(Versat* versat){
 
 void InstantiateSHA(Versat* versat){
     FUInstance* inst = nullptr;
-    {
-    TIME_IT('F');
     FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
     accel = CreateAccelerator(versat);
     inst = CreateFUInstance(accel,type,MakeSizedString("SHA"));
@@ -347,23 +347,27 @@ void InstantiateSHA(Versat* versat){
 
     FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
     {
-        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
+        readConfig = (volatile VReadConfig*) read->config;
 
         // Versat side
-        c->iterB = 1;
-        c->incrB = 1;
-        c->perB = 16;
-        c->dutyB = 16;
+        readConfig->iterB = 1;
+        readConfig->incrB = 1;
+        readConfig->perB = 16;
+        readConfig->dutyB = 16;
 
         // Memory side
-        c->incrA = 1;
-        c->iterA = 1;
-        c->perA = 16;
-        c->dutyA = 16;
-        c->size = 8;
-        c->int_addr = 0;
-        c->pingPong = 1;
-        c->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
+        readConfig->incrA = 1;
+        readConfig->iterA = 1;
+        readConfig->perA = 16;
+        readConfig->dutyA = 16;
+        readConfig->size = 8;
+        readConfig->int_addr = 0;
+        readConfig->pingPong = 1;
+        readConfig->ext_addr = (int) readMemory; // Some place so no segfault if left unconfigured
+    }
+
+    for(int i = 0; i < 8; i++){
+        registers[i] = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
     }
 
     for(int i = 0; i < 4; i++){
@@ -373,7 +377,11 @@ void InstantiateSHA(Versat* versat){
             VersatUnitWrite(mem,ii,kConstants[i][ii]);
         }
     }
-    }
+
+    FUInstance* swap = GetInstanceByName(accel,"SHA","Swap");
+
+    SwapEndianConfig* swapConfig = (SwapEndianConfig*) swap->config;
+    swapConfig->enabled = 1;
 }
 
 void TestSHA(Versat* versat){
@@ -385,7 +393,10 @@ void TestSHA(Versat* versat){
     }
 
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+    {
+    TIME_IT('R');
     versat_sha256(digest,msg_64,64);
+    }
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
 
     // Gera o versat.
@@ -1293,8 +1304,16 @@ int main(int argc,const char* argv[])
     #endif
 
     #if 0
+    unsigned char digest[256];
+    for(int i = 0; i < 256; i++){
+        digest[i] = 0;
+    }
+
     printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
+    {
+    TIME_IT('B');
     sha256(digest,msg_64,64);
+    }
     printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
     #endif
 
@@ -1323,12 +1342,6 @@ int main(int argc,const char* argv[])
 
     printf("%s\n",GetHexadecimal(msg,16));
     printf("0336763e966d92595a567cc9ce537f5e\n");
-    #endif
-
-    #if 0
-    printf("Expected: 42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa\n");
-    versat_sha256(digest,msg_64,64);
-    printf("Result:   %s\n",GetHexadecimal(digest, HASH_SIZE));
     #endif
 
 #if AUTOMATIC_TEST == 1
@@ -1360,51 +1373,22 @@ static uint load_bigendian_32(const uint8_t *x) {
 }
 
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
-    uint w[16];
-
-    {
-        FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
-
-        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
-        c->ext_addr = (int) w;
-    }
+    readConfig->ext_addr = (int) in;
 
     while (inlen >= 64) {
-        w[0]  = load_bigendian_32(in + 0);
-        w[1]  = load_bigendian_32(in + 4);
-        w[2]  = load_bigendian_32(in + 8);
-        w[3]  = load_bigendian_32(in + 12);
-        w[4]  = load_bigendian_32(in + 16);
-        w[5]  = load_bigendian_32(in + 20);
-        w[6]  = load_bigendian_32(in + 24);
-        w[7]  = load_bigendian_32(in + 28);
-        w[8]  = load_bigendian_32(in + 32);
-        w[9]  = load_bigendian_32(in + 36);
-        w[10] = load_bigendian_32(in + 40);
-        w[11] = load_bigendian_32(in + 44);
-        w[12] = load_bigendian_32(in + 48);
-        w[13] = load_bigendian_32(in + 52);
-        w[14] = load_bigendian_32(in + 56);
-        w[15] = load_bigendian_32(in + 60);
-
         // Loads data + performs work
         AcceleratorRun(accel);
 
-        #if 1
         if(!initVersat){
             for(int i = 0; i < 8; i++){
-                FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
-                VersatUnitWrite(inst,0,initialStateValues[i]);
+                VersatUnitWrite(registers[i],0,initialStateValues[i]);
             }
             initVersat = true;
         }
-        #endif
 
         in += 64;
         inlen -= 64;
     }
-
-
 
     return inlen;
 }
@@ -1452,19 +1436,12 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     }
 
     // Does the last run with valid data
-    {
-        FUInstance* read = GetInstanceByName(accel,"SHA","MemRead");
-
-        volatile VReadConfig* c = (volatile VReadConfig*) read->config;
-        c->ext_addr = (int) readMemory; // Need to put a valid address otherwise address sanitizer will complain of reading previous stack data
-    }
+    readConfig->ext_addr = (int) readMemory; // Need to put a valid address otherwise address sanitizer will complain of reading previous stack data
 
     AcceleratorRun(accel);
 
     for (size_t i = 0; i < 8; ++i) {
-        FUInstance* inst = GetInstanceByName(accel,"SHA","State","s%d",i,"reg");
-
-        uint val = *inst->state;
+        uint val = *registers[i]->state;
 
         store_bigendian_32(&out[i*4],val);
     }
