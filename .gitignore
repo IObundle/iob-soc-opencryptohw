@@ -16,8 +16,9 @@ software/*/*
 !software/bootloader/boot.S
 
 !software/firmware/firmware.cpp
-!software/firmware/unitWrapper.cpp
-!software/firmware/unitWrapper.hpp
+!software/firmware/automaticTests.cpp
+!software/firmware/unitConfiguration.cpp
+!software/firmware/unitConfiguration.hpp
 !software/firmware/firmware.S
 !software/firmware/profile.c
 !software/firmware/profile.h

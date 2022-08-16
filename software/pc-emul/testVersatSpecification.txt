@@ -8,6 +8,13 @@ module StaticMuladd(x,y){
    mul -> out;
 }
 
+module VReadToVWrite(){
+   VRead read;
+   VWrite write;
+#
+   read -> write;
+}
+
 module StringHasher(){
    Const weight1;
    Const weight2;
@@ -19,14 +26,14 @@ module StringHasher(){
    StaticMuladd mul3;
    StaticMuladd mul4;
    StaticMuladd mul5;
-   Mem bytesIn; // 0 1 2 3 4 5 6 7
+   Mem bytesIn;
    Mem bytesOut;
 #
-   bytesIn[0] -> mul1:0; // 0 1 2 3 4 5 6 7 8 9
-   bytesIn[1] -> mul2:0; // 1 2 3 4 5 6  
-   bytesIn[2] -> mul3:0; // 2 3 4 5 6 
-   bytesIn[3] -> mul4:0; // 3 4 5 6 7
-   bytesIn[4] -> mul5:0; // 4 5 6 7 8
+   bytesIn[0] -> mul1:0;
+   bytesIn[1] -> mul2:0;
+   bytesIn[2] -> mul3:0;
+   bytesIn[3] -> mul4:0;
+   bytesIn[4] -> mul5:0;
 
    weight1 -> mul1:1;
    weight2 -> mul2:1;
@@ -68,8 +75,8 @@ module MatrixMultiplicationVread(){
 
 module ConvolutionStage(previous){
    VRead pixels;
-   Mem weights;
-   Muladd muladd;
+   static Mem weights;
+   static Muladd muladd;
 #
    pixels  -> muladd:0;
    weights -> muladd:1;
@@ -88,11 +95,11 @@ module Convolution(){
    Mem res;
    Const bias;
 #
-   bias[-10] -> stage0;
-   stage0    -> stage1;
-   stage1    -> stage2;
-   stage2    -> stage3;
-   stage3    -> stage4;
+   bias   -> stage0;
+   stage0 -> stage1;
+   stage1 -> stage2;
+   stage2 -> stage3;
+   stage3 -> stage4;
    stage4[9] -> res;
 }
 

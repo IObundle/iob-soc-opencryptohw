@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-g -m32 -Wall -fsanitize=address
+GLOBAL_CFLAGS:=-g -m32 -Wall
 
 include ../software.mk
 
@@ -19,9 +19,13 @@ $(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.m
 #HEADERS
 HDR+=periphs.h 
 
+HDR+=$(FIRM_DIR)/unitConfiguration.hpp
+
 #SOURCES
 SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
+SRC+= $(FIRM_DIR)/automaticTests.cpp
+SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 
 SOC_OUT_BIN:=soc-out.bin
 
