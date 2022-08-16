@@ -31,10 +31,11 @@ struct TestInfo{
 #define TEST_FAILED TestInfo(0)
 #define TEST_PASSED TestInfo(1)
 
-#define Expect(...) Expect_(__PRETTY_FUNCTION__,__LINE__,__VA_ARGS__)
-static TestInfo Expect_(const char* functionName,int lineNumber, const char* expected,const char* format, ...) __attribute__ ((format (printf, 4, 5)));
+// Care with the testNumber variable. Every test must have one
+#define Expect(...) Expect_(__PRETTY_FUNCTION__,testNumber,__VA_ARGS__)
+static TestInfo Expect_(const char* functionName,int testNumber, const char* expected,const char* format, ...) __attribute__ ((format (printf, 5, 6)));
 
-static TestInfo Expect_(const char* functionName,int lineNumber, const char* expected,const char* format, ...){
+static TestInfo Expect_(const char* functionName,int testNumber, const char* expected,const char* format, ...){
    va_list args;
    va_start(args,format);
 
@@ -49,16 +50,16 @@ static TestInfo Expect_(const char* functionName,int lineNumber, const char* exp
       return TEST_PASSED;
    } else {
       printf("\n");
-      printf("[%5d]Test failed: %s\n",lineNumber,functionName);
-      printf("       Expected: %s\n",expected);
-      printf("       Result:   %s\n",buffer);
+      printf("[%2d]Test failed: %s\n",testNumber,functionName);
+      printf("    Expected: %s\n",expected);
+      printf("    Result:   %s\n",buffer);
       printf("\n");
 
       return TEST_FAILED;
    }
 }
 
-static TestInfo VReadToVWrite(Versat* versat){
+static TestInfo VReadToVWrite(Versat* versat,int testNumber){
    Accelerator* accel = CreateAccelerator(versat);
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("VReadToVWrite"));
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("test"));
@@ -91,7 +92,7 @@ static TestInfo VReadToVWrite(Versat* versat){
    return Expect("0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 ",buffer);
 }
 
-static TestInfo StringHasher(Versat* versat){
+static TestInfo StringHasher(Versat* versat,int testNumber){
    int weights[] = {17,67,109,157,199};
    char testString[] = "123249819835894981389Waldo198239812849825899904924oefhcasjngwoeijfjvakjndcoiqwj";
 
@@ -147,7 +148,7 @@ static TestInfo StringHasher(Versat* versat){
    return TEST_FAILED;
 }
 
-static TestInfo Convolution(Versat* versat){
+static TestInfo Convolution(Versat* versat,int testNumber){
    #define nSTAGE 5
    int pixels[25 * nSTAGE], weights[9 * nSTAGE], bias = 0;
 
@@ -266,26 +267,26 @@ static TestInfo Convolution(Versat* versat){
 
 #ifndef HARDWARE_TEST
    #define HARDWARE_TEST -1
-   #define ENABLE_TEST(ENABLED) (((ENABLED) && !REVERSE_ENABLED) || (REVERSE_ENABLED && !(ENABLED)))
+   #define ENABLE_TEST(ENABLED) ((((ENABLED) && !REVERSE_ENABLED) || (REVERSE_ENABLED && !(ENABLED))) && (currentTest++ >= 0))
 #else
    #define ENABLE_TEST(ENABLED) (currentTest++ == hardwareTest)
 #endif
+
+#define TEST_NUMBER (currentTest - 1)
 
 void AutomaticTests(Versat* versat){
    TestInfo info = TestInfo(0,0);
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-   printf("%d %d",hardwareTest,currentTest);
-
    if(ENABLE_TEST( 1 )){
-      info += VReadToVWrite(versat);
+      info += VReadToVWrite(versat,TEST_NUMBER);
    }
    if(ENABLE_TEST( 1 )){
-      info += StringHasher(versat);
+      info += StringHasher(versat,TEST_NUMBER);
    }
    if(ENABLE_TEST( 1 )){
-      info += Convolution(versat);
+      info += Convolution(versat,TEST_NUMBER);
    }
 
 
