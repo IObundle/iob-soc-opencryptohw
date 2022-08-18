@@ -21,7 +21,7 @@ void ConfigureSimpleVRead(FUInstance* inst, int numberItems,int* memory){
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 1;
+   c->pingPong = 0;
 
    // B - versat side
    c->iterB = numberItems;
@@ -35,21 +35,21 @@ void ConfigureSimpleVWrite(FUInstance* inst, int numberItems,int* memory){
    IntSet(inst->config,0,sizeof(VWriteConfig));
    volatile VWriteConfig* c = (volatile VWriteConfig*) inst->config;
 
-   // Memory side
+   // Write side
    c->incrA = 1;
    c->iterA = 1;
    c->perA = numberItems;
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 1;
+   c->pingPong = 0;
+   c->ext_addr = (int) memory;
 
-   // Write side
+   // Memory side
    c->iterB = numberItems;
    c->perB = 1;
    c->dutyB = 1;
    c->incrB = 1;
-   c->ext_addr = (int) memory;
 }
 
 void ConfigureLeftSideMatrix(FUInstance* inst,int iterations){
@@ -126,7 +126,7 @@ void ConfigureLeftSideMatrixVRead(FUInstance* inst, int iterations){
    config->dutyA = numberItems;
    config->size = 8;
    config->int_addr = 0;
-   config->pingPong = 1;
+   config->pingPong = 0;
 
    config->iterB = iterations;
    config->perB = iterations;
@@ -153,7 +153,7 @@ void ConfigureRightSideMatrixVRead(FUInstance* inst, int iterations){
    config->dutyA = numberItems;
    config->size = 8;
    config->int_addr = 0;
-   config->pingPong = 1;
+   config->pingPong = 0;
 
    config->iterB = iterations;
    config->perB = iterations;
@@ -178,7 +178,7 @@ void ConfigureMatrixVWrite(FUInstance* inst,int amountOfData){
    config->dutyA = amountOfData;
    config->size = 8;
    config->int_addr = 0;
-   config->pingPong = 1;
+   config->pingPong = 0;
 
    config->iterB = amountOfData;
    config->perB = 4;
