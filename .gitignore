@@ -11,6 +11,8 @@ software/*/*
 !software/*/*.py
 !software/*/*.rsp
 !software/*/*.c
+!software/*/*.cpp
+!software/*/*.hpp
 
 !software/bootloader/boot.c
 !software/bootloader/boot.S
@@ -20,9 +22,12 @@ software/*/*
 !software/firmware/profile.c
 !software/firmware/profile.h
 !software/firmware/crypto/
+!software/firmware/units/
 
 !software/console/console
 !software/console/eth_console
+
+!software/pc-emul/testVersatSpecification.txt
 
 #HARDWARE
 #sources

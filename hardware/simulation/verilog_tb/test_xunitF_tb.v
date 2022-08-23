@@ -6,7 +6,7 @@
 `define OUTPUT_SIZE (16)
 
 // Implicitly know FU latency
-`define XUNITF_LATENCY (2)
+`define XUNITF_LATENCY (1)
 
 module xunitF_tb;
 
@@ -105,8 +105,6 @@ module xunitF_tb;
     in5 = test_data_in[5];
     in6 = test_data_in[6];
     in7 = test_data_in[7];
-
-    @(posedge clk) #1;
 
     // word and constant values
     for(i=8; i < `INPUT_SIZE; i = i+2) begin

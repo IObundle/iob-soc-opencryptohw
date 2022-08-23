@@ -2,11 +2,15 @@ ROOT_DIR:=../..
 
 include ../software.mk
 
+BUILD_DIR=./build
+DEBUG_DIR=./debug
+VERSAT_PRG_SRC_DIR=./src
+
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -Wl,--strip-debug
+CFLAGS=-Os -std=gnu99 -Wl,--strip-debug -g -m32
 
 #DEFINE+=-DLONGLONG 
-DEFINE+=-DPC
+DEFINE+=$(defmacro)PC
 
 SOC_LOG:=soc.log
 ETH_LOG:=ethernet.log
@@ -20,11 +24,24 @@ $(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.m
 #HEADERS
 HDR+=periphs.h 
 
+#INCLUDES
+INCLUDE+=$(incdir)$(FIRM_DIR)/units
+
 #SOURCES
-SRC+= $(FIRM_DIR)/firmware.c $(UART_DIR)/software/printf.c
+SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 
 SOC_OUT_BIN:=soc-out.bin
+
+#units to verilate
+VERILATE_UNIT = xunitF xunitM
+HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
+
+#unit wrapper
+CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
+
+#firmware object
+CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
 
 #PROFILE
 ifeq ($(PROFILE),1)
@@ -40,9 +57,11 @@ CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 #RULES
 
 build: gen_data fw_emul
+	mkdir -p $(DEBUG_DIR)
+	mkdir -p $(VERSAT_PRG_SRC_DIR)
 
-fw_emul: $(HDR) $(SRC)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc
+fw_emul: $(HDR) $(SRC) $(CPP_OBJ) $(BUILD_DIR)/firmware.o
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 
 run: build
 	@rm -f soc2cnsl cnsl2soc
@@ -52,7 +71,9 @@ run: build
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) \
+		$(BUILD_DIR) $(DEBUG_DIR) $(VERSAT_PRG_SRC_DIR) *.dot
+	@rm -rf *.vh *.v *.inc versat_output
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@make clean-eth-socket
@@ -74,6 +95,22 @@ $(SOC_LOG):
 
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
+
+$(BUILD_DIR)/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir $(BUILD_DIR) $<;
+	cd $(BUILD_DIR) && VM_DEFAULT_RULES=0 make -f V$*.mk;
+
+$(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp 
+	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
+
+$(BUILD_DIR)/%.o: $(FIRM_DIR)/%.cpp
+	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
+
+versat_output: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
+	mkdir -p $(DEBUG_DIR)
+	mkdir -p $(VERSAT_PRG_SRC_DIR)
+	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
+	./$@
 
 .PHONY: build run \
 	test validate profile \
