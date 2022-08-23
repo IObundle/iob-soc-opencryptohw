@@ -60,11 +60,17 @@ class xunitF(data_w: Int) extends Component {
     T1 := h + Sigma1_32(e) + Ch(e,f,g) + k + w
     T2 := Sigma0_32(a) + Maj(a,b,c)
 
+    val T1_init = UInt(data_w bits)
+    val T2_init = UInt(data_w bits)
+
+    T1_init := in7 + Sigma1_32(in4) + Ch(in4,in5,in6) + k + w
+    T2_init := Sigma0_32(in0) + Maj(in0,in1,in2)
+
     val delay = Reg(UInt(8 bits)) init(0)
     val latency = Reg(UInt(5 bits)) init(0)
     when(run) {
       delay := delay0
-      latency := 2
+      latency := 1
     } elsewhen (delay > 0) {
       delay := delay - 1
     } otherwise {
@@ -72,15 +78,15 @@ class xunitF(data_w: Int) extends Component {
         latency := latency - 1
       }
 
-      when(latency === 2){
-        a := in0
-        b := in1
-        c := in2
-        d := in3
-        e := in4
-        f := in5
-        g := in6
-        h := in7
+      when(latency === 1){
+        a := T1_init + T2_init
+        b := in0
+        c := in1
+        d := in2
+        e := in3 + T1_init
+        f := in4
+        g := in5
+        h := in6
       }.otherwise {
         a := T1 + T2
         b := a

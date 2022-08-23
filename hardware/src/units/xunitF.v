@@ -39,7 +39,7 @@ module xunitF #(
     );
 
 reg [7:0] delay;
-reg [1:0] latency;
+reg [0:0] latency;
 reg [31:0] a,b,c,d,e,f,g,h;
 
 assign out0 = a;
@@ -87,6 +87,9 @@ endfunction
 wire [31:0] T1 = h + Sigma1_32(e) + Ch(e,f,g) + k + w;
 wire [31:0] T2 = Sigma0_32(a) + Maj(a,b,c);
 
+wire [31:0] T1_init = in7 + Sigma1_32(in4) + Ch(in4,in5,in6) + k + w;
+wire [31:0] T2_init = Sigma0_32(in0) + Maj(in0,in1,in2);
+
 always @(posedge clk,posedge rst)
 begin
    if(rst) begin
@@ -101,7 +104,7 @@ begin
       h <= 0;
    end else if(run) begin
       delay <= delay0; 
-      latency <= 2'h2;
+      latency <= 1'h1;
    end else if(|delay) begin
       delay <= delay - 1;
    end else begin
@@ -109,18 +112,18 @@ begin
          latency <= latency - 1;
       end
 
-      if(latency == 2) begin
-         a <= in0;
-         b <= in1;
-         c <= in2;
-         d <= in3;
-         e <= in4;
-         f <= in5;
-         g <= in6;
-         h <= in7;
+      if(latency == 1'h1) begin
+         a <= T1_init + T2_init;
+         b <= in0;
+         c <= in1;
+         d <= in2;
+         e <= in3 + T1_init;
+         f <= in4;
+         g <= in5;
+         h <= in6;
       end
 
-      if(latency[1] == 0) begin // latency <= 1
+      if(latency == 0) begin
          a <= T1 + T2;
          b <= a;
          c <= b;
