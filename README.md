@@ -1,18 +1,33 @@
-# iob-soc-opencryptohw
-SoC to run the program in software with or without acceleration using VERSAT2.0
+# IOb-SoC-OpenCryptoHW
+
+This project aims to develop reconfigurable open-source cryptographic hardware
+IP cores for Next Generation Internet. With the Internet of Things upon us,
+security and privacy are more important than ever. On the one hand, the risks
+are high if the security and privacy features are exclusively implemented in
+software. On the other hand, if implemented solely in hardware, it is impossible
+to fix bugs or deploy critical updates, a threat to security and privacy. Hence,
+we propose to use reconfigurable hardware, providing the flexibility of software
+and the trustworthiness of hardware.  There have been proposals to implement
+cryptographic IP cores using Field Programmable Gate Array (FPGAs). However, the
+FPGA configuration infrastructure is cumbersome and proprietary, increasing
+device cost and compromising safety. Hacking into it requires first hacking the
+device’s configuration infrastructure and then hacking the algorithm itself,
+which is way more complicated.  Therefore, we propose to use open-source
+Coarse-Grained Reconfigurable Arrays (CGRAs) instead of FPGAs. CGRAs have much
+lighter configuration circuits and are not controlled by any private entity.
 
 # Setup
 Clone the repository and the submodules with:
 ```
-git clone --recursive git@github.com:IObundle/iob-soc-sha.git
+git clone --recursive git@github.com:IObundle/IOb-SoC-OpenCryptoHW.git
 ```
 or using the url:
 ```
-git clone --recursive https://github.com/IObundle/iob-soc-sha.git
+git clone --recursive https://github.com/IObundle/IOb-SoC-OpenCryptoHW.git
 ```
 * * *
 # PC Emulation
-The iob-soc-sha system can build and run an environment for PC with:
+The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
 ```
 make pc-emul-run
 ```
@@ -43,7 +58,7 @@ PC emulation program requires:
 
 * * *
 # RISCV Emulation
-The iob-soc-sha system can be emulated using a verilog simulator like icarus 
+The IOb-SoC-OpenCryptoHW system can be emulated using a verilog simulator like icarus 
 with:
 ```Make
 # Test with all supported simulators
@@ -153,3 +168,8 @@ The SpinalHDL sources are in `hardware/src/spinalHDL`.
 Check `hardware/src/spinalHDL/README.md` for more details to setup the
 requirements to use SpinalHDL.
 
+# Acknowledgement
+This project is funded through the NGI Assure Fund, a fund established by NLnet
+with financial support from the European Commission's Next Generation Internet
+programme, under the aegis of DG Communications Networks, Content and Technology
+under grant agreement No 957073.
