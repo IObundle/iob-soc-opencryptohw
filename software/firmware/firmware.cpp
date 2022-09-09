@@ -231,10 +231,6 @@ int main(int argc,const char* argv[])
 
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
-   #if 1
-   EnableDebug(versat);
-   #endif
-
    ParseCommandLineOptions(versat,argc,argv);
 
    ParseVersatSpecification(versat,"testVersatSpecification.txt");
@@ -371,11 +367,18 @@ void versat_sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
 
 /*
 
+Immediate plan:
+
+   Add a "accelerator view", which is nothing more that pointers to nodes and edges in a real accelerator except do not need to keep track of all of them.
+      Useful for the merge algorithms, where I can make an accelerator view for each individual accelerator post-merge.
+   Change the calculate delay algorithm to take in an accelerator view.
+   Maybe change the calculate delay algorithm to store the info inside an array in the declaration, instead of inside each individual FUInstance.
+      Need to first change declarations, so that every accelerator is associated to a declaration.
+   Need to figure out what to do in regards to same name entities (Which will later affect the GetEntityByName calls)
+      Possible solution:
+
+
 Current plan:
-
-Need to fix simulation before progressing
-
-VRead is also not following the specification (doesn't respond immediatly to ready [change addr for the next or setting valid to zero when finished)
 
 Change the calculated inputs and outputs on the FUInstances to be full vector likes for the size
    If there isn't a connection, simply store a nullptr
@@ -404,15 +407,7 @@ Use the instance names as the verilog module names instead of the declaration na
 
 Next:
 
-Add logging
-Add error handling for the most common cases (change from assertions to a error + exit) [Maybe keep the assert in debug mode]
-Add a automatic test suite. PC-Emul + Simulator
 Find a way to paralelize the simulation build and running.
-
-Things to do:
-
-SHA implementation with macroinstances
-AES implementation.
 
 Keep track off:
 

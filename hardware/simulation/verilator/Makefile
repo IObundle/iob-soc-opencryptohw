@@ -60,7 +60,7 @@ VERILATOR_INPUT = $(INCLUDE_VERI) $(DEFINE) $(VSRC) --top-module system_top syst
 comp: $(SIM_PROC)
 
 #simulator executable
-$(SIM_PROC): $(HDR)
+$(SIM_PROC): $(HDR) $(VSRC)
 	$(VERILATOR) $(VERILATOR_FLAGS) $(VERILATOR_INPUT)
 	cp obj_dir/$@ .
 
