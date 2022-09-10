@@ -24,7 +24,7 @@ exec:
 
 clean: clean-remote
 	@rm -f $(SIM_PROC)
-	@make -C $(HW_DIR)/src/spinalHDL clean
+	@-make -C $(HW_DIR)/src/spinalHDL clean #Command ignored if sbt not installed
 
 SPINAL_DIR=$(HW_DIR)/src/spinalHDL
 # xunitM tests

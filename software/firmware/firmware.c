@@ -108,13 +108,9 @@ int main()
   //init ethernet
   eth_init(ETHERNET_BASE);
 
-#ifdef SIM
-  //Receive input data from uart
-  din_size = uart_recvfile("sim_in.bin", &din_fp);
-#else
   //Receive input data from ethernet
   din_size = eth_rcv_variable_file(din_fp);
-#endif
+
   printf("ETHERNET: Received file with %d bytes\n", din_size);
 #ifdef PROFILE
   PROF_START(global)
@@ -162,13 +158,9 @@ int main()
   // Finish profile
   PROF_STOP(global)
 #endif
-#ifdef SIM
-  // send message digests via uart
-  uart_sendfile("soc-out.bin", dout_size, dout_fp); 
-#else
+
   // send message digests via ethernet
   eth_send_variable_file(dout_fp, dout_size);
-#endif
   printf("ETHERNET: Sent file with %d bytes\n", dout_size);
 
 #ifdef PROFILE

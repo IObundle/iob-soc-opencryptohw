@@ -1,6 +1,10 @@
 ROOT_DIR:=.
 include ./config.mk
 
+# TESTER PORTMAP
+tester-portmap:
+	make -C submodules/TESTER/ portmap
+
 #
 # BUILD EMBEDDED SOFTWARE
 #
@@ -53,6 +57,12 @@ sim-versat-fus:
 	make -C $(SIM_DIR) xunitM SIMULATOR=icarus
 	make -C $(SIM_DIR) xunitF SIMULATOR=icarus
 
+tester-sim-build:
+	make -C submodules/TESTER sim-build
+
+tester-sim-run:
+	make -C submodules/TESTER sim-run
+
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
@@ -73,6 +83,12 @@ fpga-test:
 
 fpga-clean: fw-clean
 	make -C $(BOARD_DIR) clean-all
+
+tester-fpga-build:
+	make -C submodules/TESTER fpga-build
+
+tester-fpga-run:
+	make -C submodules/TESTER fpga-run
 
 #
 # COMPILE DOCUMENTS
@@ -129,17 +145,21 @@ test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
 #generic clean
 clean: pc-emul-clean sim-clean fpga-clean doc-clean
+	make -C submodules/TESTER clean
 
 clean-all: test-clean
 
 .PHONY: fw-build fw-clean \
 	pc-emul-build pc-emul-run pc-emul-test pc-emul-clean pc-emul-profile \
 	sim-build sim-run sim-clean sim-test sim-versat-fus \
+	tester-sim-build tester-sim-run \
 	fpga-build fpga-run fpga-run-profile fpga-test fpga-clean \
+	tester-fpga-build tester-fpga-run \
 	doc-accel-plan doc-accel-plan-clean doc-clean \
 	test-versat-fus \
 	test-pc-emul test-pc-emul-clean \
 	test-sim test-sim-clean \
 	test-fpga test-fpga-clean \
 	test test-clean \
+	tester-portmap \
 	clean clean-all

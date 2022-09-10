@@ -12,7 +12,8 @@ module system
    //PIO
 
 
-`ifdef USE_DDR //AXI MASTER INTERFACE
+//Temporarily comment ifdef because its not yet compatible with tester python scripts
+//`ifdef USE_DDR //AXI MASTER INTERFACE
 
    //address write
    output [0:0]             m_axi_awid, 
@@ -60,7 +61,7 @@ module system
    input                    m_axi_rlast, 
    input                    m_axi_rvalid, 
    output                   m_axi_rready,
-`endif //  `ifdef USE_DDR
+//`endif //  `ifdef USE_DDR
    input                    clk,
    input                    reset,
    output                   trap
