@@ -1,4 +1,9 @@
-$(ETHCLKGEN_DIR)/config.mk
+ifeq ($(filter ETHCLOCKGEN, $(HW_MODULES)),)
+
+include $(ETHCLOCKGEN_DIR)/config.mk
+
+#add itself to HW_MODULES list
+HW_MODULES+=ETHCLOCKGEN
 
 #import module
 include $(LIB_DIR)/hardware/iob_reg/hardware.mk
@@ -10,7 +15,7 @@ VHDR+=$(LIB_DIR)/hardware/include/iob_lib.vh $(LIB_DIR)/hardware/include/iob_gen
 INCLUDE+=$(incdir). $(incdir)$(LIB_DIR)/hardware/include
 
 #sources
-VSRC+=$(ETHCLKGEN_SRC_DIR)/iob_ethclockgen.v
+VSRC+=$(ETHCLOCKGEN_SRC_DIR)/iob_ethclockgen.v
 
 ethclockgen-hw-clean: ethclockgen-gen-clean
 	@rm -f *.v *.vh

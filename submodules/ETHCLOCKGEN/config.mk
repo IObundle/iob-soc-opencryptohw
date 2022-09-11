@@ -3,8 +3,8 @@ SHELL:=/bin/bash
 TOP_MODULE=iob_ethclockgen
 
 #PATHS
-LIB_DIR ?=$(ETHCLKGEN_DIR)/submodules/LIB
-ETHCLKGEN_SRC_DIR:=$(ETHCLKGEN_DIR)/hardware/src
+LIB_DIR ?=$(ETHCLOCKGEN_DIR)/submodules/LIB
+ETHCLOCKGEN_SRC_DIR:=$(ETHCLOCKGEN_DIR)/hardware/src
 
 # VERSION
 VERSION ?=V0.1

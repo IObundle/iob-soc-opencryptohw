@@ -24,4 +24,4 @@
 	url = git@github.com:IObundle/iob-vexriscv.git
 [submodule "submodules/TESTER"]
 	path = submodules/TESTER
-	url = git@github.com:arturum1/iob-soc-tester.git
+	url = git@github.com:IObundle/iob-soc-tester.git

@@ -38,7 +38,7 @@ SIMULATOR:=verilator
 #BOARD:=CYCLONEV-GT-DK
 
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
-PERIPHERALS+=UART ETHERNET ETHCLOCKGEN
+PERIPHERALS+=UART ETHERNET ETHERNET ETHCLOCKGEN
 
 # Submodule paths for Tester peripherals (listed above)
 ETHERNET_DIR=$($(UUT_NAME)_DIR)/submodules/ETHERNET
