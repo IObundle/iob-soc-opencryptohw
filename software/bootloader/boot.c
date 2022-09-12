@@ -7,7 +7,7 @@
 
 //defined here (and not in periphs.h) because it is the only peripheral used
 //by the bootloader
-#define UART_BASE (1<<P) |(UART<<(ADDR_W-2-N_SLAVES_W))
+#define UART_BASE (1<<P) |(UART0<<(P-N_SLAVES_W))
 
 #define PROGNAME "IOb-Bootloader"
 
@@ -48,7 +48,7 @@ int main() {
   int file_size = 0;
   char r_fw[] = "firmware.bin";
   if (uart_getc() == FRX) {//file receive: load firmware
-    file_size = uart_recvfile(r_fw, &prog_start_addr);
+    file_size = uart_recvfile(r_fw, prog_start_addr);
     uart_puts (PROGNAME);
     uart_puts (": Loading firmware...\n");
   }
@@ -67,7 +67,5 @@ int main() {
 #ifdef RUN_EXTMEM
   while( !cache_wtb_empty() );
 #endif
-  //reboot and run firmware (not bootloader)
-  *((int *) BOOTCTR_BASE) = 0b10;
-  
+
 }

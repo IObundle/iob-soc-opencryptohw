@@ -14,8 +14,18 @@ EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
 
-#peripherals (pc)
-$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.mk))
+#
+# ADD SUBMODULES PC-EMUL
+#
+
+#uart
+include $(UART_DIR)/software/pc-emul/pc-emul.mk
+
+#timer
+include $(TIMER_DIR)/software/pc-emul/pc-emul.mk
+
+#ethernet
+include $(ETHERNET_DIR)/software/pc-emul/pc-emul.mk
 
 #HEADERS
 HDR+=periphs.h 
@@ -47,10 +57,10 @@ fw_emul: $(HDR) $(SRC)
 run: build
 	@rm -f soc2cnsl cnsl2soc
 	$(CONSOLE_CMD) $(TEST_LOG) &
-	./fw_emul $(TEST_LOG)
+	bash -c "trap 'make kill-cnsl' INT TERM KILL EXIT; ./fw_emul $(TEST_LOG)"
 	@make clean-eth-socket
 
-clean:
+clean: kill-cnsl
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
 	@make -C $(SW_DIR)/python clean

@@ -100,17 +100,17 @@ int main()
   char *dout_fp = NULL;
 
   //init uart
-  uart_init(UART_BASE,FREQ/BAUD);   
+  uart_init(UART0_BASE,FREQ/BAUD);   
 
   //init timer
-  timer_init(TIMER_BASE);
+  timer_init(TIMER0_BASE);
 
   //init ethernet
-  eth_init(ETHERNET_BASE);
+  eth_init(ETHERNET0_BASE);
 
 #ifdef SIM
   //Receive input data from uart
-  din_size = uart_recvfile("sim_in.bin", &din_fp);
+  din_size = uart_recvfile("sim_in.bin", din_fp);
 #else
   //Receive input data from ethernet
   din_size = eth_rcv_variable_file(din_fp);

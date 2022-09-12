@@ -42,8 +42,12 @@ INIT_MEM ?=1
 RMAC_ADDR=4437e6a6893b
 
 #PERIPHERAL LIST
-#must match respective submodule CORE_NAME in the core.mk file of the submodule
-#PERIPHERALS:=UART
+#list with corename of peripherals to be attached to peripheral bus.
+#to include multiple instances, write the corename of the peripheral multiple times.
+#to pass verilog parameters to each instance, type the parameters inside parenthesis.
+#Example: 'PERIPHERALS ?=UART[1,\"textparam\"] UART UART' will create 3 UART instances, 
+#         the first one will be instantiated with verilog parameters 1 and "textparam", 
+#         the second and third will use default parameters.
 PERIPHERALS ?=UART TIMER ETHERNET
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
@@ -103,11 +107,22 @@ BOOT_DIR:=$(SW_DIR)/bootloader
 CONSOLE_DIR:=$(SW_DIR)/console
 SW_TEST_DIR:=$(SW_DIR)/test
 
+#scripts paths
+PYTHON_DIR=$(LIB_DIR)/software/python
+
 #hw paths
 HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
+
+#doc paths
 DOC_DIR=$(ROOT_DIR)/document
+
+#macro to return all defined directories separated by newline
+GET_DIRS= $(eval ROOT_DIR_TMP=.)\
+          $(foreach V,$(sort $(.VARIABLES)),\
+          $(if $(filter %_DIR, $V),\
+          $(eval TMP_VAR:=$(subst ROOT_DIR,ROOT_DIR_TMP,$(value $V)))$V=$(TMP_VAR);))
 
 #define macros
 DEFINE+=$(defmacro)DATA_W=$(DATA_W)
@@ -116,17 +131,13 @@ DEFINE+=$(defmacro)BOOTROM_ADDR_W=$(BOOTROM_ADDR_W)
 DEFINE+=$(defmacro)SRAM_ADDR_W=$(SRAM_ADDR_W)
 DEFINE+=$(defmacro)FIRM_ADDR_W=$(FIRM_ADDR_W)
 DEFINE+=$(defmacro)DCACHE_ADDR_W=$(DCACHE_ADDR_W)
-DEFINE+=$(defmacro)N_SLAVES=$(N_SLAVES) #peripherals
+DEFINE+=$(defmacro)N_SLAVES=$(shell $(SW_DIR)/python/submodule_utils.py get_n_slaves "$(PERIPHERALS)") #peripherals
+DEFINE+=$(defmacro)N_SLAVES_W=$(shell $(SW_DIR)/python/submodule_utils.py get_n_slaves_w "$(PERIPHERALS)")
 
 #address selection bits
 E:=31 #extra memory bit
-ifeq ($(USE_DDR),1)
 P:=30 #periphs
 B:=29 #boot controller
-else
-P:=31
-B:=30
-endif
 
 DEFINE+=$(defmacro)E=$E
 DEFINE+=$(defmacro)P=$P
@@ -135,22 +146,18 @@ DEFINE+=$(defmacro)B=$B
 #PERIPHERAL IDs
 #assign a sequential ID to each peripheral
 #the ID is used as an instance name index in the hardware and as a base address in the software
-N_SLAVES:=0
-$(foreach p, $(PERIPHERALS), $(eval $p=$(N_SLAVES)) $(eval N_SLAVES:=$(shell expr $(N_SLAVES) \+ 1)))
-$(foreach p, $(PERIPHERALS), $(eval DEFINE+=$(defmacro)$p=$($p)))
-
-N_SLAVES_W = $(shell echo "import math; print(math.ceil(math.log($(N_SLAVES),2)))"|python3 )
-DEFINE+=$(defmacro)N_SLAVES_W=$(N_SLAVES_W)
-
-
-#default baud and system clock freq
-BAUD ?=5000000 #simulation default
-FREQ ?=100000000
-
-SHELL = /bin/bash
+DEFINE+=$(shell $(SW_DIR)/python/submodule_utils.py get_defines "$(PERIPHERALS)" "$(defmacro)")
 
 #RULES
+
+#kill "console", the background running program seriving simulators,
+#emulators and boards
+CNSL_PID:=ps aux | grep $(USER) | grep console | grep python3 | grep -v grep
+kill-cnsl:
+	@if [ "`$(CNSL_PID)`" ]; then \
+	kill -9 $$($(CNSL_PID) | awk '{print $$2}'); fi
+
 gen-clean:
 	@rm -f *# *~
 
-.PHONY: gen-clean
+.PHONY: gen-clean kill-cnsl
