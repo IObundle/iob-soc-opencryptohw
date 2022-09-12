@@ -11,6 +11,7 @@ software/*/*
 !software/*/*.py
 !software/*/*.rsp
 !software/*/*.c
+software/*/*swreg*.c
 
 !software/bootloader/boot.c
 !software/bootloader/boot.S
