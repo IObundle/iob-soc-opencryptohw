@@ -15,9 +15,6 @@ include $(UART_DIR)/software/embedded/embedded.mk
 #timer
 include $(TIMER_DIR)/software/embedded/embedded.mk
 
-#ethernet
-include $(ETHERNET_DIR)/software/embedded/embedded.mk
-
 #versat
 include $(VERSAT_DIR)/software/embedded/embedded.mk
 
@@ -53,7 +50,6 @@ firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h *swreg.h \
 		*swreg_emb.c \
-		*d_in.bin *d_out.bin \
-		eth_frame_struct.h
+		*d_in.bin *d_out.bin
 
 .PHONY: build clean

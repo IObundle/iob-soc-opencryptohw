@@ -113,3 +113,4 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 .PHONY: build run \
 	test validate profile \
 	clean
+

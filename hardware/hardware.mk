@@ -1,6 +1,3 @@
-#default baud rate for hardware
-BAUD ?=115200
-
 include $(ROOT_DIR)/config.mk
 
 #add itself to MODULES list
@@ -13,13 +10,15 @@ HW_MODULES+=$(IOBSOC_NAME)
 #include LIB modules
 include $(LIB_DIR)/hardware/iob_merge/hardware.mk
 include $(LIB_DIR)/hardware/iob_split/hardware.mk
+include $(LIB_DIR)/hardware/iob_pulse_gen/hardware.mk
+include $(LIB_DIR)/hardware/iob_edge_detect/hardware.mk
 
 #include MEM modules
 include $(MEM_DIR)/hardware/rom/iob_rom_sp/hardware.mk
 include $(MEM_DIR)/hardware/ram/iob_ram_dp_be/hardware.mk
 
 #CPU
-include $(VEXRISCV_DIR)/hardware/hardware.mk
+include $(PICORV32_DIR)/hardware/hardware.mk
 
 #CACHE
 include $(CACHE_DIR)/hardware/hardware.mk
@@ -29,9 +28,6 @@ include $(UART_DIR)/hardware/hardware.mk
 
 #TIMER
 include $(TIMER_DIR)/hardware/hardware.mk
-
-#ETHERNET
-include $(ETHERNET_DIR)/hardware/hardware.mk
 
 #VERSAT
 include $(VERSAT_DIR)/hardware/hardware.mk
@@ -44,13 +40,19 @@ INC_DIR:=$(HW_DIR)/include
 SRC_DIR:=$(HW_DIR)/src
 
 #DEFINES
-DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W) $(defmacro)AXI_ADDR_W=32
+DEFINE+=$(defmacro)DDR_DATA_W=$(DDR_DATA_W)
+DEFINE+=$(defmacro)DDR_ADDR_W=$(DDR_ADDR_W)
 
 #INCLUDES
 INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
 
 #HEADERS
 VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
+
+#axi wires to connect cache to external memory in system top
+VHDR+=m_axi_wire.vh
+m_axi_wire.vh:
+	$(LIB_DIR)/software/python/axi_gen.py axi_wire 'm_' 'm_' 'm_'
 
 #SOURCES
 
@@ -80,8 +82,6 @@ system.v: $(SRC_DIR)/system_core.v
 	$(foreach p, $(PERIPHERALS), if test -f $($p_DIR)/hardware/include/inst.vh; then sed -i '/endmodule/e cat $($p_DIR)/hardware/include/inst.vh' $@; fi;) # insert peripheral instances
 
 # make and copy memory init files
-PYTHON_DIR=$(MEM_DIR)/software/python
-
 boot.hex: $(BOOT_DIR)/boot.bin
 	$(PYTHON_DIR)/makehex.py $< $(BOOTROM_ADDR_W) > $@
 
@@ -91,7 +91,6 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 
 #clean general hardware files
 hw-clean: gen-clean
-	@rm -f $(SRC_DIR)/GeneratedUnits/*.v $(SRC_DIR)/versat_instance.v $(INC_DIR)/versat_defs.vh
-	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v
+	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v $(SRC_DIR)/GeneratedUnits/*.v $(SRC_DIR)/versat_instance.v $(INC_DIR)/versat_defs.vh
 
 .PHONY: hw-clean
