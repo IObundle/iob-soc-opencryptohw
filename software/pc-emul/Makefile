@@ -58,13 +58,10 @@ fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
 	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -pthread
 	
 run: build
-	mkdir -p debug
-	mkdir -p src
+	@mkdir $(HW_DIR)/src/GeneratedUnits/
+	@mkdir -p debug
+	@mkdir -p src
 	./fw_emul $(TEST_LOG)
-	#@rm -f soc2cnsl cnsl2soc
-	#$(CONSOLE_CMD) $(TEST_LOG) &
-	#./fw_emul $(TEST_LOG)
-	#@make clean-eth-socket
 	cp versat_instance.v $(HW_DIR)/src/
 	cp versat_defs.vh $(HW_DIR)/include/
 	cp versat_data.inc $(FIRM_DIR)/
@@ -81,6 +78,7 @@ clean:
 	@rm -f -r ./debug
 	@rm -f -r ./src
 	@rm -f -r ./trace_out
+	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 
 test: 
 	make run
