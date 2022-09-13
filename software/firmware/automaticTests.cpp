@@ -843,6 +843,7 @@ TEST(AESRound){
 static void FillAES(FUInstance* inst){
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
    for(int i = 0; i < 10; i++){
+      printf("%d\n",i);
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
@@ -850,7 +851,9 @@ static void FillAES(FUInstance* inst){
       FillSBox(GetInstanceByName(inst,"subBytes"));
    }
 
+   printf("\n");
    for(int i = 0; i < 9; i++){
+      printf("%d\n",i);
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -977,7 +980,10 @@ TEST(SimpleMerge){
 #endif
 
 #define TEST_INST(ENABLED,TEST_NAME) do { if(ENABLE_TEST( ENABLED )){ \
-      info += TEST_NAME(versat,currentTest); \
+      TestInfo test = TEST_NAME(versat,currentTest); \
+      if(test.testsPassed == test.numberTests) printf("%32s [%02d] - OK\n",#TEST_NAME,currentTest); \
+      info += test; \
+     \
    } \
    currentTest += 1; } while(0)
 
@@ -997,7 +1003,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,Convolution);
    TEST_INST( 1 ,MatrixMultiplication);
    TEST_INST( 1 ,MatrixMultiplicationVRead);
-   TEST_INST( 1 ,SimpleMerge);
+   TEST_INST( 0 ,SimpleMerge);
    TEST_INST( 1 ,VersatAddRoundKey);
    TEST_INST( 1 ,LookupTable);
    TEST_INST( 1 ,VersatSubBytes);
