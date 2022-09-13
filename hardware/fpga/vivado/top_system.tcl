@@ -40,7 +40,7 @@ if { $USE_DDR < 0 } {
 
         set_property -dict \
             [list \
-                 CONFIG.NUM_SLAVE_PORTS {1}\
+                 CONFIG.NUM_SLAVE_PORTS {2}\
                  CONFIG.AXI_ADDR_WIDTH {30}\
                  CONFIG.ACLK_PERIOD {5000} \
                  CONFIG.INTERCONNECT_DATA_WIDTH {32}\
@@ -49,7 +49,10 @@ if { $USE_DDR < 0 } {
                  CONFIG.M00_AXI_READ_FIFO_DEPTH {32}\
                  CONFIG.S00_AXI_IS_ACLK_ASYNC {1}\
                  CONFIG.S00_AXI_READ_FIFO_DEPTH {32}\
-                 CONFIG.S00_AXI_WRITE_FIFO_DEPTH {32}] [get_ips axi_interconnect_0]
+                 CONFIG.S00_AXI_WRITE_FIFO_DEPTH {32}\
+                 CONFIG.S01_AXI_IS_ACLK_ASYNC {1}\
+                 CONFIG.S01_AXI_READ_FIFO_DEPTH {32}\
+                 CONFIG.S01_AXI_WRITE_FIFO_DEPTH {32}] [get_ips axi_interconnect_0]
 
         generate_target all [get_files ./ip/axi_interconnect_0/axi_interconnect_0.xci]
 
@@ -61,7 +64,7 @@ if { $USE_DDR < 0 } {
     }
     
     if { [file isdirectory "./ip/ddr4_0"] } {
-	read_ip ./ip/ddr4_0/ddr4_0.xci
+    read_ip ./ip/ddr4_0/ddr4_0.xci
         report_property [get_files ./ip/ddr4_0/ddr4_0.xci]
     } else {
 
@@ -81,7 +84,7 @@ if { $USE_DDR < 0 } {
              CONFIG.C0.DDR4_AxiAddressWidth {30} \
              CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
              CONFIG.C0.BANK_GROUP_WIDTH {1}] [get_ips ddr4_0]
-	
+    
         generate_target all [get_files ./ip/ddr4_0/ddr4_0.xci]
 
         report_property [get_ips ddr4_0]

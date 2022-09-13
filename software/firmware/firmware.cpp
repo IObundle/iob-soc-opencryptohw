@@ -225,6 +225,9 @@ int main(int argc,const char* argv[])
 {
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
+
+   printf("here\n");
+
    timer_init(TIMER_BASE);
 
    printf("Init base modules\n");

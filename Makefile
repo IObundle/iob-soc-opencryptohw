@@ -49,7 +49,7 @@ HW_DIR=./hardware
 # SIMULATE RTL
 #
 #default simulator running locally or remotely
-SIMULATOR ?=icarus
+SIMULATOR ?=verilator
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 #default baud and system clock frequency
 SIM_BAUD = 2500000
@@ -84,7 +84,7 @@ sim-debug:
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
 #default board running locally or remotely
-BOARD ?=CYCLONEV-GT-DK
+BOARD ?=AES-KU040-DB-G
 BOARD_DIR =$(shell find hardware -name $(BOARD))
 #default baud and system clock freq for boards
 BOARD_BAUD = 115200

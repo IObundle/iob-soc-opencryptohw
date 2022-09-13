@@ -58,7 +58,7 @@ fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
 	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -pthread
 	
 run: build
-	@mkdir $(HW_DIR)/src/GeneratedUnits/
+	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
 	@mkdir -p debug
 	@mkdir -p src
 	./fw_emul $(TEST_LOG)

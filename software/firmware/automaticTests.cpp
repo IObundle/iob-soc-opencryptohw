@@ -518,7 +518,7 @@ TEST(VersatAddRoundKey){
                               0xfe,0x2c,0x39,0x76,
                               0x17,0xb1,0x39,0x05);
 
-   char* expected = "0xa4 0x68 0x6b 0x02 0x9c 0x9f 0x5b 0x6a 0x7f 0x35 0xea 0x50 0xf2 0x2b 0x43 0x49 ";
+   const char* expected = "0xa4 0x68 0x6b 0x02 0x9c 0x9f 0x5b 0x6a 0x7f 0x35 0xea 0x50 0xf2 0x2b 0x43 0x49 ";
 
    char buffer[1024];
    char* ptr = buffer;
@@ -843,7 +843,7 @@ TEST(AESRound){
 static void FillAES(FUInstance* inst){
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
    for(int i = 0; i < 10; i++){
-      printf("%d\n",i);
+      //printf("%d\n",i);
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
@@ -851,9 +851,9 @@ static void FillAES(FUInstance* inst){
       FillSBox(GetInstanceByName(inst,"subBytes"));
    }
 
-   printf("\n");
+   //printf("\n");
    for(int i = 0; i < 9; i++){
-      printf("%d\n",i);
+      //printf("%d\n",i);
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -992,7 +992,7 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-   #if 1
+   #if 0
    SetDebug(versat,true);
    #endif
 

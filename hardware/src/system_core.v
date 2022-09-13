@@ -23,8 +23,52 @@ module system
           
           
 `ifdef USE_DDR 
-//AXI MASTER INTERFACE
- `include "m_axi_m_port.vh"
+   //address write
+   output [2*1-1:0]        m_axi_awid,
+   output [2*`DDR_ADDR_W-1:0]  m_axi_awaddr,
+   output [2*8-1:0]        m_axi_awlen,
+   output [2*3-1:0]        m_axi_awsize,
+   output [2*2-1:0]        m_axi_awburst,
+   output [2*1-1:0]        m_axi_awlock,
+   output [2*4-1:0]        m_axi_awcache,
+   output [2*3-1:0]        m_axi_awprot,
+   output [2*4-1:0]        m_axi_awqos,
+   output [2*1-1:0]      m_axi_awvalid,
+   input [2*1-1:0]       m_axi_awready,
+
+   //write
+   output [2*32-1:0]   m_axi_wdata,
+   output [2*32/8-1:0] m_axi_wstrb,
+   output [2*1-1:0]      m_axi_wlast,
+   output [2*1-1:0]      m_axi_wvalid,
+   input [2*1-1:0]       m_axi_wready,
+
+   //write response
+    input [2*1-1:0]      m_axi_bid,
+   input [2*2-1:0]       m_axi_bresp,
+   input [2*1-1:0]       m_axi_bvalid,
+   output [2*1-1:0]      m_axi_bready,
+
+   //address read
+   output [2*1-1:0]        m_axi_arid,
+   output [2*`DDR_ADDR_W-1:0]  m_axi_araddr,
+   output [2*8-1:0]        m_axi_arlen,
+   output [2*3-1:0]        m_axi_arsize,
+   output [2*2-1:0]        m_axi_arburst,
+   output [2*1-1:0]        m_axi_arlock,
+   output [2*4-1:0]        m_axi_arcache,
+   output [2*3-1:0]        m_axi_arprot,
+   output [2*4-1:0]        m_axi_arqos,
+   output [2*1-1:0]      m_axi_arvalid,
+   input [2*1-1:0]       m_axi_arready,
+
+   //read
+    input [2*1-1:0]      m_axi_rid,
+   input [2*32-1:0]  m_axi_rdata,
+   input [2*2-1:0]       m_axi_rresp,
+   input [2*1-1:0]       m_axi_rlast,
+   input [2*1-1:0]       m_axi_rvalid,
+   output [2*1-1:0]      m_axi_rready,
 `endif
           
 `include "iob_gen_if.vh"
@@ -245,7 +289,51 @@ module system
       .d_resp (ext_mem_d_resp),
 
       //AXI INTERFACE 
-`include "m_axi_portmap.vh"
+
+      //AXI INTERFACE 
+      //address write
+      .m_axi_awid(m_axi_awid[0*1+:1]), 
+      .m_axi_awaddr(m_axi_awaddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]), 
+      .m_axi_awlen(m_axi_awlen[0*8+:8]), 
+      .m_axi_awsize(m_axi_awsize[0*3+:3]), 
+      .m_axi_awburst(m_axi_awburst[0*2+:2]), 
+      .m_axi_awlock(m_axi_awlock[0*1+:1]), 
+      .m_axi_awcache(m_axi_awcache[0*4+:4]), 
+      .m_axi_awprot(m_axi_awprot[0*3+:3]),
+      .m_axi_awqos(m_axi_awqos[0*4+:4]), 
+      .m_axi_awvalid(m_axi_awvalid[0*1+:1]), 
+      .m_axi_awready(m_axi_awready[0*1+:1]), 
+        //write
+      .m_axi_wdata(m_axi_wdata[0*32+:32]), 
+      .m_axi_wstrb(m_axi_wstrb[0*32/8+:32/8]), 
+      .m_axi_wlast(m_axi_wlast[0*1+:1]), 
+      .m_axi_wvalid(m_axi_wvalid[0*1+:1]), 
+      .m_axi_wready(m_axi_wready[0*1+:1]), 
+      //write response
+      .m_axi_bid(m_axi_bid[0]), 
+      .m_axi_bresp(m_axi_bresp[0*2+:2]), 
+      .m_axi_bvalid(m_axi_bvalid[0*1+:1]), 
+      .m_axi_bready(m_axi_bready[0*1+:1]), 
+      //address read
+      .m_axi_arid(m_axi_arid[0*1+:1]), 
+      .m_axi_araddr(m_axi_araddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]), 
+      .m_axi_arlen(m_axi_arlen[0*8+:8]), 
+      .m_axi_arsize(m_axi_arsize[0*3+:3]), 
+      .m_axi_arburst(m_axi_arburst[0*2+:2]), 
+      .m_axi_arlock(m_axi_arlock[0*1+:1]), 
+      .m_axi_arcache(m_axi_arcache[0*4+:4]), 
+      .m_axi_arprot(m_axi_arprot[0*3+:3]), 
+      .m_axi_arqos(m_axi_arqos[0*4+:4]), 
+      .m_axi_arvalid(m_axi_arvalid[0*1+:1]), 
+      .m_axi_arready(m_axi_arready[0*1+:1]), 
+      //read 
+      .m_axi_rid(m_axi_rid[0]), 
+      .m_axi_rdata(m_axi_rdata[0*32+:32]), 
+      .m_axi_rresp(m_axi_rresp[0*2+:2]), 
+      .m_axi_rlast(m_axi_rlast[0*1+:1]), 
+      .m_axi_rvalid(m_axi_rvalid[0*1+:1]),  
+      .m_axi_rready(m_axi_rready[0*1+:1]),
+
       .clk (clk),
       .rst (cpu_reset)
       );
