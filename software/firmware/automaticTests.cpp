@@ -572,6 +572,12 @@ static void FillSBox(FUInstance* inst){
    }
 }
 
+static void FillSubBytes(FUInstance* inst){
+   for(int i = 0; i < 8; i++){
+      FillSBox(GetInstanceByName(inst,"s%d",i));
+   }
+}
+
 TEST(VersatSubBytes){
    #if 0
    int input[] = {0x19,0xa0,0x9a,0xe9,
@@ -590,9 +596,7 @@ TEST(VersatSubBytes){
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
    #if 1
-   for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(accel,"Test","s%d",i));
-   }
+   FillSubBytes(inst);
    #endif
 
    int* out = TestInstance(versat,accel,inst,16,16,0x19,0xa0,0x9a,0xe9,0x3d,0xf4,0xc6,0xf8,0xe3,0xe2,0x8d,0x48,0xbe,0x2b,0x2a,0x08);
@@ -625,6 +629,8 @@ TEST(VersatShiftRows){
                   0x27,0xbf,0xb4,0x41,
                   0x11,0x98,0x5d,0x52,
                   0xae,0xf1,0xe5,0x30);
+
+   //OutputMemoryMap(versat,accel);
 
    SetDebug(versat,tmp);
 
@@ -843,17 +849,17 @@ TEST(AESRound){
 static void FillAES(FUInstance* inst){
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
    for(int i = 0; i < 10; i++){
-      //printf("%d\n",i);
+      printf("%d\n",i);
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
       FillKeySchedule(GetInstanceByName(inst,"key%d",i));
-      FillSBox(GetInstanceByName(inst,"subBytes"));
    }
+   FillSubBytes(GetInstanceByName(inst,"subBytes"));
 
-   //printf("\n");
+   printf("\n");
    for(int i = 0; i < 9; i++){
-      //printf("%d\n",i);
+      printf("%d\n",i);
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -887,6 +893,8 @@ TEST(AES){
    return EXPECT("0x39 0x02 0xdc 0x19 0x25 0xdc 0x11 0x6a 0x84 0x09 0x85 0x0b 0x1d 0xfb 0x97 0x32 ",buffer);
 }
 
+int ClearCache();
+
 TEST(ReadWriteAES){
    int cypher[] = {0x32,0x88,0x31,0xe0,
                   0x43,0x5a,0x31,0x37,
@@ -908,9 +916,15 @@ TEST(ReadWriteAES){
 
    FillAES(GetInstanceByName(accel,"Test","aes"));
 
+   ClearCache();
+   printf("Cleared cache\n");
    AcceleratorRun(accel);
+   ClearCache();
    AcceleratorRun(accel);
+   ClearCache();
    AcceleratorRun(accel);
+   ClearCache();
+   printf("Cleared cache again\n");
 
    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 

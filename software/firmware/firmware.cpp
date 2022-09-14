@@ -73,9 +73,9 @@ int ClearCache(){
 
    return lastValue;
 #else
-   volatile int* ptr = (volatile int*) 0;
+   volatile int* ptr = (volatile int*) (EXTRA_BASE);
    int sum = 0;
-   for(int i = 0; i < 4096 * 16; i += 4096){
+   for(int i = 0; i < 4096 * 4096; i += 4096){
       int val = ptr[i];
       sum += val;
    }
@@ -225,9 +225,6 @@ int main(int argc,const char* argv[])
 {
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
-
-   printf("here\n");
-
    timer_init(TIMER_BASE);
 
    printf("Init base modules\n");

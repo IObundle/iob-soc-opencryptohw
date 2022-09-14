@@ -32,7 +32,7 @@ fw-debug:
 PC_DIR:=$(SW_DIR)/pc-emul
 pc-emul-build:
 	make fw-build
-	make -C $(PC_DIR)
+	make -C $(PC_DIR) build
 
 pc-emul-run: pc-emul-build
 	make -C $(PC_DIR) run
@@ -93,6 +93,9 @@ BOARD_FREQ ?=100000000
 ifeq ($(BOARD), CYCLONEV-GT-DK)
 BOARD_FREQ =50000000
 endif
+
+fpga-fw-build:
+	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
 fpga-build:
 	make -C $(PC_DIR) run
