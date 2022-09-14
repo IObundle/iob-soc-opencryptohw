@@ -32,6 +32,9 @@ pc-emul-profile:
 	make fw-build BAUD=5000000 PROFILE=1
 	make -C $(PC_DIR) profile
 
+pc-emul-output-versat:
+	make -C $(PC_DIR) output-versat OUTPUT_VERSAT_DST=$(OUTPUT_VERSAT_DST)
+
 #
 # SIMULATE RTL
 #
