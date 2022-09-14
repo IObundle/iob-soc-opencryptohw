@@ -35,6 +35,10 @@ DEFINE+=$(defmacro)SIM=$(SIM)
 
 #SOURCES
 
+# xunit tests
+XUNITM_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitM_tb.v
+XUNITF_VSRC+=$(HW_DIR)/simulation/verilog_tb/test_xunitF_tb.v
+
 #verilog testbench
 TB_DIR:=$(HW_DIR)/simulation/verilog_tb
 
@@ -108,6 +112,11 @@ system_top.v: $(TB_DIR)/system_top_core.v
 
 #add peripheral testbench sources
 VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $($p_DIR)/hardware/testbench/module_tb.sv; then echo $($p_DIR)/hardware/testbench/module_tb.sv; fi;)) 
+
+spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)
+
+$(XUNITM_VSRC) $(XUNITF_VSRC):
+	make -C $(SPINAL_DIR) rtl/$(notdir $@)
 
 kill-remote-sim:
 	@echo "INFO: Remote simulator $(SIMULATOR) will be killed"

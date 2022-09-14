@@ -51,7 +51,7 @@ USE_MUL_DIV ?=1
 USE_COMPRESSED ?=1
 
 #ROOT DIRECTORY ON REMOTE MACHINES
-REMOTE_ROOT_DIR ?=sandbox/iob-soc-sha
+REMOTE_ROOT_DIR ?=sandbox/iob-soc-opencryptohw
 
 #SIMULATION
 #default simulator running locally or remotely
