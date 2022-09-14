@@ -46,5 +46,5 @@ jobs:
           submodules: 'recursive'
       - name: test-clean
         run: make test-clean
-      - name: test-pc-emul
+      - name: generate versat instance
         run: make pc-emul-output-versat
