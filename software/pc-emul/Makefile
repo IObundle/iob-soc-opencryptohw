@@ -26,6 +26,9 @@ SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= ./ila.c
+
+INCLUDE+=$(incdir)./build
 
 SOC_OUT_BIN:=soc-out.bin
 

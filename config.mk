@@ -39,7 +39,7 @@ INIT_MEM ?=1
 #PERIPHERAL LIST
 #must match respective submodule CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART TIMER VERSAT
+PERIPHERALS ?=UART TIMER VERSAT ILA
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
 USE_MUL_DIV ?=1
@@ -93,6 +93,9 @@ MEM_DIR=$(ROOT_DIR)/submodules/MEM
 AXI_DIR=$(ROOT_DIR)/submodules/AXI
 TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
 VERSAT_DIR=$(ROOT_DIR)/submodules/VERSAT
+ILA_DIR=$(ROOT_DIR)/submodules/ILA
+
+ILA_PYTHON_DIR=$(ILA_DIR)/software/python
 
 #sw paths
 SW_DIR:=$(ROOT_DIR)/software

@@ -72,7 +72,7 @@ module MatrixMultiplicationVread(){
 
    ma -> res;
 }
- 
+
 module ConvolutionStage(previous){
    VRead pixels;
    static Mem weights;

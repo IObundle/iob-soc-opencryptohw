@@ -12,6 +12,7 @@ extern "C"{
 #include "string.h"
 
 #include "iob-timer.h"
+#include "iob-ila.h"
 
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
@@ -74,11 +75,13 @@ int ClearCache(){
    return lastValue;
 #else
    volatile int* ptr = (volatile int*) (EXTRA_BASE);
-   int sum = 0;
-   for(int i = 0; i < 4096 * 4096; i += 4096){
+   static int sum = 0;
+   for(int i = 0; i < 4096 * 256; i += 1){
       int val = ptr[i];
       sum += val;
    }
+
+   printf("[Ignore]%d\n\n",sum);
    return sum;
 #endif
 }
@@ -226,6 +229,7 @@ int main(int argc,const char* argv[])
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
    timer_init(TIMER_BASE);
+   ila_init(ILA_BASE);
 
    printf("Init base modules\n");
 
@@ -282,7 +286,6 @@ int main(int argc,const char* argv[])
    printf("\n");
 #endif
 
-   Hook(versat,nullptr,nullptr);
    uart_finish();
 
    return 0;

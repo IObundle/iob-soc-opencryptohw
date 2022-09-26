@@ -32,6 +32,9 @@ include $(TIMER_DIR)/hardware/hardware.mk
 #VERSAT
 include $(VERSAT_DIR)/hardware/hardware.mk
 
+#ILA
+include $(ILA_DIR)/hardware/hardware.mk
+
 #AXI
 include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
 

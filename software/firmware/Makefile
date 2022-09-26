@@ -18,6 +18,9 @@ include $(TIMER_DIR)/software/embedded/embedded.mk
 #versat
 include $(VERSAT_DIR)/software/embedded/embedded.mk
 
+#ila
+include $(ILA_DIR)/software/embedded/embedded.mk
+
 #HEADERS
 HDR+=periphs.h
 
@@ -26,6 +29,7 @@ SRC+= firmware.S firmware.cpp $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= $(FIRM_DIR)/ila.c
 
 #PROFILE
 ifeq ($(PROFILE),1)

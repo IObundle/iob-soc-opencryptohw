@@ -196,7 +196,7 @@ module top_system
       .m_axi_rresp   (sys_rresp),
       .m_axi_rlast   (sys_rlast),
       .m_axi_rvalid  (sys_rvalid),
-      .m_axi_rready  (sys_rready),  
+      .m_axi_rready  (sys_rready),
 `endif
 
       //UART

@@ -11,7 +11,7 @@ SIM_PROC=a.out
 include ../simulation.mk
 
 #simulator flags
-VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE)
+VLOG = iverilog -pfileline=1 -ptrace=off -W all -g2005-sv $(INCLUDE) $(DEFINE)
 
 comp: $(SIM_PROC)
 

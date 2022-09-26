@@ -97,20 +97,20 @@ if { $USE_DDR < 0 } {
 
 }
 
+file mkdir reports
 
-synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $TOP
+synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $TOP -debug_log -verbose
+report_utilization -hierarchical -file reports/synth_utilization.txt
 
-opt_design
+opt_design -debug_log -verbose
+report_timing_summary -file reports/opt_timing.txt -max_paths 30
 
 place_design
 
 route_design
 
 report_utilization
-
 report_timing
-
-file mkdir reports
 
 report_timing -file reports/timing.txt -max_paths 30
 report_clocks -file reports/clocks.txt

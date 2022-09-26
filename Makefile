@@ -6,6 +6,20 @@ ifeq ($(RUN_EXTMEM),1)
 USE_DDR=1
 endif
 
+ILA_DIR=./submodules/ILA
+ILA_PYTHON_DIR=$(ILA_DIR)/software/python
+ila-build: ilaFormat.txt
+	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
+	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
+	cp ila.c $(FIRM_DIR)/
+	cp ila.c $(PC_DIR)/
+
+ila-generate-vcd: ilaFormat.txt ilaData.txt
+	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd
+
+ila-clean:
+	@rm -f $(HW_DIR)/include/signal_inst.vh $(FIRM_DIR)/ila.c $(PC_DIR)/ila.c ila.c
+
 #
 # BUILD EMBEDDED SOFTWARE
 #
@@ -16,7 +30,7 @@ FIRM_DIR:=$(SW_DIR)/firmware
 BAUD ?=$(SIM_BAUD)
 FREQ ?=$(SIM_FREQ)
 
-fw-build:
+fw-build: ila-build
 	make -C $(FIRM_DIR) build-all
 
 fw-clean:
@@ -30,8 +44,7 @@ fw-debug:
 #
 
 PC_DIR:=$(SW_DIR)/pc-emul
-pc-emul-build:
-	make fw-build
+pc-emul-build: ila-build
 	make -C $(PC_DIR) build
 
 pc-emul-run: pc-emul-build
@@ -54,7 +67,7 @@ SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 #default baud and system clock frequency
 SIM_BAUD = 2500000
 SIM_FREQ =50000000
-sim-build:
+sim-build: ila-build
 	make -C $(PC_DIR) run
 	make fw-build
 	make -C $(SIM_DIR) build
@@ -94,15 +107,15 @@ ifeq ($(BOARD), CYCLONEV-GT-DK)
 BOARD_FREQ =50000000
 endif
 
-fpga-fw-build:
+fpga-fw-build: ila-build
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
-fpga-build:
+fpga-build: ila-build
 	make -C $(PC_DIR) run
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 	make -C $(BOARD_DIR) build
 
-fpga-run: fpga-build
+fpga-run: fpga-fw-build
 	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"
 
 fpga-clean: fw-clean
@@ -134,7 +147,7 @@ doc-test:
 # CLEAN
 #
 
-clean: pc-emul-clean sim-clean fpga-clean doc-clean
+clean: pc-emul-clean sim-clean fpga-clean doc-clean ila-clean
 
 #
 # TEST ALL PLATFORMS
@@ -191,4 +204,5 @@ debug:
 	test-fpga test-fpga-clean \
 	test-doc test-doc-clean \
 	test test-clean \
-	debug
+	debug \
+	ila-build ila-generate-vcd ila-clean
