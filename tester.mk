@@ -53,7 +53,7 @@ REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 
 #Mac address of pc interface connected to ethernet peripheral
 RMAC_ADDR:=4437e6a6893b
-ETH_IF:= $(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | awk '{print $1;}')
+ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
 
 #Configure Tester to use ethernet
 USE_ETHERNET:=1
