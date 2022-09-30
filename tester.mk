@@ -37,6 +37,10 @@ SIMULATOR:=verilator
 #check the respective Makefile in TESTER/hardware/fpga/$(BOARD) for specific settings
 #BOARD:=CYCLONEV-GT-DK
 
+#Add Unit Under Test to Tester peripherals list
+#this works even if UUT is not a "perihpheral"
+#Pass "4" as AXI_ID_W parameter to match tester.
+PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,4]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
 PERIPHERALS+=UART ETHERNET ETHERNET ETHCLOCKGEN
 
