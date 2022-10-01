@@ -65,11 +65,6 @@ SIM=1
 DEFINE+=$(defmacro)SIM=1
 endif
 
-#Set FPGA BAUD if we are not running simulation
-ifeq ($(ISSIMULATION),)
-BAUD=115200
-endif
-
 #Extra tester target dependencies
 #Run before building system
 BUILD_DEPS+=$($(UUT_NAME)_DIR)/hardware/src/system.v
