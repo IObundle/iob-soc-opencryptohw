@@ -59,7 +59,7 @@ ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
 USE_ETHERNET:=1
 DEFINE+=$(defmacro)USE_ETHERNET=1
 
-#Use ethenet in simulation mode if we are running simulation
+#Use ethernet in simulation mode if we are running simulation
 ifneq ($(ISSIMULATION),)
 SIM=1
 DEFINE+=$(defmacro)SIM=1
@@ -69,13 +69,16 @@ endif
 #Run before building system
 BUILD_DEPS+=$($(UUT_NAME)_DIR)/hardware/src/system.v
 #Run before building system for simulation
-SIM_DEPS+=set-simulation-variable
+SIM_DEPS+=set-simulation-variable $(SIM_DIR)/sim_in.bin $(SIM_DIR)/soc_out.bin
 #Run before building system for fpga
-FPGA_DEPS+=
+FPGA_DEPS+=$(BOARD_DIR)/sim_in.bin $(BOARD_DIR)/soc_out.bin
 #Run when cleaning tester
-CLEAN_DEPS+=clean-top-module
+CLEAN_DEPS+=clean-top-module clean-files
 #Run after finishing fpga run (useful to copy files from remote machines at the end of a run sequence)
 FPGA_POST_RUN_DEPS+=
+
+# Verification filename
+TEST_VECTOR_RSP ?=SHA256ShortMsg.rsp
 
 #
 else
@@ -93,6 +96,21 @@ clean-top-module:
 $($(UUT_NAME)_DIR)/software/firmware/boot.hex $($(UUT_NAME)_DIR)/software/firmware/firmware.hex:
 	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD)
 	make -C $($(UUT_NAME)_DIR)/software/firmware -f ../../hardware/hardware.mk boot.hex firmware.hex ROOT_DIR=../..
+
+#Targets to generate and copy sim_in.bin, soc_out.bin
+$($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_in.bin $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_out.bin:
+	make -C $($(UUT_NAME)_DIR)/software/test gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+
+%/sim_in.bin: $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_in.bin
+	ln -sr $< $@
+
+%/soc_out.bin: $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_out.bin
+	ln -sr $< $@
+
+#Cleanup targets
+clean-files:
+	rm -f $(SIM_DIR)/sim_in.bin $(SIM_DIR)/soc_out.bin
+	rm -f $(BOARD_DIR)/sim_in.bin $(BOARD_DIR)/soc_out.bin
 
 #Set ISSIMULATION variable
 set-simulation-variable:

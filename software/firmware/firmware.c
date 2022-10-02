@@ -164,6 +164,7 @@ int main()
   // Finish profile
   PROF_STOP(global)
 #endif
+  printf("Sending output file...\n");
 #ifdef SIM
   // send message digests via uart
   uart_sendfile("soc-out.bin", dout_size, dout_fp); 
@@ -178,5 +179,6 @@ int main()
   profile_report();
 #endif
 
+  printf("Done!\n");
   uart_finish();
 }

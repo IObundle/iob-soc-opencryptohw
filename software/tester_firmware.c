@@ -23,7 +23,7 @@
 #define OUTPUT_FILENAME "soc_out.bin"
 
 //Global buffers for messages
-char c, msgBuffer[512];
+char c, msgBuffer[1024];
 
 // Send signal by uart to receive file by ethernet
 int uart_recvfile_ethernet(char* file_name) {
@@ -96,10 +96,15 @@ int main()
   //Receive and print SUT boot messages
   relayUUTMessagesUntil("Boot complete!\n");
 
+#ifndef SIM
   //Send file receive request by ethernet
   file_size[0] = uart_recvfile_ethernet(INPUT_FILENAME);
   //Receive requested file by ethernet
   eth_rcv_file(file_buffer[0],file_size[0]);
+#else
+  //Send file receive request by UART during simulation
+  file_size[0] = uart_recvfile(INPUT_FILENAME, file_buffer[0]);
+#endif
 
   //Switch and init instance 1 of ETHERNET (Connected to SUT)
   eth_init(ETHERNET1_BASE);
@@ -107,22 +112,8 @@ int main()
   //Send input file by ethernet to SUT
   eth_send_variable_file(file_buffer[0], file_size[0]);
 
-  //Switch back to instance 1 of UART (Connected to SUT)
-  IOB_UART_INIT_BASEADDR(UART1_BASE);
-
-  //Store message received from SUT
-  for(i=0; (c=uart_getc())!='\n'; i++)
-	  msgBuffer[i] = c;
-  msgBuffer[i] = '\n';
-
-  //Switch to instance 0 of UART (Connected to console)
-  IOB_UART_INIT_BASEADDR(UART0_BASE);
-
-  //Print message previously received from SUT
-  printf("[SUT] ");
-  for(i=0; (c=msgBuffer[i])!='\n'; i++)
-	  uart_putc(c);
-  uart_putc('\n');
+  //Receive and print SUT messages while processing
+  relayUUTMessagesUntil("Sending output file...\n");
 
   //Receive output file by ethernet from SUT
   file_size[0] = eth_rcv_variable_file(file_buffer[0]);
@@ -130,16 +121,28 @@ int main()
   //Switch to instance 0 of ETHERNET (Connected to Host machine)
   IOB_ETH_INIT_BASEADDR(ETHERNET0_BASE);
 
+#ifndef SIM
   //Request to receive expected output file by ethernet from Host machine
   file_size[1] = uart_recvfile_ethernet(OUTPUT_FILENAME);
+#else
+  //Receive expected output file by UART during simulation
+  file_size[1] = uart_recvfile(OUTPUT_FILENAME, file_buffer[1]);
+#endif
+  
   //Check if file sizes are different
   if(file_size[0]!=file_size[1]){
     printf("Test failed! Output file size (%d) and expected file size (%d) are different.", file_size[0], file_size[1]);
     uart_finish();
     return -1;
   }
+
+#ifndef SIM
   //Receive expected output file by ethernet from Host machine
   eth_rcv_file(file_buffer[1],file_size[1]);
+#endif
+  
+  //Receive and print SUT final messages 
+  relayUUTMessagesUntil("Done!\n");
 
   //Check if received file is equal to expected file
   for(i=0; i<file_size[0]; i++){
