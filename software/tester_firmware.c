@@ -96,6 +96,7 @@ int main()
   //Receive and print SUT boot messages
   relayUUTMessagesUntil("Boot complete!\n");
 
+	printf("\nRequesting input file from Host Machine...\n\n");
 #ifndef SIM
   //Send file receive request by ethernet
   file_size[0] = uart_recvfile_ethernet(INPUT_FILENAME);
@@ -106,21 +107,24 @@ int main()
   file_size[0] = uart_recvfile(INPUT_FILENAME, file_buffer[0]);
 #endif
 
+	printf("\nSending input file to UUT...\n");
   //Switch and init instance 1 of ETHERNET (Connected to SUT)
-  eth_init(ETHERNET1_BASE);
+  //This instance has ETH_RMAC_ADDR as its mac addr (emulating the mac addr of the console)
+  //It expects to connect to the ETH_MAC_ADDR (it is the mac address of the eth interface in UUT)
+  eth_init_mac(ETHERNET1_BASE, ETH_REAL_RMAC_ADDR, ETH_MAC_ADDR);
 
   //Send input file by ethernet to SUT
-  eth_send_variable_file(file_buffer[0], file_size[0]);
+  printf("Sent %d bytes.\n", eth_send_variable_file(file_buffer[0], file_size[0]) );
 
-  //Receive and print SUT messages while processing
-  relayUUTMessagesUntil("Sending output file...\n");
-
+	printf("\nWaiting to receive output file from UUT...\n\n");
   //Receive output file by ethernet from SUT
   file_size[0] = eth_rcv_variable_file(file_buffer[0]);
+	printf("Received %d bytes.\n\n",file_size[0]);
   
   //Switch to instance 0 of ETHERNET (Connected to Host machine)
   IOB_ETH_INIT_BASEADDR(ETHERNET0_BASE);
 
+	printf("\nRequesting expected output file from Host Machine...\n\n");
 #ifndef SIM
   //Request to receive expected output file by ethernet from Host machine
   file_size[1] = uart_recvfile_ethernet(OUTPUT_FILENAME);
@@ -141,9 +145,7 @@ int main()
   eth_rcv_file(file_buffer[1],file_size[1]);
 #endif
   
-  //Receive and print SUT final messages 
-  relayUUTMessagesUntil("Done!\n");
-
+	printf("\nChecking if files are equal...\n");
   //Check if received file is equal to expected file
   for(i=0; i<file_size[0]; i++){
 		if(file_buffer[0][i]!=file_buffer[1][i]){
@@ -153,7 +155,7 @@ int main()
 		}
   }
   
-  uart_puts ("\nTest complete! Output and expected files are equal!.\n\n");
+  uart_puts ("\nTest complete! Output and expected files are equal!\n\n");
 
   //End UART0 connection
   uart_finish();

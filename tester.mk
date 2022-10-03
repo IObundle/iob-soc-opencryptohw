@@ -42,7 +42,13 @@ SIMULATOR:=verilator
 #Pass "4" as AXI_ID_W parameter to match tester.
 PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,4]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
-PERIPHERALS+=UART ETHERNET ETHERNET ETHCLOCKGEN
+PERIPHERALS+=UART
+# Instance 0 of ETHERNET can run in simulation mode, instance 1 always runs in non simulation mode.
+# Instance 0 of ETHERNET has default mac addr. Instance 1 has the same mac addr as the console (this way, the UUT thinks its talking to the console's interface).
+PERIPHERALS+=ETHERNET[32,\`iob_eth_swreg_ADDR_W,\`ETH_MAC_ADDR,$(if $(SIM),1,0)]
+PERIPHERALS+=ETHERNET[32,\`iob_eth_swreg_ADDR_W,48'h$(RMAC_ADDR)]
+#Clock generator for internal ethernet interfaces
+PERIPHERALS+=ETHCLOCKGEN
 
 # Submodule paths for Tester peripherals (listed above)
 ETHERNET_DIR=$($(UUT_NAME)_DIR)/submodules/ETHERNET
@@ -54,12 +60,15 @@ REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 #Mac address of pc interface connected to ethernet peripheral
 RMAC_ADDR:=4437e6a6893b
 ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
+#Define real mac address based on RMAC_ADDR
+#This is required because the software.mk script of ETHERNET overrides the value of ETH_MAC_ADDR with the simulation mac address when the SIM variable is set.
+DEFINE+=$(defmacro)ETH_REAL_RMAC_ADDR=0x$(RMAC_ADDR)
 
 #Configure Tester to use ethernet
 USE_ETHERNET:=1
 DEFINE+=$(defmacro)USE_ETHERNET=1
 
-#Use ethernet in simulation mode if we are running simulation
+#Use ethernet (connected to console) in simulation mode if we are running simulation
 ifneq ($(ISSIMULATION),)
 SIM=1
 DEFINE+=$(defmacro)SIM=1
@@ -94,7 +103,7 @@ clean-top-module:
 
 #Target to build UUT bootloader and firmware
 $($(UUT_NAME)_DIR)/software/firmware/boot.hex $($(UUT_NAME)_DIR)/software/firmware/firmware.hex:
-	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD)
+	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD) FREQ=$(FREQ)
 	make -C $($(UUT_NAME)_DIR)/software/firmware -f ../../hardware/hardware.mk boot.hex firmware.hex ROOT_DIR=../..
 
 #Targets to generate and copy sim_in.bin, soc_out.bin
