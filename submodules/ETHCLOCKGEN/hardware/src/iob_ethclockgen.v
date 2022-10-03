@@ -2,11 +2,7 @@
 `include "iob_lib.vh"
 
 module iob_ethclockgen 
-  # (
-     )
-
   (
-
 	//PLL_LOCKED outputs
    `IOB_OUTPUT(PLL_LOCKED_0, 1),
    `IOB_OUTPUT(PLL_LOCKED_1, 1),

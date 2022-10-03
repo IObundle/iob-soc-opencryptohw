@@ -37,8 +37,17 @@ SIMULATOR:=verilator
 #check the respective Makefile in TESTER/hardware/fpga/$(BOARD) for specific settings
 #BOARD:=CYCLONEV-GT-DK
 
+#Add Unit Under Test to Tester peripherals list
+#this works even if UUT is not a "perihpheral"
+#Pass "4" as AXI_ID_W parameter to match tester.
+PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,4]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
-PERIPHERALS+=UART ETHERNET ETHERNET ETHCLOCKGEN
+PERIPHERALS+=UART
+# Instance 0 of ETHERNET has default MAC address. Instance 1 has the same MAC address as the console (this way, the UUT always connects to the console's MAC address).
+PERIPHERALS+=ETHERNET
+PERIPHERALS+=ETHERNET[32,\`iob_eth_swreg_ADDR_W,48'h$(RMAC_ADDR)]
+#Clock generator for internal ethernet interfaces
+PERIPHERALS+=ETHCLOCKGEN
 
 # Submodule paths for Tester peripherals (listed above)
 ETHERNET_DIR=$($(UUT_NAME)_DIR)/submodules/ETHERNET
@@ -49,34 +58,35 @@ REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 
 #Mac address of pc interface connected to ethernet peripheral
 RMAC_ADDR:=4437e6a6893b
-ETH_IF:= $(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | awk '{print $1;}')
+ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
+#Define real mac address based on RMAC_ADDR
+#This is required because the software.mk script of ETHERNET overrides the value of ETH_MAC_ADDR with the simulation mac address when the SIM variable is set.
+DEFINE+=$(defmacro)ETH_REAL_RMAC_ADDR=0x$(RMAC_ADDR)
 
 #Configure Tester to use ethernet
 USE_ETHERNET:=1
 DEFINE+=$(defmacro)USE_ETHERNET=1
 
-#Use ethenet in simulation mode if we are running simulation
+#Use UART to transfer files from/to console, as these transfers are not compatible with ETHERNET during simulation.
 ifneq ($(ISSIMULATION),)
 SIM=1
 DEFINE+=$(defmacro)SIM=1
-endif
-
-#Set FPGA BAUD if we are not running simulation
-ifeq ($(ISSIMULATION),)
-BAUD=115200
 endif
 
 #Extra tester target dependencies
 #Run before building system
 BUILD_DEPS+=$($(UUT_NAME)_DIR)/hardware/src/system.v
 #Run before building system for simulation
-SIM_DEPS+=set-simulation-variable
+SIM_DEPS+=set-simulation-variable $(SIM_DIR)/sim_in.bin $(SIM_DIR)/soc_out.bin
 #Run before building system for fpga
-FPGA_DEPS+=
+FPGA_DEPS+=$(BOARD_DIR)/sim_in.bin $(BOARD_DIR)/soc_out.bin
 #Run when cleaning tester
-CLEAN_DEPS+=clean-top-module
+CLEAN_DEPS+=clean-top-module clean-files
 #Run after finishing fpga run (useful to copy files from remote machines at the end of a run sequence)
 FPGA_POST_RUN_DEPS+=
+
+# Verification filename
+TEST_VECTOR_RSP ?=SHA256ShortMsg.rsp
 
 #
 else
@@ -92,8 +102,23 @@ clean-top-module:
 
 #Target to build UUT bootloader and firmware
 $($(UUT_NAME)_DIR)/software/firmware/boot.hex $($(UUT_NAME)_DIR)/software/firmware/firmware.hex:
-	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD)
+	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD) FREQ=$(FREQ)
 	make -C $($(UUT_NAME)_DIR)/software/firmware -f ../../hardware/hardware.mk boot.hex firmware.hex ROOT_DIR=../..
+
+#Targets to generate and copy sim_in.bin, soc_out.bin
+$($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_in.bin $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_out.bin:
+	make -C $($(UUT_NAME)_DIR)/software/test gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+
+%/sim_in.bin: $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_in.bin
+	ln -sr $< $@
+
+%/soc_out.bin: $($(UUT_NAME)_DIR)/software/test/$(basename $(TEST_VECTOR_RSP))_d_out.bin
+	ln -sr $< $@
+
+#Cleanup targets
+clean-files:
+	rm -f $(SIM_DIR)/sim_in.bin $(SIM_DIR)/soc_out.bin
+	rm -f $(BOARD_DIR)/sim_in.bin $(BOARD_DIR)/soc_out.bin
 
 #Set ISSIMULATION variable
 set-simulation-variable:

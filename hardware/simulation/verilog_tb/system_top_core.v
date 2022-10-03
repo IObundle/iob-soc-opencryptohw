@@ -136,4 +136,36 @@ module system_top
       .cts       (UART0_rts)
       );
 
+	//Manually added testbench ethernet core. Signals connected to ETHERNET0
+	//instance of the system.
+   //ethernet clock: 4x slower than system clock
+   reg [1:0] eth_cnt = 2'b0;
+   reg eth_clk;
+
+   always @(posedge clk) begin
+       eth_cnt <= eth_cnt + 1'b1;
+       eth_clk <= eth_cnt[1];
+   end
+
+   // Ethernet Interface signals
+   assign ETHERNET0_RX_CLK = eth_clk;
+   assign ETHERNET0_TX_CLK = eth_clk;
+   assign ETHERNET0_PLL_LOCKED = 1'b1;
+
+//add core test module in testbench
+iob_eth_tb_gen eth_tb(
+      .clk      (clk),
+      .reset    (rst),
+
+      // This module acts like a loopback
+      .RX_CLK(ETHERNET0_TX_CLK),
+      .RX_DATA(ETHERNET0_TX_DATA),
+      .RX_DV(ETHERNET0_TX_EN),
+
+      // The wires are thus reversed
+      .TX_CLK(ETHERNET0_RX_CLK),
+      .TX_DATA(ETHERNET0_RX_DATA),
+      .TX_EN(ETHERNET0_RX_DV)
+);
+
 endmodule

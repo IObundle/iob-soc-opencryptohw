@@ -108,6 +108,8 @@ int main()
   //init ethernet
   eth_init(ETHERNET0_BASE);
 
+  printf("Boot complete!\n");
+
 #ifdef SIM
   //Receive input data from uart
   din_size = uart_recvfile("sim_in.bin", din_fp);
