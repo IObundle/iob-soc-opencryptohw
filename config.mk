@@ -48,7 +48,7 @@ RMAC_ADDR=4437e6a6893b
 #Example: 'PERIPHERALS ?=UART[1,\"textparam\"] UART UART' will create 3 UART instances, 
 #         the first one will be instantiated with verilog parameters 1 and "textparam", 
 #         the second and third will use default parameters.
-PERIPHERALS ?=UART TIMER ETHERNET[32,\`iob_eth_swreg_ADDR_W,\`ETH_MAC_ADDR,$(if $(SIM),1,0)]
+PERIPHERALS ?=UART TIMER ETHERNET
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
 USE_MUL_DIV ?=1
