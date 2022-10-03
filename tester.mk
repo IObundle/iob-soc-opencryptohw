@@ -43,8 +43,7 @@ SIMULATOR:=verilator
 PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,4]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
 PERIPHERALS+=UART
-# Instance 0 of ETHERNET can run in simulation mode, instance 1 always runs in non simulation mode.
-# Instance 0 of ETHERNET has default mac addr. Instance 1 has the same mac addr as the console (this way, the UUT thinks its talking to the console's interface).
+# Instance 0 of ETHERNET has default MAC address. Instance 1 has the same MAC address as the console (this way, the UUT always connects to the console's MAC address).
 PERIPHERALS+=ETHERNET
 PERIPHERALS+=ETHERNET[32,\`iob_eth_swreg_ADDR_W,48'h$(RMAC_ADDR)]
 #Clock generator for internal ethernet interfaces
@@ -68,7 +67,7 @@ DEFINE+=$(defmacro)ETH_REAL_RMAC_ADDR=0x$(RMAC_ADDR)
 USE_ETHERNET:=1
 DEFINE+=$(defmacro)USE_ETHERNET=1
 
-#Use ethernet (connected to console) in simulation mode if we are running simulation
+#Use UART to transfer files from/to console, as these transfers are not compatible with ETHERNET during simulation.
 ifneq ($(ISSIMULATION),)
 SIM=1
 DEFINE+=$(defmacro)SIM=1
