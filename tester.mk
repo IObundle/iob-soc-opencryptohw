@@ -35,7 +35,7 @@ SIMULATOR:=verilator
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in TESTER/hardware/fpga/$(BOARD) for specific settings
-#BOARD:=CYCLONEV-GT-DK
+BOARD:=AES-KU040-DB-G
 
 #Add Unit Under Test to Tester peripherals list
 #this works even if UUT is not a "perihpheral"

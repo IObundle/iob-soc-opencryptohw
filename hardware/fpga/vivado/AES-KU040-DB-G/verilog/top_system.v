@@ -120,18 +120,18 @@ module top_system
 
         //ETHERNET
         //PHY
-        .ETH_PHY_RESETN(ENET_RESETN),
+        .ETHERNET0_ETH_PHY_RESETN(ENET_RESETN),
 
         //PLL
-        .PLL_LOCKED(locked),
+        .ETHERNET0_PLL_LOCKED(locked),
 
         //MII
-        .RX_CLK(ETH_CLK),
-        .RX_DATA(RX_DATA),
-        .RX_DV(ENET_RX_DV),
-        .TX_CLK(ETH_CLK),
-        .TX_DATA(TX_DATA),
-        .TX_EN(ENET_TX_EN),
+        .ETHERNET0_RX_CLK(ETH_CLK),
+        .ETHERNET0_RX_DATA(RX_DATA),
+        .ETHERNET0_RX_DV(ENET_RX_DV),
+        .ETHERNET0_TX_CLK(ETH_CLK),
+        .ETHERNET0_TX_DATA(TX_DATA),
+        .ETHERNET0_TX_EN(ENET_TX_EN),
 
       //UART
       .UART0_txd (uart_txd),
