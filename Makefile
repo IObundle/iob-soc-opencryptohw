@@ -87,6 +87,9 @@ tester-sim-build:
 tester-sim-run:
 	make -C submodules/TESTER sim-run
 
+tester-sim-test: tester-sim-build
+	make tester-sim-run | tee /dev/tty | grep "Test complete! Output and expected files are equal!" >/dev/null
+
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
@@ -130,6 +133,8 @@ tester-fpga-build:
 tester-fpga-run:
 	make -C submodules/TESTER fpga-run
 
+tester-fpga-test: tester-fpga-build
+	make tester-fpga-run | tee /dev/tty | grep "Test complete! Output and expected files are equal!" >/dev/null
 #
 # COMPILE DOCUMENTS
 #
@@ -200,9 +205,9 @@ python-cache-clean:
 .PHONY: fw-build fw-clean fw-debug\
 	pc-emul-build pc-emul-run pc-emul-test pc-emul-clean pc-emul-profile \
 	sim-build sim-run sim-clean sim-test sim-versat-fus \
-	tester-sim-build tester-sim-run \
+	tester-sim-build tester-sim-run tester-sim-test \
 	fpga-build fpga-run fpga-run-profile fpga-test fpga-clean \
-	tester-fpga-build tester-fpga-run \
+	tester-fpga-build tester-fpga-run tester-fpga-test \
 	doc-accel-plan doc-accel-plan-clean doc-clean \
 	test-versat-fus \
 	test-pc-emul test-pc-emul-clean \

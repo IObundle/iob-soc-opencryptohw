@@ -131,7 +131,7 @@ validate:
 
 $(SIM_IN_BIN):
 	$(eval TEST_VECTOR_RSP_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin)
-	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
+	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)" | head -n 1))
 	cp $(TEST_VECTOR_RSP_PATH) $(SIM_IN_BIN)
 
 #clean target common to all simulators

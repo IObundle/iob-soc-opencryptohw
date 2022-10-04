@@ -109,3 +109,35 @@ jobs:
       - name: SpinalHDL FUs
         run: make test-versat-fus SPINAL=1
 
+  tester-verilator:
+    runs-on: self-hosted
+    timeout-minutes: 30
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    # run after indicated job
+    needs: verilator
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: clean
+        run: make clean SIMULATOR=verilator
+      - name: tester-sim-test
+        run: make tester-sim-test SIMULATOR=verilator
+
+  tester-fpga:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: fpga
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: clean
+        run: make clean
+      - name: tester-fpga-test
+        run: make tester-fpga-test
