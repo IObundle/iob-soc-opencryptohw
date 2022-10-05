@@ -1,9 +1,6 @@
 include $(ROOT_DIR)/hardware/hardware.mk
 include $(LIB_DIR)/hardware/iob_reset_sync/hardware.mk
 
-BAUD=$(BOARD_BAUD)
-FREQ=$(BOARD_FREQ)
-
 LOAD_FILE=/tmp/$(BOARD).load
 QUEUE_FILE=/tmp/$(BOARD).queue
 TOOL=$(shell find $(HW_DIR)/fpga -name $(BOARD) | cut -d"/" -f7)
@@ -29,7 +26,6 @@ CONSOLE_CMD=$(CONSOLE_DIR)/eth_console -s /dev/usb-uart
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
-
 
 #RULES
 
@@ -80,8 +76,6 @@ else
 	scp $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(FPGA_LOG) .
 endif
 endif
-
-
 
 #
 # Board access queue
