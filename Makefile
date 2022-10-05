@@ -24,30 +24,30 @@ fw-debug:
 # EMULATE ON PC
 #
 
+#default baud and system clock frequency
+SIM_BAUD ?= 2500000
+SIM_FREQ ?=50000000
 pc-emul-build:
-	make fw-build
-	make -C $(PC_DIR)
+	make fw-build BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ)
+	make -C $(PC_DIR) BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ)
 
 pc-emul-run: pc-emul-build
-	make -C $(PC_DIR) run
+	make -C $(PC_DIR) run BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ)
 
 pc-emul-clean: fw-clean
 	make -C $(PC_DIR) clean
 
 pc-emul-test: pc-emul-clean
-	make -C $(PC_DIR) test
+	make -C $(PC_DIR) test BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ)
 
 pc-emul-profile:
-	make fw-build BAUD=5000000 PROFILE=1
-	make -C $(PC_DIR) profile
+	make fw-build BAUD=5000000 FREQ=$(SIM_FREQ) PROFILE=1
+	make -C $(PC_DIR) profile BAUD=5000000 FREQ=$(SIM_FREQ)
 
 #
 # SIMULATE RTL
 #
 
-#default baud and system clock frequency
-SIM_BAUD ?= 2500000
-SIM_FREQ ?=50000000
 sim-build:
 	make fw-build BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ) SIM=1
 	make -C $(SIM_DIR) build BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ)
@@ -65,8 +65,8 @@ sim-debug:
 	make -C $(SIM_DIR) debug
 
 sim-versat-fus:
-	make -C $(SIM_DIR) xunitM SIMULATOR=icarus
-	make -C $(SIM_DIR) xunitF SIMULATOR=icarus
+	make -C $(SIM_DIR) xunitM BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ) SIMULATOR=icarus
+	make -C $(SIM_DIR) xunitF BAUD=$(SIM_BAUD) FREQ=$(SIM_FREQ) SIMULATOR=icarus
 
 tester-sim-build:
 	make -C submodules/TESTER sim-build
