@@ -107,8 +107,8 @@ fpga-debug:
 	make -C $(BOARD_DIR) debug
  
 fpga-run-profile:
-	make fw-build PROFILE=1
-	make -C $(BOARD_DIR) profile
+	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ) PROFILE=1
+	make -C $(BOARD_DIR) profile BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
 fpga-test:
 	make -C $(BOARD_DIR) test
