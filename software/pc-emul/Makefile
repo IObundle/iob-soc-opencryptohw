@@ -5,9 +5,15 @@ include ../software.mk
 BUILD_DIR=./build
 DEBUG_DIR=./debug
 VERSAT_PRG_SRC_DIR=./src
+HW_SRC_DIR=$(HW_DIR)/src
+ifeq ($(SPINAL),1)
+XUNIT_DIR:=$(HW_SRC_DIR)/spinalHDL/rtl
+else
+XUNIT_DIR:=$(HW_SRC_DIR)/units
+endif
 
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -Wl,--strip-debug -g -m32
+CFLAGS=-Os -std=gnu99 -g -m32
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
@@ -96,7 +102,7 @@ $(SOC_LOG):
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
-$(BUILD_DIR)/V%.h: $(HW_DIR)/src/units/%.v
+$(BUILD_DIR)/V%.h: $(XUNIT_DIR)/%.v
 	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir $(BUILD_DIR) $<;
 	cd $(BUILD_DIR) && VM_DEFAULT_RULES=0 make -f V$*.mk;
 
@@ -113,7 +119,12 @@ output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
 	./$@
 ifneq ($(OUTPUT_VERSAT_DST),)
 	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
+	mv versat_defs.vh $(OUTPUT_VERSAT_DST) 
+	mv versat_data.inc $(OUTPUT_VERSAT_DST) 
 endif
+
+$(XUNIT_DIR)/%.v:
+	make -C $(ROOT_DIR) gen-spinal-sources
 
 .PHONY: build run \
 	test validate profile \

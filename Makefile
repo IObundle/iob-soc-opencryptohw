@@ -8,8 +8,14 @@ include ./config.mk
 fw-build:
 	make -C $(FIRM_DIR) build-all
 
-fw-clean:
+fw-clean: pc-emul-clean
 	make -C $(FIRM_DIR) clean-all
+
+#
+# GENERATE SPINALHDL VERILOG SOURCES
+#
+gen-spinal-sources:
+	make -C $(SIM_DIR) gen-spinal-sources
 
 #
 # EMULATE ON PC
@@ -50,7 +56,7 @@ sim-clean: fw-clean
 	make -C $(SIM_DIR) clean
 
 sim-test:
-	make -C $(SIM_DIR) test
+	make -C $(SIM_DIR) test SPINAL=$(SPINAL)
 
 sim-versat-fus:
 	make -C $(SIM_DIR) xunitM SIMULATOR=icarus

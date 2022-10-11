@@ -48,3 +48,20 @@ jobs:
         run: make test-clean
       - name: generate versat instance
         run: make pc-emul-output-versat
+
+  simulation:
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: simulate system with verilog FUs
+        run: make sim-test SIMULATOR=verilator
+      - name: simulation clean
+        run: make sim-clean SIMULATOR=verilator
+      - name: simulate system with SpinalHDL FUs
+        run: make sim-test SIMULATOR=verilator SPINAL=1
+      - name: simulation clean
+        run: make sim-clean SIMULATOR=verilator SPINAL=1

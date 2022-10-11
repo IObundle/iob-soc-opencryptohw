@@ -44,6 +44,7 @@ TB_DIR:=$(HW_DIR)/simulation/verilog_tb
 
 #axi memory
 include $(AXI_DIR)/hardware/axiram/hardware.mk
+include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
 
 #TEST OUTPUT
 SOC_OUT_BIN:=soc-out.bin
@@ -135,7 +136,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: sim-shortmsg validate
 
 sim-shortmsg:
-	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0 
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/

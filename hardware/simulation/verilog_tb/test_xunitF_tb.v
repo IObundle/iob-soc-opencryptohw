@@ -159,6 +159,8 @@ module xunitF_tb;
         .out6(out6),
         .out7(out7),
 
+        .done(),
+
         .delay0(delay_cfg)
     );
 

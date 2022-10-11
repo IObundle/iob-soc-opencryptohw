@@ -54,16 +54,26 @@ module Maj(x,y,z){
    c1 -> out;
 }
 
+module sigma_stage(x,y){
+   sigma sigma0(7,18,3);
+   sigma sigma1(17,19,10);
+#
+   x -> sigma0;
+   y -> sigma1;
+
+   sigma0 -> out:0;
+   sigma1 -> out:1;
+}
+
 module M_Stage(w0,w14,w9,w1){
-   static sigma sigma0(7,18,3);
-   static sigma sigma1(17,19,10);
+   static sigma_stage sigma(7,18,3,17,19,10);
    pipeline_register r;
 #
-   w14 -> sigma1;
-   w1 -> sigma0;
-
-   a1 = sigma1 + w9;
-   a2 = sigma0 + w0;
+   w1 -> sigma:0;
+   w14 -> sigma:1;
+  
+   a1 = sigma:1 + w9;
+   a2 = sigma:0 + w0;
 
    b = a1 + a2;
 
@@ -225,9 +235,27 @@ module T2(a,b,c){
    d -> out; 
 }
 
+module T_Stage(a,b,c,e,f,g,h,k,w){
+   T1 t1(6,11,25);
+   T2 t2(2,13,22);
+#
+   a -> t2:0;
+   b -> t2:1;
+   c -> t2:2;
+
+   e -> t1:0;
+   f -> t1:1;
+   g -> t1:2;
+   h -> t1:3;
+   k -> t1:4;
+   w -> t1:5;
+
+   t1 -> out:0;
+   t2 -> out:1;
+}
+
 module F_Stage(a,b,c,d,e,f,g,h,k,w){
-   T1 t1;
-   T2 t2;
+   static T_Stage t;
    pipeline_register d0;
    pipeline_register d1;
    pipeline_register d2;
@@ -237,19 +265,19 @@ module F_Stage(a,b,c,d,e,f,g,h,k,w){
    pipeline_register d6;
    pipeline_register d7;
 #
-   e -> t1:0;
-   f -> t1:1;
-   g -> t1:2;
-   h -> t1:3;
-   k -> t1:4;
-   w -> t1:5;
+   a -> t:0;
+   b -> t:1;
+   c -> t:2;
 
-   a -> t2:0;
-   b -> t2:1;
-   c -> t2:2;
+   e -> t:3;
+   f -> t:4;
+   g -> t:5;
+   h -> t:6;
+   k -> t:7;
+   w -> t:8;
 
-   a1 = t1 + t2;
-   a2 = d + t1;
+   a1 = t:0 + t:1;
+   a2 = d + t:0;
 
    a1 -> d0; // a
    a -> d1;  // b
@@ -401,6 +429,12 @@ module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
    s7 -> out:7;
 }
 
+module Constants(){
+   static xmem mem(1,16,16,0,0,1);
+#
+   mem -> out:0;
+}
+
 module SHA(){
    vread MemRead;
    xunitF F0;
@@ -410,10 +444,10 @@ module SHA(){
    xunitM M0;
    xunitM M1;
    xunitM M2;
-   xmem cMem0(1,16,16,0,0,1){0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
-   xmem cMem1(1,16,16,0,0,1){0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967};
-   xmem cMem2(1,16,16,0,0,1){0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070};
-   xmem cMem3(1,16,16,0,0,1){0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2};
+   Constants cMem0;
+   Constants cMem1;
+   Constants cMem2;
+   Constants cMem3;
    ShaState State;
 #
    State:0..7 -> F0:0..7;

@@ -17,10 +17,13 @@ module xunitM #(
 
     output reg [DATA_W-1:0] out0,
 
+    output              done,
+
     //configurations
     input [7:0]         delay0 // Encodes delay
     );
 
+assign done = 1'b1;
 reg [7:0] delay;
 reg [4:0] latency;
 reg [31:0] w[15:0];

@@ -34,10 +34,13 @@ module xunitF #(
     output [DATA_W-1:0] out6,
     output [DATA_W-1:0] out7,
 
+    output              done,
+
     //configurations
     input [7:0]         delay0 // Encodes delay
     );
 
+assign done = (delay == 0);
 reg [7:0] delay;
 reg [0:0] latency;
 reg [31:0] a,b,c,d,e,f,g,h;
