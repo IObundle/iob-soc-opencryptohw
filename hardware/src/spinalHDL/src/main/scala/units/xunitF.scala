@@ -32,6 +32,7 @@ class xunitF(data_w: Int) extends Component {
   val out5 = out UInt(data_w bits)
   val out6 = out UInt(data_w bits)
   val out7 = out UInt(data_w bits)
+  val done = out Bool()
 
   // Configure the clock domain
   val xunitFClockDomain = ClockDomain(
@@ -108,6 +109,8 @@ class xunitF(data_w: Int) extends Component {
     out5 := f
     out6 := g
     out7 := h
+
+    done := (delay === 0)
   }
 
   def ROTR_32(x: UInt, c: Int): UInt = {

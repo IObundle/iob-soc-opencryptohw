@@ -16,6 +16,7 @@ class xunitM(data_w: Int) extends Component {
   val delay0 = in UInt(8 bits)
   val in0 = in UInt(data_w bits)
   val out0 = out UInt(data_w bits)
+  val done = out Bool()
 
   // Configure the clock domain
   val xunitMClockDomain = ClockDomain(
@@ -67,6 +68,8 @@ class xunitM(data_w: Int) extends Component {
     // register output
     out0_reg := next_w
     out0 := out0_reg
+
+    done := True
   }
 
   def ROTR_32(x: UInt, c: Int): UInt = {
