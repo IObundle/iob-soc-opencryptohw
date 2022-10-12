@@ -39,7 +39,7 @@ pc-emul-profile:
 	make -C $(PC_DIR) profile
 
 pc-emul-output-versat:
-	make -C $(PC_DIR) output-versat OUTPUT_VERSAT_DST=$(OUTPUT_VERSAT_DST)
+	make -C $(PC_DIR) output-versat
 
 #
 # SIMULATE RTL
@@ -83,7 +83,7 @@ fpga-test:
 fpga-clean: fw-clean
 	make -C $(BOARD_DIR) clean-all
 
-fpga-build-versat:
+fpga-build-versat: pc-emul-output-versat
 	make -C $(BOARD_DIR) build-versat
 
 #
