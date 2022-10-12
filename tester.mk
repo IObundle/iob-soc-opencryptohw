@@ -39,8 +39,7 @@ BOARD:=AES-KU040-DB-G
 
 #Add Unit Under Test to Tester peripherals list
 #this works even if UUT is not a "perihpheral"
-#Pass "4" as AXI_ID_W parameter to match tester.
-PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,4]
+PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,AXI_ID_W]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
 PERIPHERALS+=UART
 # Instance 0 of ETHERNET has default MAC address. Instance 1 has the same MAC address as the console (this way, the UUT always connects to the console's MAC address).
@@ -57,7 +56,11 @@ ETHCLOCKGEN_DIR=$($(UUT_NAME)_DIR)/submodules/ETHCLOCKGEN
 REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 
 #Mac address of pc interface connected to ethernet peripheral
+ifeq ($(BOARD),AES-KU040-DB-G) # Arroz eth if mac
 RMAC_ADDR:=4437e6a6893b
+else # Pudim eth if mac #TODO: ssh to pudim with root perms. Install pyeth3 environment. Configure enp3s0 to 100mbps
+RMAC_ADDR:=309c231e624a
+endif
 ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
 #Define real mac address based on RMAC_ADDR
 #This is required because the software.mk script of ETHERNET overrides the value of ETH_MAC_ADDR with the simulation mac address when the SIM variable is set.
