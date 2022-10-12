@@ -121,12 +121,6 @@ output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
 	mkdir -p $(VERSAT_PRG_SRC_DIR)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 	./$@
-ifneq ($(OUTPUT_VERSAT_DST),)
-	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
-	mv versat_defs.vh $(OUTPUT_VERSAT_DST) 
-	mv versat_data.inc $(OUTPUT_VERSAT_DST) 
-	mv $(BUILD_DIR)/verilogWrapper.inc $(OUTPUT_VERSAT_DST) 
-endif
 
 $(XUNIT_DIR)/%.v:
 	make -C $(ROOT_DIR) gen-spinal-sources
