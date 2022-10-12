@@ -114,6 +114,11 @@ system_top.v: $(TB_DIR)/system_top_core.v
 #add peripheral testbench sources
 VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $($p_DIR)/hardware/testbench/module_tb.sv; then echo $($p_DIR)/hardware/testbench/module_tb.sv; fi;)) 
 
+spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)
+
+$(XUNITM_VSRC) $(XUNITF_VSRC):
+	make -C $(SPINAL_DIR) rtl/$(notdir $@)
+
 kill-remote-sim:
 	@echo "INFO: Remote simulator $(SIMULATOR) will be killed"
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC); \

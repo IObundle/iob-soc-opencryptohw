@@ -1,18 +1,33 @@
-# iob-soc-sha
-SoC to run the program in software with or without acceleration using VERSAT2.0
+# IOb-SoC-OpenCryptoHW
+
+This project aims to develop reconfigurable open-source cryptographic hardware
+IP cores for Next Generation Internet. With the Internet of Things upon us,
+security and privacy are more important than ever. On the one hand, the risks
+are high if the security and privacy features are exclusively implemented in
+software. On the other hand, if implemented solely in hardware, it is impossible
+to fix bugs or deploy critical updates, a threat to security and privacy. Hence,
+we propose to use reconfigurable hardware, providing the flexibility of software
+and the trustworthiness of hardware.  There have been proposals to implement
+cryptographic IP cores using Field Programmable Gate Array (FPGAs). However, the
+FPGA configuration infrastructure is cumbersome and proprietary, increasing
+device cost and compromising safety. Hacking into it requires first hacking the
+device’s configuration infrastructure and then hacking the algorithm itself,
+which is way more complicated.  Therefore, we propose to use open-source
+Coarse-Grained Reconfigurable Arrays (CGRAs) instead of FPGAs. CGRAs have much
+lighter configuration circuits and are not controlled by any private entity.
 
 # Setup
 Clone the repository and the submodules with:
 ```
-git clone --recursive git@github.com:IObundle/iob-soc-sha.git
+git clone --recursive git@github.com:IObundle/IOb-SoC-OpenCryptoHW.git
 ```
 or using the url:
 ```
-git clone --recursive https://github.com/IObundle/iob-soc-sha.git
+git clone --recursive https://github.com/IObundle/IOb-SoC-OpenCryptoHW.git
 ```
 * * *
 # PC Emulation
-The iob-soc-sha system can build and run an environment for PC with:
+The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
 ```
 make pc-emul-run
 ```
@@ -43,7 +58,7 @@ PC emulation program requires:
 
 * * *
 # RISCV Emulation
-The iob-soc-sha system can be emulated using a verilog simulator like icarus 
+The IOb-SoC-OpenCryptoHW system can be emulated using a verilog simulator like icarus 
 with:
 ```Make
 # Test with all supported simulators
@@ -72,18 +87,13 @@ RISCV emulation requires:
     - [icarus verilog](https://github.com/steveicarus/iverilog)  
     - [verilator](https://github.com/verilator/verilator)
 
-# FPGA Execution
-The system can be tested on FPGA with:
+# FPGA Synthesis
+The system can be synthetized for FPGA with:
 ```
-make test-fpga
+make fpga-build
 ```
 
-The results can be manually checked in the terminal and in
-`hardware/fpga/<tool>/<board>/ethernet.log`, where `<tool>` is the tool used
-for synthesis and `<board>` is the board directory name.
-
-The system has been tested with the `AES-KU040-DB-G` board from Xilinx. In that
-case the results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
+The synthesis results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
 
 ### Clean environment
 To clean the workspace after the FPGA execution:
@@ -103,28 +113,6 @@ FPGA execution requires:
     ```
     - Follow [IOb-soc's README](https://github.com/IObundle/iob-soc#readme) for
     more installation details.
-
-# Profiling
-The system can be profiled using a 
-[Timer core](https://www.github.com/IObundle/iob-timer.git), a software 
-controlled counter.
-
-The `pc-emul` version simulates the counter behaviour by calling the C standard
-`<timer.h>` library.
-
-The profiling is available for `pc-emul` using the following command:
-```
-make pc-emul-profile
-```
-The `pc-emul-profile` target outputs an `emul_profile.log` file with the
-profiling information.
-
-For `fpga` profiling run the following command:
-```
-make fpga-run-profile
-```
-The `fpga-run-profile` target outputs a `fpga_profile.log` file with the 
-profiling information.
 
 # Ethernet
 The system supports ethernet communication using the 
@@ -162,3 +150,9 @@ The log file can be reviewed in
 `hardware/fpga/vivado/AES-KU040-DB-G/versat.log`.
 The netlist file can be reviewed in
 `hardware/fpga/vivado/AES-KU040-DB-G/iob_versat.edif`.
+
+# Acknowledgement
+This project is funded through the NGI Assure Fund, a fund established by NLnet
+with financial support from the European Commission's Next Generation Internet
+programme, under the aegis of DG Communications Networks, Content and Technology
+under grant agreement No 957073.

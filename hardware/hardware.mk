@@ -111,4 +111,12 @@ versat_instance.v versat_defs.vh:
 	$(eval CURRENT_DIR=$(shell pwd))
 	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
 
+$(XUNIT_DIR)/%.v:
+	make -C $(SIM_DIR) spinal-sources
+
+versat_instance.v:
+	$(eval CURRENT_DIR=$(shell pwd))
+	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
+
+
 .PHONY: hw-clean
