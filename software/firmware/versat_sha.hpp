@@ -5,8 +5,7 @@
 
 #include "versat.hpp"
 
-#include "unitWrapper.hpp"
-#include "unitVerilogWrappers.hpp"
+#include "verilogWrapper.inc"
 
 #include "system.h"
 

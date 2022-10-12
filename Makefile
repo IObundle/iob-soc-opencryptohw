@@ -31,7 +31,7 @@ pc-emul-run:
 pc-emul-test: pc-emul-clean
 	make -C $(PC_DIR) test
 
-pc-emul-clean: fw-clean
+pc-emul-clean:
 	make -C $(PC_DIR) clean
 
 pc-emul-profile:
@@ -83,6 +83,9 @@ fpga-test:
 fpga-clean: fw-clean
 	make -C $(BOARD_DIR) clean-all
 
+fpga-build-versat:
+	make -C $(BOARD_DIR) build-versat
+
 #
 # COMPILE DOCUMENTS
 #
@@ -117,6 +120,9 @@ test-sim-clean:
 test-fpga: test-fpga-clean
 	make fpga-test BOARD=AES-KU040-DB-G
 
+test-fpga-versat: test-fpga-clean
+	make fpga-build-versat BOARD=AES-KU040-DB-G
+
 test-fpga-clean:
 	make fpga-clean BOARD=AES-KU040-DB-G
 
@@ -124,8 +130,11 @@ test: test-clean
 	make test-pc-emul 
 	make pc-emul-profile
 	make test-pc-emul-clean
+	make pc-emul-output-versat
+	make test-pc-emul-clean
 	make test-sim
 	make test-sim-clean
+	make test-fpga-versat
 	make test-fpga
 	make fpga-run-profile
 	make test-fpga-clean

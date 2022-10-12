@@ -73,7 +73,7 @@ clean:
 		*swreg_emb.c \
 		*d_in.bin *d_out.bin \
 		eth_frame_struct.h \
-		versat_data.inc versat_defs.vh versat_instance.v \
+		versat_data.inc versat_defs.vh versat_instance.v verilogWrapper.inc \
 		$(BUILD_DIR)
 
 .PHONY: build clean
