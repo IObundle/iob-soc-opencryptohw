@@ -87,18 +87,13 @@ RISCV emulation requires:
     - [icarus verilog](https://github.com/steveicarus/iverilog)  
     - [verilator](https://github.com/verilator/verilator)
 
-# FPGA Execution
-The system can be tested on FPGA with:
+# FPGA Synthesis
+The system can be synthetized for FPGA with:
 ```
-make test-fpga
+make fpga-build
 ```
 
-The results can be manually checked in the terminal and in
-`hardware/fpga/<tool>/<board>/ethernet.log`, where `<tool>` is the tool used
-for synthesis and `<board>` is the board directory name.
-
-The system has been tested with the `AES-KU040-DB-G` board from Xilinx. In that
-case the results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
+The synthesis results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
 
 ### Clean environment
 To clean the workspace after the FPGA execution:
@@ -118,28 +113,6 @@ FPGA execution requires:
     ```
     - Follow [IOb-soc's README](https://github.com/IObundle/iob-soc#readme) for
     more installation details.
-
-# Profiling
-The system can be profiled using a 
-[Timer core](https://www.github.com/IObundle/iob-timer.git), a software 
-controlled counter.
-
-The `pc-emul` version simulates the counter behaviour by calling the C standard
-`<timer.h>` library.
-
-The profiling is available for `pc-emul` using the following command:
-```
-make pc-emul-profile
-```
-The `pc-emul-profile` target outputs an `emul_profile.log` file with the
-profiling information.
-
-For `fpga` profiling run the following command:
-```
-make fpga-run-profile
-```
-The `fpga-run-profile` target outputs a `fpga_profile.log` file with the 
-profiling information.
 
 # Ethernet
 The system supports ethernet communication using the 
@@ -167,6 +140,16 @@ The SpinalHDL sources are in `hardware/src/spinalHDL`.
 #### SpinalHDL Setup
 Check `hardware/src/spinalHDL/README.md` for more details to setup the
 requirements to use SpinalHDL.
+
+### Versat FPGA Synthesis
+The Versat Accelerator can be synthetized with the command:
+```
+make fpga-build-versat
+```
+The log file can be reviewed in
+`hardware/fpga/vivado/AES-KU040-DB-G/versat.log`.
+The netlist file can be reviewed in
+`hardware/fpga/vivado/AES-KU040-DB-G/iob_versat.edif`.
 
 # Acknowledgement
 This project is funded through the NGI Assure Fund, a fund established by NLnet

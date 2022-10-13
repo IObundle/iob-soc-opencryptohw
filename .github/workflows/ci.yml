@@ -25,14 +25,14 @@ concurrency:
 jobs:
   pc-emul:
     runs-on: self-hosted
-    timeout-minutes: 30
+    timeout-minutes: 5
 
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
       - name: test-clean
-        run: make test-clean
+        run: make pc-emul-clean
       - name: test-pc-emul
         run: make test-pc-emul
 
@@ -45,7 +45,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: test-clean
-        run: make test-clean
+        run: make pc-emul-clean
       - name: generate versat instance
         run: make pc-emul-output-versat
 
@@ -65,3 +65,29 @@ jobs:
         run: make sim-test SIMULATOR=verilator SPINAL=1
       - name: simulation clean
         run: make sim-clean SIMULATOR=verilator SPINAL=1
+
+  versat-synthesis:
+    runs-on: self-hosted
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: fpga clean
+        run: make fpga-clean
+      - name: fpga build
+        run: make fpga-build-versat
+
+  system-synthesis:
+    runs-on: self-hosted
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: fpga clean
+        run: make fpga-clean
+      - name: fpga build
+        run: make fpga-build

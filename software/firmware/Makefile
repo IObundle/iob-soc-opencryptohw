@@ -27,6 +27,7 @@ include $(VERSAT_DIR)/software/embedded/embedded.mk
 #HEADERS
 HDR+=periphs.h
 HDR+=versat_data.inc
+HDR+=verilogWrapper.inc
 
 #INCLUDES
 INCLUDE+=$(incdir)$(FIRM_DIR)/units
@@ -60,9 +61,14 @@ firmware.elf: ../template.lds $(HDR) $(SRC) $(CPP_OBJ) gen_data
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(CPP_OBJ) $(LLIBS) -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
-versat_data.inc:
-	@$(eval CURRENT_DIR=$(shell pwd))
-	@make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
+versat_data.inc: $(PC_DIR)/versat_data.inc
+	cp $< $@
+
+verilogWrapper.inc: $(PC_DIR)/build/verilogWrapper.inc
+	cp $< $@
+
+$(PC_DIR)/%.inc:
+	@make -C $(ROOT_DIR) pc-emul-output-versat
 
 $(BUILD_DIR)/%.o: %.cpp
 	mkdir -p $(BUILD_DIR)
@@ -73,7 +79,7 @@ clean:
 		*swreg_emb.c \
 		*d_in.bin *d_out.bin \
 		eth_frame_struct.h \
-		versat_data.inc versat_defs.vh versat_instance.v \
+		versat_data.inc versat_defs.vh versat_instance.v verilogWrapper.inc \
 		$(BUILD_DIR)
 
 .PHONY: build clean

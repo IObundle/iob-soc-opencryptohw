@@ -13,7 +13,10 @@ XUNIT_DIR:=$(HW_SRC_DIR)/units
 endif
 
 #additional compiler flags
-CFLAGS=-Os -std=gnu99 -g -m32
+CC_OPTS+=-fno-inline-functions-called-once # exclude optimization
+
+CFLAGS=-O0 -std=gnu99 -g -m32 $(CC_OPTS)
+GLOBAL_CFLAGS=-O0 -g -m32 $(CC_OPTS)
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
@@ -40,8 +43,9 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 SOC_OUT_BIN:=soc-out.bin
 
 #units to verilate
-VERILATE_UNIT = xunitF xunitM
-HDR+=$(foreach obj,$(VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
+CUSTOM_VERILATE_UNIT = xunitF xunitM
+HDR+=$(foreach obj,$(CUSTOM_VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
+UNIT_VERILOG+=$(foreach unit,$(CUSTOM_VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
 
 #unit wrapper
 CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
@@ -117,11 +121,6 @@ output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
 	mkdir -p $(VERSAT_PRG_SRC_DIR)
 	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
 	./$@
-ifneq ($(OUTPUT_VERSAT_DST),)
-	mv versat_instance.v $(OUTPUT_VERSAT_DST) 
-	mv versat_defs.vh $(OUTPUT_VERSAT_DST) 
-	mv versat_data.inc $(OUTPUT_VERSAT_DST) 
-endif
 
 $(XUNIT_DIR)/%.v:
 	make -C $(ROOT_DIR) gen-spinal-sources

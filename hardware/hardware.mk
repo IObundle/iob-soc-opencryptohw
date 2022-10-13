@@ -107,16 +107,13 @@ gen-spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)
 $(XUNITM_VSRC) $(XUNITF_VSRC):
 	make -C $(SPINAL_DIR) rtl/$(notdir $@)
 
-versat_instance.v versat_defs.vh:
-	$(eval CURRENT_DIR=$(shell pwd))
-	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
+versat_instance.v versat_defs.vh: $(PC_DIR)/$(@F)
+	cp $(PC_DIR)/$(@F) $@
+
+$(PC_DIR)/versat_instance.v $(PC_DIR)/versat_defs.vh:
+	make -C $(ROOT_DIR) pc-emul-output-versat
 
 $(XUNIT_DIR)/%.v:
 	make -C $(SIM_DIR) spinal-sources
-
-versat_instance.v:
-	$(eval CURRENT_DIR=$(shell pwd))
-	make -C $(ROOT_DIR) pc-emul-output-versat OUTPUT_VERSAT_DST=$(CURRENT_DIR)
-
 
 .PHONY: hw-clean
