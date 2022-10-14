@@ -9,6 +9,7 @@ software/*/*
 !software/*/Makefile
 !software/*/*.expected
 !software/*/*.py
+!software/*/*.mk
 !software/*/*.rsp
 !software/*/*.c
 software/*/*swreg*.c

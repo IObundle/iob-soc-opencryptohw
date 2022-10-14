@@ -1,11 +1,9 @@
+include $(ROOT_DIR)/hardware/hardware.mk
+
 #axi portmap for axi ram
 VHDR+=s_axi_portmap.vh
 s_axi_portmap.vh:
 	$(LIB_DIR)/software/python/axi_gen.py axi_portmap 's_' 's_' 'm_'
-
-#default baud and freq for simulation
-BAUD=$(SIM_BAUD)
-FREQ=$(SIM_FREQ)
 
 #define for testbench
 DEFINE+=$(defmacro)BAUD=$(BAUD)
@@ -23,8 +21,6 @@ VCD ?=0
 ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
 endif
-
-include $(ROOT_DIR)/hardware/hardware.mk
 
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
@@ -131,7 +127,7 @@ validate:
 
 $(SIM_IN_BIN):
 	$(eval TEST_VECTOR_RSP_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin)
-	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
+	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)" | head -n 1))
 	cp $(TEST_VECTOR_RSP_PATH) $(SIM_IN_BIN)
 
 #clean target common to all simulators
