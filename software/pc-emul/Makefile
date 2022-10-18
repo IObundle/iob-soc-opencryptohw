@@ -26,7 +26,9 @@ SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
-SRC+= ./ila.c
+SRC+= $(FIRM_DIR)/versatSHA.cpp
+
+#SRC+= ./ila.c
 
 INCLUDE+=$(incdir)./build
 
@@ -58,7 +60,7 @@ build: gen_data fw_emul
 	mkdir -p trace_out
 
 fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -pthread
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -pthread -lncurses
 	
 run: build
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/

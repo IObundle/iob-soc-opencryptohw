@@ -1,9 +1,53 @@
 
-module StaticMuladd(x,y){
-   Muladd mul;   
+module SimpleAdder(){
+   Const a1;
+   Const a2;
+   Reg res;
 #
+   a = a1 + a2;
+
+   a -> res;
+}
+
+module ComplexAdder(){
+   Mem b1;   
+   Mem b2;
+   Mem memOut1;
+#
+   b = b1 + b2;
+
+   b -> memOut1;
+}
+
+module ComplexMultiplier(){
+   Mem c1;
+   Mem c2;
+   Mem memOut2;
+   Mul mul;
+#
+   c1 -> mul:0;
+   c2 -> mul:1;
+
+   mul -> memOut2;
+}
+
+module SemiComplexAdder(){
+   Const d1;
+   Mem d2;
+   Mem memOut3;
+#
+   d = d1 + d2;
+
+   d -> memOut3;
+}
+
+module StaticMuladd(x,y){
+   static Muladd mul;
+#
+   z = x + y;
+
    x -> mul:0;
-   y -> mul:1;
+   z -> mul:1;
 
    mul -> out;
 }
@@ -179,7 +223,7 @@ module sigma_stage(x,y){
 }
 
 module M_Stage(w0,w14,w9,w1){
-   static sigma_stage sigma(7,18,3,17,19,10);
+   sigma_stage sigma(7,18,3,17,19,10);
    PipelineRegister r;
 #
    w1 -> sigma:0;
@@ -549,7 +593,7 @@ module Constants(){
 
 module SHA(){
    VRead MemRead;
-   SwapEndian Swap(0);
+   SwapEndian Swap(1);
    F F0;
    F F1;
    F F2;

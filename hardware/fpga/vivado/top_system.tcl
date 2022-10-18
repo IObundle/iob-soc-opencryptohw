@@ -35,7 +35,6 @@ if { $USE_DDR < 0 } {
         read_ip ./ip/axi_interconnect_0/axi_interconnect_0.xci
         report_property [get_files ./ip/axi_interconnect_0/axi_interconnect_0.xci]
     } else {
-
         create_ip -name axi_interconnect -vendor xilinx.com -library ip -version 1.7 -module_name axi_interconnect_0 -dir ./ip -force
 
         set_property -dict \
@@ -103,16 +102,13 @@ synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $
 report_utilization -hierarchical -file reports/synth_utilization.txt
 
 opt_design -debug_log -verbose
-report_timing_summary -file reports/opt_timing.txt -max_paths 30
+report_timing_summary -file reports/opt_timing.txt -max_paths 3000
 
 place_design
 
 route_design
 
-report_utilization
-report_timing
-
-report_timing -file reports/timing.txt -max_paths 30
+report_timing -file reports/timing.txt -max_paths 3000
 report_clocks -file reports/clocks.txt
 report_clock_interaction -file reports/clock_interaction.txt
 report_cdc -details -file reports/cdc.txt
