@@ -15,15 +15,6 @@ software/*/*
 !software/bootloader/boot.c
 !software/bootloader/boot.S
 
-!software/firmware/firmware.cpp
-!software/firmware/automaticTests.cpp
-!software/firmware/unitConfiguration.cpp
-!software/firmware/unitConfiguration.hpp
-!software/firmware/firmware.S
-!software/firmware/profile.c
-!software/firmware/profile.h
-!software/firmware/crypto/
-
 !software/console/console
 !software/console/eth_console
 
