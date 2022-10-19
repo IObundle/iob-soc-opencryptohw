@@ -1241,8 +1241,6 @@ TEST(SHA){
 
    InitVersatSHA(versat,true);
 
-   //OutputMemoryMap(versat,accel);
-
    unsigned char digest[256];
    for(int i = 0; i < 256; i++){
       digest[i] = 0;
@@ -1278,17 +1276,17 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-   #if 1
-   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,true);
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,true);
-   #endif
-
 #if 1
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,true);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
+#endif
+
+#if 0
    TEST_INST( 0 ,TestMStage);
    TEST_INST( 0 ,TestFStage);
-   TEST_INST( 1 ,SHA); // Need to fix the default values initialized to put this working again
+   TEST_INST( 0 ,SHA); // Need to fix the default values initialization to put this working again
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,VReadToVWrite);
    TEST_INST( 1 ,StringHasher);
    TEST_INST( 1 ,Convolution);

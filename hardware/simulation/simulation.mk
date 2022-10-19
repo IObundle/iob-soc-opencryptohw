@@ -20,7 +20,7 @@ DDR_ADDR_W=$(DCACHE_ADDR_W)
 CONSOLE_CMD=$(PYTHON_DIR)/console -L
 
 #produce waveform dump
-VCD ?=1
+VCD ?=0
 
 ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
