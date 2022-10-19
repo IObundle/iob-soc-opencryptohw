@@ -1276,7 +1276,7 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 1
+#if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
    SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,false);
 #endif
