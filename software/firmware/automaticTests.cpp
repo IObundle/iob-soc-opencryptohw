@@ -859,7 +859,6 @@ TEST(AESRound){
 static void FillAES(FUInstance* inst){
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
    for(int i = 0; i < 10; i++){
-      //printf("%d\n",i);
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
@@ -867,9 +866,7 @@ static void FillAES(FUInstance* inst){
    }
    FillSubBytes(GetInstanceByName(inst,"subBytes"));
 
-   //printf("\n");
    for(int i = 0; i < 9; i++){
-      //printf("%d\n",i);
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -1064,6 +1061,45 @@ TEST(ComplexMultiplier){
    return EXPECT("20","%d",result);
 }
 
+TEST(ShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ShareConfig"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   FUInstance* a1 = GetInstanceByName(accel,"Test","a1");
+   FUInstance* a2 = GetInstanceByName(accel,"Test","a2");
+   FUInstance* b1 = GetInstanceByName(accel,"Test","b1");
+   FUInstance* b2 = GetInstanceByName(accel,"Test","b2");
+   FUInstance* out0 = GetInstanceByName(accel,"Test","out0");
+   FUInstance* out1 = GetInstanceByName(accel,"Test","out1");
+   FUInstance* out2 = GetInstanceByName(accel,"Test","out2");
+
+   a1->config[0] = 2;
+   AcceleratorRun(accel);
+   int res0 = out0->state[0];
+
+   a1->config[0] = 0;
+   a2->config[0] = 3;
+   AcceleratorRun(accel);
+   int res1 = out0->state[0];
+
+   b2->config[0] = 4;
+   AcceleratorRun(accel);
+   int res2 = out1->state[0];
+
+   a1->config[0] = 0;
+   a2->config[0] = 0;
+   b1->config[0] = 0;
+   b2->config[0] = 0;
+
+   a2->config[0] = 3;
+   b2->config[0] = 4;
+   AcceleratorRun(accel);
+   int res3 = out2->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
+}
+
 TEST(SimpleFlatten){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1127,7 +1163,7 @@ TEST(ComplexFlatten){
    AcceleratorRun(flatten);
 
    //CheckMemory(flatten,flatten);
-   //DisplayAcceleratorMemory(flatten);
+   DisplayAcceleratorMemory(flatten);
 
    OutputVersatSource(versat,flatten,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
@@ -1306,12 +1342,15 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 1
-   TEST_INST( 1 ,SimpleFlatten);
-   TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
-   TEST_INST( DISABLED ,ComplexFlatten);
+#if 0
+   TEST_INST( 1 ,ShareConfig);
 #endif
-#if 1
+#if 0
+   TEST_INST( 0 ,SimpleFlatten);
+   TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
+   TEST_INST( 0 ,ComplexFlatten);
+#endif
+#if 0
    TEST_INST( 1 ,SimpleMergeNoCommon);
    TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
@@ -1322,6 +1361,72 @@ void AutomaticTests(Versat* versat){
 
    printf("\nAutomatic tests done (passed/total): %d / %d\n",info.testsPassed,info.numberTests);
 }
+
+/*
+
+How to handle flattening of static units?
+
+Static units are units that share the configuration pointer among any unit in the accelerator that has the same parent module and the same name
+
+After flattening, those units will have the same module and different names
+
+Therefore, need a way of sharing configurations for units inside the same module and with different names
+
+A Share block can be uniquely identified by the module it belongs too as well as a index, for the case where a module has multiple share blocks
+
+Share state?
+
+   Makes no sense, except for the merge case? Or if I intend to implement the concept of instance unions
+
+Share memory?
+
+   Makes sense and possible, because we can share the iob_native wires and as such, accessing one unit is equivalent to accessing all of them
+
+Share IO?
+
+   Don't even know what that would look like, specially because for IO, each unit is a Master, so hard to "share".
+
+Share anything more?
+
+Share config + memory (+ state) = Same unit (If unit is a source of data, sharing both might be better, but only if unit is less complex than the "Delay" unit)
+
+Share config + state (and no memory mapped) = Same unit (If unit is a source of data, sharing both might be better, but only if unit is less complex than the "Delay" unit)
+
+Share state + memory - Not very useful, I think
+
+Flatten static units become share blocks
+
+Share blocks flatten become share blocks
+
+Probably need to rework the static info thing
+   - Make it generic for any kind of sharing and stuff
+   - Because it is literally all it is, a "global" accelerator tracker of which units interfaces are shared with one another
+
+Populate with shared units
+
+   Need to keep track when a shared region is first encountered
+   Since regions are module specific, put code inside the for loop that loops through instances
+      Then hijack the config pointer to point to the section previously pushed
+
+Shared Static?
+
+   Do not allow static inside a share config block
+      Makes no sense,
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
