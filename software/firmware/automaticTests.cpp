@@ -1160,7 +1160,7 @@ TEST(SimpleMergeNoCommon){
    return EXPECT("7 6","%d %d",resA,resB);
 }
 
-TEST(SimpleMergeUnitCommonNoEdgeCommon){
+TEST(SimpleMergeUnitCommonNoEdge){
    FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
    FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ComplexAdder"));
 
@@ -1277,14 +1277,14 @@ void AutomaticTests(Versat* versat){
    int currentTest = 0;
 
 #if 1
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,true);
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,false);
 #endif
 
-#if 0
-   TEST_INST( 0 ,TestMStage);
-   TEST_INST( 0 ,TestFStage);
-   TEST_INST( 0 ,SHA); // Need to fix the default values initialization to put this working again
+#if 1
+   TEST_INST( 1 ,TestMStage);
+   TEST_INST( 1 ,TestFStage);
+   TEST_INST( 1 ,SHA);
 #endif
 #if 1
    TEST_INST( 1 ,VReadToVWrite);
@@ -1306,18 +1306,14 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 0
-   TEST_INST( 0 ,SimpleFlatten);
-   TEST_INST( 0 ,FlattenSHA); // Without handling static units, probably will not work
-   TEST_INST( 0 ,ComplexFlatten);
+#if 1
+   TEST_INST( 1 ,SimpleFlatten);
+   TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
+   TEST_INST( DISABLED ,ComplexFlatten);
 #endif
-#if 0
-   #if 0
-   SetDebug(versat,true);
-   #endif
-
+#if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
-   TEST_INST( 1 ,SimpleMergeUnitCommonNoEdgeCommon);
+   TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
    TEST_INST( 1 ,SimpleMergeInputOutputCommon);
 #endif

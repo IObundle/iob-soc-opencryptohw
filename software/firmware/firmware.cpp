@@ -38,34 +38,6 @@ struct TimeIt{
 #define MEMSET(base, location, value) (*((volatile int*) (base + (sizeof(int)) * location)) = value)
 #define MEMGET(base, location)        (*((volatile int*) (base + (sizeof(int)) * location)))
 
-/*
-int ClearCache(){
-#ifdef PC
-   static int buffer[4096 * 4096];
-   int currentValue = 1;
-   int lastValue = 0;
-
-   for(int i = 0; i < 4096 * 4096; i += 4096){
-      lastValue = buffer[i];
-      buffer[i] = currentValue;
-   }
-   currentValue += 1;
-
-   return lastValue;
-#else
-   volatile int* ptr = (volatile int*) (EXTRA_BASE);
-   static int sum = 0;
-   for(int i = 0; i < 4096 * 256; i += 1){
-      int val = ptr[i];
-      sum += val;
-   }
-
-   printf("[Ignore]%d\n\n",sum);
-   return sum;
-#endif
-}
-*/
-
 void AutomaticTests(Versat* versat);
 
 int main(int argc,const char* argv[])
@@ -79,7 +51,8 @@ int main(int argc,const char* argv[])
 
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
-   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,true);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,false);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,false);
 
    ParseCommandLineOptions(versat,argc,argv);
 
