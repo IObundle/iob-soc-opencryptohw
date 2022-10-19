@@ -1,3 +1,5 @@
 ROOT_DIR:=../..
-include $(ROOT_DIR)/system.mk
-include $(TEX_DIR)/document/document.mk
+
+NOCLEAN = -name "presentation.tex" -o -name "presentation.pdf"
+
+include $(ROOT_DIR)/document/document.mk

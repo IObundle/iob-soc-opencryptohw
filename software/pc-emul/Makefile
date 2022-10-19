@@ -1,84 +1,119 @@
 ROOT_DIR:=../..
+
+GLOBAL_CFLAGS:=-g -m32 -Wall #-fsanitize=address
+
 include ../software.mk
-
-#default baud and freq for pc emulation
-BAUD=5000000
-FREQ=100000000
-
-#additional compiler flags
-CFLAGS=-g -m32 -std=c99
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=-DPC
 
-EMUL_LOG:=emul.log
+SOC_LOG:=soc.log
+ETH_LOG:=ethernet.log
+EMUL_PROFILE_LOG:=emul_profile.log
 
 #SUBMODULES
 
 #peripherals (pc)
-SUB_DIR:=$(SUBMODULES_DIR)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/pc-emul/pc.mk))
+$(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.mk))
 
 #HEADERS
-HDR+=periphs.h test_vectors.h
+HDR+=periphs.h 
+
+HDR+=$(FIRM_DIR)/unitConfiguration.hpp
 
 #SOURCES
-SRC+= $(FIRM_DIR)/firmware.c
+SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
-SRC+=$(UART_DIR)/software/printf.c
+SRC+= $(FIRM_DIR)/automaticTests.cpp
+SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= $(FIRM_DIR)/versatSHA.cpp
 
-#TEST VECTOR
-TEST_VECTOR_RSP:=$(SW_TEST_DIR)/SHA256ShortMsg.rsp
-VALIDATION_LOG:=validation.log
+#SRC+= ./ila.c
+
+INCLUDE+=$(incdir)./build
+
+SOC_OUT_BIN:=soc-out.bin
+
+#PROFILE
+ifeq ($(PROFILE),1)
+HDR+=$(FIRM_DIR)/profile.h
+SRC+= $(FIRM_DIR)/profile.c
+DEFINE+=$(defmacro)PROFILE
+INCLUDE+=$(incdir)$(FIRM_DIR)
+endif
 
 #UNITS TO VERILATE
-VERILATE_UNIT = xunitF xunitM
+VERILATE_UNIT := xunitF xunitM
+UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
 
-UNIT_OBJ+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj)__ALLcls.o)
-OBJ+=./build/unitWrapper.o
+UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
+OBJ+=./build/firmware.o
+
+#CONSOLE
+CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
 #RULES
 
-all: build run
+build: gen_data fw_emul
+	mkdir -p debug
+	mkdir -p src
+	mkdir -p trace_out
 
-ifeq ($(AUTOMATIC_TEST),1)
-run: firmware.out
-	./firmware.out $(TEST_LOG) > $(EMUL_LOG)
-	@tail -n +6 $(TEST_VECTOR_RSP) > $(VALIDATION_LOG)
-	@sed -i 's/\r//' $(VALIDATION_LOG) #remove carriage return chars
-	@if cmp --silent $(VALIDATION_LOG) $(EMUL_LOG); then echo "\n\nShortMessage Test PASSED\n\n"; else echo "\n\nShortMessage Test FAILED\n\n"; exit 1; fi;
-	@rm -rf $(VALIDATION_LOG)
-	mv versat_instance.v $(HW_DIR)/src/
-	mv versat_defs.vh $(HW_DIR)/include/
-	mv versat_constants.c $(FIRM_DIR)/
-else
-run: firmware.out
-	./firmware.out $(TEST_LOG)
-	mv versat_instance.v $(HW_DIR)/src/
-	mv versat_defs.vh $(HW_DIR)/include/
-	mv versat_constants.c $(FIRM_DIR)/
-endif
+fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
+	
+run: build
+	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
+	@mkdir -p debug
+	@mkdir -p src
+	./fw_emul $(TEST_LOG)
+	cp versat_instance.v $(HW_DIR)/src/
+	cp versat_defs.vh $(HW_DIR)/include/
+	cp versat_data.inc $(FIRM_DIR)/
+	cp ./build/verilogWrapper.inc $(FIRM_DIR)/
+	cp src/* $(HW_DIR)/src/GeneratedUnits/
 
-build: firmware.out
+clean:
+	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+	@rm -f versat_data.inc versat_defs.vh versat_instance.v
+	@make -C $(SW_DIR)/python clean
+	@make -C $(SW_TEST_DIR) clean
+	@rm -f -r ./build
+	@rm -f -r ./debug
+	@rm -f -r ./src
+	@rm -f -r ./trace_out
+	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 
-firmware.out: $(HDR) $(SRC) $(UNIT_OBJ) $(OBJ)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc
+test: 
+	make run
+	make validate
 
-./build/unitWrapper.o: $(FIRM_DIR)/unitWrapper.cpp $(UNIT_OBJ)
-	g++ -std=c++11 -g -c -o ./build/unitWrapper.o -m32 $(FIRM_DIR)/unitWrapper.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
+validate:
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
-./build/V%__ALLcls.o ./build/V%__ALLsup.o: $(HW_DIR)/src/units/%.v
-	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+profile: clean $(EMUL_PROFILE_LOG)
+	@printf "\n=== PROFILE LOG ===\n"
+	@cat $(EMUL_PROFILE_LOG)
+	@printf "=== PROFILE LOG ===\n"
+
+$(SOC_LOG): 
+	make run PROFILE=1 TEST_LOG="> $(SOC_LOG)"
+
+$(EMUL_PROFILE_LOG): $(SOC_LOG)
+	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
+
+./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)
+	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
+
+./build/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;
 	mv ./obj/*.h ./build/
 	rm -r -f ./obj
-	
-#SHA256 test vectors
-test_vectors.h:
-	./$(SW_TEST_DIR)/gen_test_header.py $(TEST_VECTOR_RSP) > $@
 
-clean:
-	@rm -rf firmware.out periphs.h test.log test_vectors.h $(EMUL_LOG) $(VALIDATION_LOG) build headers versat_instance_template.h UARTsw_reg.h
+.PHONY: build run \
+	test validate profile \
+	clean
 
-.PHONY: all build run clean subs periphs_tmp.h firmware.out

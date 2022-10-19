@@ -2,7 +2,7 @@
 `include "xversat.vh"
 
 module xunitF #(
-         parameter DELAY_W = 10,
+         parameter DELAY_W = 32,
          parameter DATA_W = 32
               )
     (
@@ -26,20 +26,20 @@ module xunitF #(
     input [DATA_W-1:0]  in8,
     input [DATA_W-1:0]  in9,
 
-    output [DATA_W-1:0] out0,
-    output [DATA_W-1:0] out1,
-    output [DATA_W-1:0] out2,
-    output [DATA_W-1:0] out3,
-    output [DATA_W-1:0] out4,
-    output [DATA_W-1:0] out5,
-    output [DATA_W-1:0] out6,
-    output [DATA_W-1:0] out7,
+    (* latency=16 *) output [DATA_W-1:0] out0,
+    (* latency=16 *) output [DATA_W-1:0] out1,
+    (* latency=16 *) output [DATA_W-1:0] out2,
+    (* latency=16 *) output [DATA_W-1:0] out3,
+    (* latency=16 *) output [DATA_W-1:0] out4,
+    (* latency=16 *) output [DATA_W-1:0] out5,
+    (* latency=16 *) output [DATA_W-1:0] out6,
+    (* latency=16 *) output [DATA_W-1:0] out7,
 
     //configurations
-    input [7:0]         delay0 // Encodes delay
+    input [DELAY_W-1:0]         delay0 // Encodes delay
     );
 
-reg [7:0] delay;
+reg [DELAY_W-1:0] delay;
 reg [31:0] a,b,c,d,e,f,g,h;
 
 assign out0 = a;
@@ -95,10 +95,16 @@ endfunction
 wire [31:0] T1 = h + Sigma1_32(e) + Ch(e,f,g) + k + w;
 wire [31:0] T2 = Sigma0_32(a) + Maj(a,b,c);
 
+wire [31:0] T1_init = in7 + Sigma1_32(in4) + Ch(in4,in5,in6) + k + w;
+wire [31:0] T2_init = Sigma0_32(in0) + Maj(in0,in1,in2);
+
+reg working;
+
 always @(posedge clk,posedge rst)
 begin
    if(rst) begin
       delay <= 0;
+      working <= 0;
       a <= 0;
       b <= 0;
       c <= 0;
@@ -109,32 +115,30 @@ begin
       h <= 0;
    end else if(run) begin
       delay <= delay0;
-   end else begin
-      if(|delay) begin
+      working <= 0;
+   end else if(!working) begin
+      if(delay == 0) begin
+         a <= T1_init + T2_init;
+         b <= in0;
+         c <= in1;
+         d <= in2;
+         e <= in3 + T1_init;
+         f <= in4;
+         g <= in5;
+         h <= in6;
+         working <= 1'b1;
+      end else begin
          delay <= delay - 1;
       end
-
-      if(delay == 1) begin
-         a <= in0;
-         b <= in1;
-         c <= in2;
-         d <= in3;
-         e <= in4;
-         f <= in5;
-         g <= in6;
-         h <= in7;
-      end
-
-      if(delay == 0) begin
-         a <= T1 + T2;
-         b <= a;
-         c <= b;
-         d <= c;
-         e <= d + T1;
-         f <= e;
-         g <= f;
-         h <= g;
-      end
+   end else begin
+      a <= T1 + T2;
+      b <= a;
+      c <= b;
+      d <= c;
+      e <= d + T1;
+      f <= e;
+      g <= f;
+      h <= g;
    end
 end
 

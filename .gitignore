@@ -1,45 +1,50 @@
 #TOP
-test_report.log
+#nothing to ignore
 
 #SOFTWARE
 software/periphs.h
 
 software/*/*
+!software/*/makefile
 !software/*/Makefile
 !software/*/*.expected
 !software/*/*.py
 !software/*/*.rsp
+!software/*/*.c
+!software/*/*.cpp
+!software/*/*.hpp
 
 !software/bootloader/boot.c
 !software/bootloader/boot.S
 
-!software/firmware/firmware.c
-!software/firmware/unitWrapper.c
-!software/firmware/unitWrapper.cpp
-!software/firmware/unitWrapper.h
-!software/firmware/firmware.S
-!software/firmware/crypto/
+!software/console/console
+!software/console/eth_console
 
-!software/console/console.c
-!software/console/console.h
-!software/console/rs232comm.c
-!software/console/socketcomm.c
 
 #HARDWARE
 #sources
 hardware/src/system.v
 hardware/src/versat_instance.v
+hardware/src/GeneratedUnits/*
 hardware/testbench/system_tb.v
 hardware/include/versat_defs.vh
+#scala sources
+hardware/src/spinalHDL/project/*
+hardware/src/spinalHDL/target/*
 
 #simulation
 hardware/simulation/*/*
+!hardware/simulation/verilog_tb/*
+
+!hardware/simulation/simulation.mk
 !hardware/simulation/*/Makefile
-!hardware/simulation/*/test.expected
-!hardware/simulation/xcelium/run_xmsim.sh
+!hardware/simulation/*/*.expected
+!hardware/simulation/*/*.sh
+!hardware/simulation/verilator/*.cpp
 
 #fpga
 hardware/fpga/*/*/*
+!hardware/fpga/fpga.mk
 !hardware/fpga/*/*/Makefile
 !hardware/fpga/*/*/*.tcl
 !hardware/fpga/*/*/*.expected
@@ -48,10 +53,11 @@ hardware/fpga/*/*/*
 !hardware/fpga/vivado/*/*.xdc
 !hardware/fpga/quartus/*/*.sdc
 
+!hardware/fpga/quartus/*/qsys
+
 #DOCUMENT
 document/*/*
 !document/*/Makefile
 !document/*/*.expected
 !document/*/*.pdf
 !document/presentation/presentation.tex
-

@@ -1,15 +1,23 @@
-#DEFINES
+include $(ROOT_DIR)/hardware/hardware.mk
+
+
+#axi portmap for axi ram
+VHDR+=s_axi_portmap.vh
+s_axi_portmap.vh:
+	$(LIB_DIR)/software/python/axi_gen.py axi_portmap 's_' 's_' 'm_'
 
 #default baud and freq for simulation
-BAUD ?=5000000
-FREQ ?=100000000
+BAUD=$(SIM_BAUD)
+FREQ=$(SIM_FREQ)
 
 #define for testbench
 DEFINE+=$(defmacro)BAUD=$(BAUD)
 DEFINE+=$(defmacro)FREQ=$(FREQ)
 
 #ddr controller address width
-DDR_ADDR_W=24
+DDR_ADDR_W=$(DCACHE_ADDR_W)
+
+CONSOLE_CMD=$(PYTHON_DIR)/console -L
 
 #produce waveform dump
 VCD ?=0
@@ -18,85 +26,145 @@ ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
 endif
 
-include $(ROOT_DIR)/hardware/hardware.mk
+ifeq ($(INIT_MEM),0)
+CONSOLE_CMD+=-f
+endif
+
+ifneq ($(wildcard  firmware.hex),)
+FW_SIZE=$(shell wc -l firmware.hex | awk '{print $$1}')
+endif
+
+DEFINE+=$(defmacro)FW_SIZE=$(FW_SIZE)
 
 #SOURCES
-#asic post-synthesis and post-pr sources
-ifeq ($(ASIC_SIM),1)
-ASIC_SIM_LIB ?= my_asic_sim_lib
-$(wildcard $(ASIC_DIR)/$(ASIC_NODE)/memory/bootrom/SP*.v)
-$(wildcard $(ASIC_DIR)/$(ASIC_NODE)/memory/sram/SH*.v)
-ifeq ($(ASIC_SYNTH),1)
-VSRC=$(ASIC_DIR)/$(ASIC_NODE)/synth/system_synth.v
-endif
-ifeq ($(ASIC_PR),1)
-VSRC=$(ASIC_DIR)/$(ASIC_NODE)/pr/system_pr.v
-endif
-endif
 
-#ddr memory
-VSRC+=$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_ram.v \
-$(CACHE_DIR)/submodules/AXIMEM/rtl/arbiter.v \
-$(CACHE_DIR)/submodules/AXIMEM/rtl/priority_encoder.v \
-$(CACHE_DIR)/submodules/AXIMEM/rtl/axi_interconnect.v
+#verilog testbench
+TB_DIR:=$(HW_DIR)/simulation/verilog_tb
+
+#axi memory
+include $(AXI_DIR)/hardware/axiram/hardware.mk
+
+VSRC+=system_top.v
+
 #testbench
+ifneq ($(SIMULATOR),verilator)
 VSRC+=system_tb.v
+endif
 
 #RULES
-all: clean sw
+build: $(VSRC) $(VHDR) $(HEXPROGS)
 ifeq ($(SIM_SERVER),)
-	make run 
+	make comp
 else
-	ssh $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
-	rsync -avz --exclude .git $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
-	bash -c "trap 'make kill-remote-sim' INT; ssh $(SIM_USER)@$(SIM_SERVER) 'cd $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR); make run INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM) VCD=$(VCD) TEST_LOG=\"$(TEST_LOG)\"'"
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
+	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR) sim-build SIMULATOR=$(SIMULATOR) INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM) VCD=$(VCD) TEST_LOG=\"$(TEST_LOG)\"'
+endif
+
+run: sim
+ifeq ($(VCD),1)
+	if [ ! `pgrep -u $(USER) gtkwave` ]; then gtkwave system.vcd; fi &
+endif
+
+sim:
+ifeq ($(SIM_SERVER),)
+	cp $(FIRM_DIR)/firmware.bin .
+	@rm -f soc2cnsl cnsl2soc
+	$(CONSOLE_CMD) $(TEST_LOG) &
+	bash -c "trap 'make kill-cnsl' INT TERM KILL EXIT; make exec"
+else
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
+	rsync -avz --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
+	bash -c "trap 'make kill-remote-sim' INT TERM KILL; ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR) $@ SIMULATOR=$(SIMULATOR) INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM) VCD=$(VCD) TEST_LOG=\"$(TEST_LOG)\"'"
 ifneq ($(TEST_LOG),)
 	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/test.log $(SIM_DIR)
 endif
 ifeq ($(VCD),1)
-	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)//hardware/simulation/$(SIMULATOR)/*.vcd $(SIM_DIR)
+	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/*.vcd $(SIM_DIR)
 endif
 endif
-ifeq ($(VCD),1)
-	if [ "`pgrep -u $(USER) gtkwave`" ]; then killall -q -9 gtkwave; fi
-	gtkwave -a ../waves.gtkw system.vcd &
-endif
+
+#
+#EDIT TOP OR TB DEPENDING ON SIMULATOR
+#
+
+system_tb.v:
+	cp $(TB_DIR)/system_core_tb.v $@
+	$(if $(HFILES), $(foreach f, $(HFILES), sed -i '/PHEADER/a `include \"$f\"' $@;),) # insert header files
+
+#create  simulation top module
+system_top.v: $(TB_DIR)/system_top_core.v
+	cp $< $@
+	$(foreach p, $(PERIPHERALS), $(eval HFILES=$(shell echo `ls $($p_DIR)/hardware/include/*.vh | grep -v pio | grep -v inst | grep -v swreg`)) \
+	$(eval HFILES+=$(notdir $(filter %swreg_def.vh, $(VHDR)))) \
+	$(if $(HFILES), $(foreach f, $(HFILES), sed -i '/PHEADER/a `include \"$f\"' $@;),)) # insert header files
+	$(foreach p, $(PERIPHERALS), if test -f $($p_DIR)/hardware/include/pio.vh; then sed s/input/wire/ $($p_DIR)/hardware/include/pio.vh | sed s/output/wire/  | sed s/\,/\;/ > wires_tb.vh; sed -i '/PWIRES/r wires_tb.vh' $@; fi;) # declare and insert wire declarations
+	$(foreach p, $(PERIPHERALS), if test -f $($p_DIR)/hardware/include/pio.vh; then sed s/input// $($p_DIR)/hardware/include/pio.vh | sed s/output// | sed 's/\[.*\]//' | sed 's/\([A-Za-z].*\),/\.\1(\1),/' > ./ports.vh; sed -i '/PORTS/r ports.vh' $@; fi;) #insert and connect pins in uut instance
+	$(foreach p, $(PERIPHERALS), if test -f $($p_DIR)/hardware/include/inst_tb.vh; then sed -i '/endmodule/e cat $($p_DIR)/hardware/include/inst_tb.vh' $@; fi;) # insert peripheral instances
 
 
-#create testbench
-system_tb.v: $(TB_DIR)/system_core_tb.v
-	cp $(TB_DIR)/system_core_tb.v $@  # create system_tb.v
-	$(foreach p, $(PERIPHERALS), if [ `ls -1 $(SUBMODULES_DIR)/$p/hardware/include/*.vh 2>/dev/null | wc -l ` -gt 0 ]; then $(foreach f, $(shell echo `ls $(SUBMODULES_DIR)/$p/hardware/include/*.vh`), sed -i '/PHEADER/a `include \"$f\"' $@;) break; fi;) # insert header files
-	$(foreach p, $(PERIPHERALS), if test -f $(SUBMODULES_DIR)/$p/hardware/include/pio.v; then sed s/input/wire/ $(SUBMODULES_DIR)/$p/hardware/include/pio.v | sed s/output/wire/  | sed s/\,/\;/ > wires_tb.v; sed -i '/PWIRES/r wires_tb.v' $@; fi;) # declare and insert wire declarations
-	$(foreach p, $(PERIPHERALS), if test -f $(SUBMODULES_DIR)/$p/hardware/include/pio.v; then sed s/input// $(SUBMODULES_DIR)/$p/hardware/include/pio.v | sed s/output// | sed 's/\[.*\]//' | sed 's/\([A-Za-z].*\),/\.\1(\1),/' > ./ports.v; sed -i '/PORTS/r ports.v' $@; fi;) #insert and connect pins in uut instance
-	$(foreach p, $(PERIPHERALS), if test -f $(SUBMODULES_DIR)/$p/hardware/include/inst_tb.sv; then sed -i '/endmodule/e cat $(SUBMODULES_DIR)/$p/hardware/include/inst_tb.sv' $@; fi;) # insert peripheral instances
-
-
-VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $(SUBMODULES_DIR)/$p/hardware/testbench/module_tb.sv; then echo $(SUBMODULES_DIR)/$p/hardware/testbench/module_tb.sv; fi;)) #add test cores to list of sources
+#add peripheral testbench sources
+VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $($p_DIR)/hardware/testbench/module_tb.sv; then echo $($p_DIR)/hardware/testbench/module_tb.sv; fi;))
 
 kill-remote-sim:
 	@echo "INFO: Remote simulator $(SIMULATOR) will be killed"
-	ssh $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC)'
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC); \
+	make -C $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR) kill-cnsl'
+ifeq ($(VCD),1)
+	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/*.vcd $(SIM_DIR)
+endif
+
+test: clean-testlog test1 test2 test3 test4 test5
+	diff test.log ../test.expected
+
+test1:
+	make -C $(ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log"
+test2:
+	make -C $(ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)
+	make -C $(ROOT_DIR) sim-run INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log"
+test3:
+	make -C $(ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0 TEST_LOG=">> test.log"
+test4:
+	make -C $(ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log"
+test5:
+	make -C $(ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)
+	make -C $(ROOT_DIR) sim-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log"
+
 
 #clean target common to all simulators
-clean-remote: hw-clean 
+clean-remote: hw-clean
+	@rm -f soc2cnsl cnsl2soc *.txt
 	@rm -f system.vcd
 ifneq ($(SIM_SERVER),)
-	ssh $(SIM_USER)@$(SIM_SERVER) 'if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi'
-	rsync -avz --delete --exclude .git $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(SIM_USER)@$(SIM_SERVER) 'cd $(REMOTE_ROOT_DIR); make sim-clean SIMULATOR=$(SIMULATOR)'
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
+	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR) sim-clean SIMULATOR=$(SIMULATOR)'
 endif
 
 #clean test log only when sim testing begins
 clean-testlog:
 	@rm -f test.log
 ifneq ($(SIM_SERVER),)
-	ssh $(SIM_USER)@$(SIM_SERVER) 'if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi'
-	rsync -avz --delete --exclude .git $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(SIM_USER)@$(SIM_SERVER) 'cd $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR); rm -f test.log'
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
+	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'rm -f $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/test.log'
 endif
 
-
+debug:
+	@echo $(VHDR)
+	@echo $(VSRC)
+	@echo $(INCLUDE)
+	@echo $(DEFINE)
+	@echo $(MEM_DIR)
+	@echo $(CPU_DIR)
+	@echo $(CACHE_DIR)
+	@echo $(UART_DIR)
 
 .PRECIOUS: system.vcd test.log
-.PHONY: all clean-remote clean-testlog kill-remote-sim
+
+.PHONY: build run sim \
+	kill-remote-sim clean-remote \
+	test test1 test2 test3 test4 test5 clean-testlog

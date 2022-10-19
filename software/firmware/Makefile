@@ -1,46 +1,60 @@
-ROOT_DIR:=../..
+ROOT_DIR=../..
 include ../software.mk
 
-SUB_DIR:=$(SUBMODULES_DIR)
-
-#additional compiler flags
-CFLAGS+=--specs=nano.specs -Wl,-Bstatic,-T,../template.lds,-Map,firmware.map,--strip-debug
-
-#SUBMODULES
+#additional linker flag
+LFLAGS+=-Wl,-Map,firmware.map
 
 #cache
 ifeq ($(USE_DDR),1)
 include $(CACHE_DIR)/software/software.mk
 endif
 
-#peripherals (embedded)
-$(foreach p, $(PERIPHERALS), $(eval include $(SUB_DIR)/$p/software/embedded/embedded.mk))
+#uart
+include $(UART_DIR)/software/embedded/embedded.mk
+
+#timer
+include $(TIMER_DIR)/software/embedded/embedded.mk
+
+#versat
+include $(VERSAT_DIR)/software/embedded/embedded.mk
+
+#ila
+include $(ILA_DIR)/software/embedded/embedded.mk
 
 #HEADERS
 HDR+=periphs.h
 
 #SOURCES
-SRC+= firmware.S firmware.c $(UART_DIR)/software/printf.c
+SRC+= firmware.S firmware.cpp $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
-SRC+= $(FIRM_DIR)/unitWrapper.c
-SRC+= $(FIRM_DIR)/versat_constants.c
+SRC+= $(FIRM_DIR)/automaticTests.cpp
+SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= $(FIRM_DIR)/versatSHA.cpp
+#SRC+= $(FIRM_DIR)/ila.c
+
+#PROFILE
+ifeq ($(PROFILE),1)
+HDR+=$(FIRM_DIR)/profile.h
+SRC+= $(FIRM_DIR)/profile.c
+DEFINE+=$(defmacro)PROFILE
+endif
+
+#SIMULATION
+ifeq ($(SIM),1)
+DEFINE+=$(defmacro)SIM
+endif
 
 #RULES
-run: firmware.elf
 
-firmware.elf: ../template.lds $(HDR) $(SRC)
-	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) -lgcc -lc -lnosys
+build: firmware.elf
+
+firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
+	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS) -lgcc -lc -lnosys -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
-#peripherals' base addresses
-periphs.h: periphs_tmp.h
-	is_diff=`diff -q $@ $<`; if [ 'is_diff' ]; then cp $< $@; fi
-	@rm periphs_tmp.h
+clean:
+	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h *swreg.h \
+		*swreg_emb.c \
+		*d_in.bin *d_out.bin
 
-periphs_tmp.h:
-	$(foreach p, $(PERIPHERALS), $(shell echo "#define $p_BASE (1<<$P) |($p<<($P-N_SLAVES_W))" >> $@) )
-
-clean: gen-clean 
-	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h
-
-.PHONY: run clean subs periphs_tmp.h
+.PHONY: build clean

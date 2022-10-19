@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import string
 import sys
@@ -11,7 +11,7 @@ def format_msg_to_header(msg, count):
     byte_list = re.findall('..', msg)
 
     # generate static char array for C header
-    formated_msg = "char msg_" + str(count) + "[] = { "
+    formated_msg = "unsigned char msg_" + str(count) + "[] = { "
     first = True
     # append each by to array
     for byte_str in byte_list:
@@ -26,7 +26,7 @@ def format_msg_to_header(msg, count):
     return formated_msg
 
 def msg_array(count):
-    formated_msg = "char *msg_array[] = { "
+    formated_msg = "unsigned char *msg_array[] = { "
     first = True
     for i in range(count):
         if first:

@@ -1,113 +1,58 @@
 [*]
-[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Feb 12 03:28:18 2021
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Wed Jul 13 18:14:26 2022
 [*]
-[dumpfile] "(null)"
-[savefile] "/home/jsousa/sandbox/iob-soc/hardware/simulation/waves.gtkw"
-[timestart] 13966554000
-[size] 1918 1031
+[dumpfile] "/home/zettasticks/IOBundle/iob-soc-sha/hardware/simulation/icarus/system.vcd"
+[dumpfile_mtime] "Wed Jul 13 18:10:54 2022"
+[dumpfile_size] 107805182
+[savefile] "/home/zettasticks/IOBundle/iob-soc-sha/hardware/simulation/waves.gtkw"
+[timestart] 121106200
+[size] 1848 1016
 [pos] -1 -1
-*-20.371645 13971110000 14260000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-15.371645 121185200 14260000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] system_tb.
-[treeopen] system_tb.uut.
-[treeopen] system_tb.uut.cpu.picorv32_core.
-[treeopen] system_tb.uut.cpu.picorv32_core.genblk1.
-[treeopen] system_tb.uut.cpu.picorv32_core.genblk5.
-[treeopen] system_tb.uut.int_mem0.
-[treeopen] system_tb.uut.int_mem0.int_sram.
+[treeopen] system_tb.system_top.
+[treeopen] system_tb.system_top.uut.
+[treeopen] system_tb.system_top.uut.int_mem0.
+[treeopen] system_tb.system_top.uut.int_mem0.int_sram.
+[treeopen] system_tb.system_top.uut.versat.
+[treeopen] system_tb.system_top.uut.versat.xversat.
+[treeopen] system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.
 [sst_width] 324
-[signals_width] 358
+[signals_width] 303
 [sst_expanded] 1
 [sst_vpaned_height] 440
-@200
--INT MEM
+@28
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.clk
 @22
-system_tb.uut.int_mem0.i_req[68:0]
-system_tb.uut.int_mem0.i_resp[32:0]
-system_tb.uut.int_mem0.ram_i_req[68:0]
-system_tb.uut.int_mem0.ram_i_resp[32:0]
-system_tb.uut.int_mem0.d_req[68:0]
-system_tb.uut.int_mem0.d_resp[32:0]
-@200
--TIMER
--sram
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.currentIteration[9:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.currentPeriod[9:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.delay0[31:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.delay[31:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.dsp_out0[63:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.iterations[9:0]
 @28
-system_tb.uut.int_mem0.int_sram.i_valid
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.opcode
 @22
-system_tb.uut.int_mem0.int_sram.i_wstrb[3:0]
-system_tb.uut.int_mem0.int_sram.i_rdata[31:0]
-@28
-system_tb.uut.int_mem0.int_sram.i_ready
-system_tb.uut.int_mem0.int_sram.d_valid
-@22
-system_tb.uut.int_mem0.int_sram.d_addr[13:0]
-system_tb.uut.int_mem0.int_sram.d_wdata[31:0]
-system_tb.uut.int_mem0.int_sram.d_wstrb[3:0]
-system_tb.uut.int_mem0.int_sram.d_rdata[31:0]
-@29
-system_tb.uut.int_mem0.int_sram.d_ready
-@200
--SYSTEM
-@28
-system_tb.uut.boot
-@22
-system_tb.uut.cpu_i_req[68:0]
-system_tb.uut.cpu_i_resp[32:0]
-system_tb.uut.dbus_split.m_req[68:0]
-system_tb.uut.cpu_d_req[68:0]
-system_tb.uut.cpu_d_resp[32:0]
-system_tb.uut.pbus_req[68:0]
-system_tb.uut.pbus_resp[32:0]
-system_tb.uut.int_mem_d_req[68:0]
-system_tb.uut.int_mem_d_resp[32:0]
-@200
--CPU
-@22
-system_tb.uut.cpu.ibus_req[68:0]
-system_tb.uut.cpu.dbus_req[68:0]
-system_tb.uut.cpu.cpu_i_req[68:0]
-system_tb.uut.cpu.cpu_d_req[68:0]
-system_tb.uut.cpu.cpu_req[68:0]
-@28
-system_tb.uut.cpu.cpu_instr
-system_tb.uut.cpu.cpu_valid
-@200
--PICORV32
-@28
-system_tb.uut.cpu.clk
-system_tb.uut.cpu.picorv32_core.resetn
-system_tb.uut.cpu.picorv32_core.mem_instr
-system_tb.uut.cpu.picorv32_core.mem_valid
-@22
-system_tb.uut.cpu.picorv32_core.mem_addr[31:0]
-system_tb.uut.cpu.picorv32_core.mem_wdata[31:0]
-system_tb.uut.cpu.picorv32_core.mem_wstrb[3:0]
-system_tb.uut.cpu.picorv32_core.mem_rdata[31:0]
-@28
-system_tb.uut.cpu.picorv32_core.mem_ready
-system_tb.uut.cpu.picorv32_core.trap
-@200
--UART
-@28
-system_tb.uut.uart.txd
-system_tb.uut.uart.rxd
-system_tb.uut.uart.tx_ready
-system_tb.uut.uart.rx_ready
-system_tb.uut.uart.valid
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.period[9:0]
 @24
-system_tb.uut.uart.address[2:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.result_mult_reg[63:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.acc[63:0]
+@28
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.rst
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.run
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.done
 @22
-system_tb.uut.uart.wdata[15:0]
-system_tb.uut.uart.wstrb[3:0]
-system_tb.uut.uart.rdata[31:0]
-@28
-system_tb.uut.uart.ready
-@200
--test_uart
-@28
-system_tb.uart_tb.valid
-system_tb.uart_tb.address[2:0]
-system_tb.uart_tb.rxd
-system_tb.uart_tb.txd
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.in0[31:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.in1[31:0]
+@24
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xmuladd_2.out0[31:0]
+@22
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xreg_3.delay0[31:0]
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xreg_3.delay[31:0]
+@24
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xreg_3.in0[31:0]
+@25
+system_tb.system_top.uut.versat.xversat.matrixMultiplication_0.xreg_3.out0[31:0]
 [pattern_trace] 1
 [pattern_trace] 0

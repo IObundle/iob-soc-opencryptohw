@@ -1,0 +1,1126 @@
+
+module SimpleAdder(){
+   Const a1;
+   Const a2;
+   Reg res;
+#
+   a = a1 + a2;
+
+   a -> res;
+}
+
+module ComplexAdder(){
+   Mem b1;   
+   Mem b2;
+   Mem memOut1;
+#
+   b = b1 + b2;
+
+   b -> memOut1;
+}
+
+module ComplexMultiplier(){
+   Mem c1;
+   Mem c2;
+   Mem memOut2;
+   Mul mul;
+#
+   c1 -> mul:0;
+   c2 -> mul:1;
+
+   mul -> memOut2;
+}
+
+module SemiComplexAdder(){
+   Const d1;
+   Mem d2;
+   Mem memOut3;
+#
+   d = d1 + d2;
+
+   d -> memOut3;
+}
+
+module StaticMuladd(x,y){
+   static Muladd mul;
+#
+   z = x + y;
+
+   x -> mul:0;
+   z -> mul:1;
+
+   mul -> out;
+}
+
+module VReadToVWrite(){
+   VRead read;
+   VWrite write;
+#
+   read -> write;
+}
+
+module StringHasher(){
+   Const weight1;
+   Const weight2;
+   Const weight3;
+   Const weight4;
+   Const weight5;
+   StaticMuladd mul1;
+   StaticMuladd mul2;
+   StaticMuladd mul3;
+   StaticMuladd mul4;
+   StaticMuladd mul5;
+   Mem bytesIn;
+   Mem bytesOut;
+#
+   bytesIn[0] -> mul1:0;
+   bytesIn[1] -> mul2:0;
+   bytesIn[2] -> mul3:0;
+   bytesIn[3] -> mul4:0;
+   bytesIn[4] -> mul5:0;
+
+   weight1 -> mul1:1;
+   weight2 -> mul2:1;
+   weight3 -> mul3:1;
+   weight4 -> mul4:1;
+   weight5 -> mul5:1;
+
+   a1 = mul1 + mul2;
+   a2 = mul3 + mul4;
+   a3 = a1 + a2;
+   a4 = a3 + mul5;
+
+   a4[1] -> bytesOut;
+}
+
+module MatrixMultiplication(){
+   Mem matA; // 0 1 2 0 1 2 0 1 2 3 4 5 3 4 5 3 4 5
+   Mem matB; // a d g b e h c f i a d 
+   Muladd ma;
+   Mem res;
+#
+   matA -> ma:0;
+   matB -> ma:1;
+
+   ma -> res;
+}
+
+module MatrixMultiplicationVread(){ 
+   VRead matA;
+   VRead matB;
+   Muladd ma;
+   VWrite res;
+#
+   matA -> ma:0;
+   matB -> ma:1;
+
+   ma -> res;
+}
+
+module ConvolutionStage(previous){
+   VRead pixels;
+   static Mem weights;
+   static Muladd muladd;
+#
+   pixels  -> muladd:0;
+   weights -> muladd:1;
+
+   res = muladd + previous;
+
+   res -> out;
+}
+
+module Convolution(){
+   ConvolutionStage stage0;
+   ConvolutionStage stage1;
+   ConvolutionStage stage2;
+   ConvolutionStage stage3;
+   ConvolutionStage stage4;
+   Mem res;
+   Const bias;
+#
+   bias   -> stage0;
+   stage0 -> stage1;
+   stage1 -> stage2;
+   stage2 -> stage3;
+   stage3 -> stage4;
+   stage4[9] -> res;
+}
+
+module StaticMux(x,y){
+   Mux2 mux;
+#
+   x -> mux:0;
+   y -> mux:1;
+
+   mux -> out;
+}
+
+module sigma(x){
+   Const const1;
+   Const const2;
+   Const const3;
+#
+   a1 = x >>> const1;
+   a2 = x >>> const2;
+   a3 = x >> const3;
+
+   b1 = a1 ^ a2;
+
+   c1 = b1 ^ a3;
+
+   c1 -> out;
+}
+
+module Sigma(x){
+   Const const1;
+   Const const2;
+   Const const3;
+#
+   a1 = x >>> const1;
+   a2 = x >>> const2;
+   a3 = x >>> const3;
+
+   b1 = a1 ^ a2;
+
+   c1 = b1 ^ a3;
+
+   c1 -> out;
+}
+
+module CH(x,y,z){
+#
+   a1 = x & y;
+   a2 = ~x & z;
+
+   b1 = a1 ^ a2;
+
+   b1 -> out;
+}
+
+module Maj(x,y,z){
+#
+   a1 = x & y;
+   a2 = x & z;
+   a3 = y & z;
+
+   b1 = a1 ^ a2;
+
+   c1 = b1 ^ a3;
+
+   c1 -> out;
+}
+
+module sigma_stage(x,y){
+   sigma sigma0(7,18,3);
+   sigma sigma1(17,19,10);
+#
+   x -> sigma0;
+   y -> sigma1;
+
+   sigma0 -> out:0;
+   sigma1 -> out:1;
+}
+
+module M_Stage(w0,w14,w9,w1){
+   static sigma_stage sigma(7,18,3,17,19,10);
+   PipelineRegister r;
+#
+   w1 -> sigma:0;
+   w14 -> sigma:1;
+  
+   a1 = sigma:1 + w9;
+   a2 = sigma:0 + w0;
+
+   b = a1 + a2;
+
+   b -> r;
+
+   r -> out;
+}
+
+module M(w){ 
+   M_Stage m0;
+   M_Stage m1;
+   M_Stage m2;
+   M_Stage m3;
+   M_Stage m4;
+   M_Stage m5;
+   M_Stage m6;
+   M_Stage m7;
+   M_Stage m8;
+   M_Stage m9;
+   M_Stage ma;
+   M_Stage mb;
+   M_Stage mc;
+   M_Stage md;
+   M_Stage me;
+   M_Stage mf;
+   Merge merge;
+#
+   w[0] -> m0:0;
+   w[14] -> m0:1;
+   w[9] -> m0:2;
+   w[1] -> m0:3;
+
+   w[1] -> m1:0;
+   w[15] -> m1:1;
+   w[10] -> m1:2;
+   w[2] -> m1:3;
+   
+   w[2] -> m2:0;
+   m0 -> m2:1;
+   w[11] -> m2:2;
+   w[3] -> m2:3;
+   
+   w[3] -> m3:0;
+   m1 -> m3:1;
+   w[12] -> m3:2;
+   w[4] -> m3:3;
+   
+   w[4] -> m4:0;
+   m2 -> m4:1;
+   w[13] -> m4:2;
+   w[5] -> m4:3;
+   
+   w[5] -> m5:0;
+   m3 -> m5:1;
+   w[14] -> m5:2;
+   w[6] -> m5:3;
+   
+   w[6] -> m6:0;
+   m4 -> m6:1;
+   w[15] -> m6:2;
+   w[7] -> m6:3;
+   
+   w[7] -> m7:0;
+   m5 -> m7:1;
+   m0 -> m7:2;
+   w[8] -> m7:3;
+   
+   w[8] -> m8:0;
+   m6 -> m8:1;
+   m1 -> m8:2;
+   w[9] -> m8:3;
+   
+   w[9] -> m9:0;
+   m7 -> m9:1;
+   m2 -> m9:2;
+   w[10] -> m9:3;
+   
+   w[10] -> ma:0;
+   m8 -> ma:1;
+   m3 -> ma:2;
+   w[11] -> ma:3;
+   
+   w[11] -> mb:0;
+   m9 -> mb:1;
+   m4 -> mb:2;
+   w[12] -> mb:3;
+   
+   w[12] -> mc:0;
+   ma -> mc:1;
+   m5 -> mc:2;
+   w[13] -> mc:3;
+   
+   w[13] -> md:0;
+   mb -> md:1;
+   m6 -> md:2;
+   w[14] -> md:3;
+   
+   w[14] -> me:0;
+   mc -> me:1;
+   m7 -> me:2;
+   w[15] -> me:3;
+   
+   w[15] -> mf:0;
+   md -> mf:1;
+   m8 -> mf:2;
+   m0 -> mf:3;
+
+   m0 -> merge:0;
+   m1 -> merge:1;
+   m2 -> merge:2;
+   m3 -> merge:3;
+   m4 -> merge:4;
+   m5 -> merge:5;
+   m6 -> merge:6;
+   m7 -> merge:7;
+   m8 -> merge:8;
+   m9 -> merge:9;
+   ma -> merge:10;
+   mb -> merge:11;
+   mc -> merge:12;
+   md -> merge:13;
+   me -> merge:14;
+   mf -> merge:15;
+
+   merge -> out;
+}
+
+module T1(e,f,g,h,k,w){
+   CH ch;
+   Sigma s(6,11,25);
+#   
+   e -> s;
+
+   e -> ch:0;
+   f -> ch:1;
+   g -> ch:2;
+
+   a1 = h + s:0;
+   a2 = ch + k;
+   a3 = a1 + a2;
+   
+   b1 = a3 + w;
+
+   b1 -> out;
+}
+
+module T2(a,b,c){
+   Sigma s(2,13,22);
+   Maj m;
+#
+   a -> s;
+
+   a -> m:0;
+   b -> m:1;
+   c -> m:2;
+
+   d = s + m;
+
+   d -> out; 
+}
+
+module T_Stage(a,b,c,e,f,g,h,k,w){
+   T1 t1(6,11,25);
+   T2 t2(2,13,22);
+#
+   a -> t2:0;
+   b -> t2:1;
+   c -> t2:2;
+
+   e -> t1:0;
+   f -> t1:1;
+   g -> t1:2;
+   h -> t1:3;
+   k -> t1:4;
+   w -> t1:5;
+
+   t1 -> out:0;
+   t2 -> out:1;
+}
+
+module F_Stage(a,b,c,d,e,f,g,h,k,w){
+   static T_Stage t;
+   PipelineRegister d0;
+   PipelineRegister d1;
+   PipelineRegister d2;
+   PipelineRegister d3;
+   PipelineRegister d4;
+   PipelineRegister d5;
+   PipelineRegister d6;
+   PipelineRegister d7;
+#
+   a -> t:0;
+   b -> t:1;
+   c -> t:2;
+
+   e -> t:3;
+   f -> t:4;
+   g -> t:5;
+   h -> t:6;
+   k -> t:7;
+   w -> t:8;
+
+   a1 = t:0 + t:1;
+   a2 = d + t:0;
+
+   a1 -> d0; // a
+   a -> d1;  // b
+   b -> d2;  // c
+   c -> d3;  // d
+   a2 -> d4; // e
+   e -> d5;  // f
+   f -> d6;  // g
+   g -> d7;  // h
+
+   d0 -> out:0;
+   d1 -> out:1;
+   d2 -> out:2;
+   d3 -> out:3;
+   d4 -> out:4;
+   d5 -> out:5;
+   d6 -> out:6;
+   d7 -> out:7;
+}
+
+module F(a,b,c,d,e,f,g,h,k,w){
+   F_Stage f0;
+   F_Stage f1;
+   F_Stage f2;
+   F_Stage f3;
+   F_Stage f4;
+   F_Stage f5;
+   F_Stage f6;
+   F_Stage f7;
+   F_Stage f8;
+   F_Stage f9;
+   F_Stage fa;
+   F_Stage fb;
+   F_Stage fc;
+   F_Stage fd;
+   F_Stage fe;
+   F_Stage ff;
+#
+   a ->  f0:0;
+   b ->  f0:1;
+   c ->  f0:2;
+   d ->  f0:3;
+   e ->  f0:4;
+   f ->  f0:5;
+   g ->  f0:6;
+   h ->  f0:7;
+   k[0] -> f0:8;
+   w[0] -> f0:9;
+
+   f0:0..7 -> f1:0..7;
+   k[1] -> f1:8;
+   w[1] -> f1:9;
+
+   f1:0..7 -> f2:0..7;
+   k[2] -> f2:8;
+   w[2] -> f2:9;
+
+   f2:0..7 -> f3:0..7;
+   k[3] -> f3:8;
+   w[3] -> f3:9;
+
+   f3:0..7 -> f4:0..7;
+   k[4] -> f4:8;
+   w[4] -> f4:9;
+
+   f4:0..7 -> f5:0..7;
+   k[5] -> f5:8;
+   w[5] -> f5:9;
+
+   f5:0..7 -> f6:0..7;
+   k[6] -> f6:8;
+   w[6] -> f6:9;
+
+   f6:0..7 -> f7:0..7;
+   k[7] -> f7:8;
+   w[7] -> f7:9;
+
+   f7:0..7 -> f8:0..7;
+   k[8] -> f8:8;
+   w[8] -> f8:9;
+
+   f8:0..7 -> f9:0..7;
+   k[9] -> f9:8;
+   w[9] -> f9:9;
+
+   f9:0..7 -> fa:0..7;
+   k[10] -> fa:8;
+   w[10] -> fa:9;
+
+   fa:0..7 -> fb:0..7;
+   k[11] -> fb:8;
+   w[11] -> fb:9;
+
+   fb:0..7 -> fc:0..7;
+   k[12] -> fc:8;
+   w[12] -> fc:9;
+
+   fc:0..7 -> fd:0..7;
+   k[13] -> fd:8;
+   w[13] -> fd:9;
+
+   fd:0..7 -> fe:0..7;
+   k[14] -> fe:8;
+   w[14] -> fe:9;
+
+   fe:0..7 -> ff:0..7;
+   k[15] -> ff:8;
+   w[15] -> ff:9;
+
+   ff:0..7 -> out:0..7;
+}
+
+module ShaSingleState(in){
+   Reg reg;
+#
+   a = reg + in;
+   a -> reg;
+   reg -> out;
+}
+
+// Simple grouping of state so it appears better on the graphs
+module ShaState(x0,x1,x2,x3,x4,x5,x6,x7){
+   ShaSingleState s0;
+   ShaSingleState s1;
+   ShaSingleState s2;
+   ShaSingleState s3;
+   ShaSingleState s4;
+   ShaSingleState s5;
+   ShaSingleState s6;
+   ShaSingleState s7;
+#
+   x0 -> s0;
+   x1 -> s1;
+   x2 -> s2;
+   x3 -> s3;
+   x4 -> s4;
+   x5 -> s5;
+   x6 -> s6;
+   x7 -> s7;
+
+   s0 -> out:0;
+   s1 -> out:1;
+   s2 -> out:2;
+   s3 -> out:3;
+   s4 -> out:4;
+   s5 -> out:5;
+   s6 -> out:6;
+   s7 -> out:7;
+}
+
+module Constants(){
+   static Mem mem(1,16,16,0,0,1);
+#
+   mem -> out:0;
+}
+
+module SHA(){
+   VRead MemRead;
+   SwapEndian Swap(1);
+   F F0;
+   F F1;
+   F F2;
+   F F3;
+   M M0;
+   M M1;
+   M M2;
+   Constants cMem0;
+   Constants cMem1;
+   Constants cMem2;
+   Constants cMem3;
+   ShaState State;
+#
+   MemRead -> Swap;
+
+   State:0..7 -> F0:0..7;
+   cMem0      -> F0:8;
+   Swap       -> F0:9;
+
+   F0:0..7    -> F1:0..7;
+   cMem1      -> F1:8;
+   M0         -> F1:9;
+
+   F1:0..7    -> F2:0..7;
+   cMem2      -> F2:8;
+   M1         -> F2:9;
+
+   F2:0..7    -> F3:0..7;
+   cMem3      -> F3:8;
+   M2         -> F3:9;
+
+   Swap -> M0;
+   M0 -> M1;
+   M1 -> M2;
+   
+   F3:0..7 -> State:0..7;
+}
+
+module SBox(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf){
+   LookupTable s0;
+   LookupTable s1;
+   LookupTable s2;
+   LookupTable s3;
+   LookupTable s4;
+   LookupTable s5;
+   LookupTable s6;
+   LookupTable s7;
+#
+   x0 -> s0:0;
+   x1 -> s0:1;
+
+   x2 -> s1:0;
+   x3 -> s1:1;
+
+   x4 -> s2:0;
+   x5 -> s2:1;
+
+   x6 -> s3:0;
+   x7 -> s3:1;
+
+   x8 -> s4:0;
+   x9 -> s4:1;
+
+   xa -> s5:0;
+   xb -> s5:1;
+
+   xc -> s6:0;
+   xd -> s6:1;
+
+   xe -> s7:0;
+   xf -> s7:1;
+
+   s0:0 -> out:0;
+   s0:1 -> out:1;
+   s1:0 -> out:2;
+   s1:1 -> out:3;
+   s2:0 -> out:4;
+   s2:1 -> out:5;
+   s3:0 -> out:6;
+   s3:1 -> out:7;
+   s4:0 -> out:8;
+   s4:1 -> out:9;
+   s5:0 -> out:10;
+   s5:1 -> out:11;
+   s6:0 -> out:12;
+   s6:1 -> out:13;
+   s7:0 -> out:14;
+   s7:1 -> out:15;
+}
+
+module ShiftRows(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf){
+   #
+   // First row
+   x0 -> out:0;
+   x1 -> out:1;
+   x2 -> out:2;
+   x3 -> out:3;
+
+   // Second row
+   x4 -> out:7;
+   x5 -> out:4;
+   x6 -> out:5;
+   x7 -> out:6;
+
+   // Third row
+   x8 -> out:10;
+   x9 -> out:11;
+   xa -> out:8;
+   xb -> out:9;
+
+   // Fourth row
+   xc -> out:13;
+   xd -> out:14;
+   xe -> out:15;
+   xf -> out:12;
+}
+
+module MixProduct(mul2,mul3,x11,x12){
+#
+   a = mul2 ^ mul3;
+   b = x11 ^ x12;
+   d = a ^ b;
+
+   d -> out;
+}
+
+module DoRow(x0,x1,x2,x3){
+   LookupTable mul2_0;
+   LookupTable mul2_1;
+   LookupTable mul3_0;
+   LookupTable mul3_1;
+   MixProduct m0;
+   MixProduct m1;
+   MixProduct m2;
+   MixProduct m3;
+#
+   x0 -> mul2_0:0;
+   x1 -> mul2_0:1;
+   x2 -> mul2_1:0;
+   x3 -> mul2_1:1;
+
+   x0 -> mul3_0:0;
+   x1 -> mul3_0:1;
+   x2 -> mul3_1:0;
+   x3 -> mul3_1:1;
+
+   mul2_0:0 -> m0:0; // mul2[x0]
+   mul3_0:1 -> m0:1; // mul3[x1]
+   x2 -> m0:2;
+   x3 -> m0:3;
+
+   x0 -> m1:0;
+   mul2_0:1 -> m1:1; // mul2[x1]
+   mul3_1:0 -> m1:2; // mul3[x2]
+   x3 -> m1:3;
+
+   x0 -> m2:0;
+   x1 -> m2:1;
+   mul2_1:0 -> m2:2; // mul2[x2]
+   mul3_1:1 -> m2:3; // mul3[x3]
+
+   mul3_0:0 -> m3:0; // mul3[x0]
+   x1 -> m3:1;
+   x2 -> m3:2;
+   mul2_1:1 -> m3:3; // mul2[x3]
+
+   m0 -> out:0;
+   m1 -> out:1;
+   m2 -> out:2;
+   m3 -> out:3;
+}
+
+module MixColumns(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf){
+   DoRow d0;
+   DoRow d1;
+   DoRow d2;
+   DoRow d3;
+#
+   x0 -> d0:0;
+   x4 -> d0:1;
+   x8 -> d0:2;
+   xc -> d0:3;
+
+   x1 -> d1:0;
+   x5 -> d1:1;
+   x9 -> d1:2;
+   xd -> d1:3;
+
+   x2 -> d2:0;
+   x6 -> d2:1;
+   xa -> d2:2;
+   xe -> d2:3;
+
+   x3 -> d3:0;
+   x7 -> d3:1;
+   xb -> d3:2;
+   xf -> d3:3;
+
+   d0:0 -> out:0;
+   d0:1 -> out:4;
+   d0:2 -> out:8;
+   d0:3 -> out:12;
+   
+   d1:0 -> out:1;
+   d1:1 -> out:5;
+   d1:2 -> out:9;
+   d1:3 -> out:13;
+
+   d2:0 -> out:2;
+   d2:1 -> out:6;
+   d2:2 -> out:10;
+   d2:3 -> out:14;
+   
+   d3:0 -> out:3;
+   d3:1 -> out:7;
+   d3:2 -> out:11;
+   d3:3 -> out:15;
+}
+
+module AddRoundKey(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,y0,y1,y2,y3,y4,y5,y6,y7,y8,y9,ya,yb,yc,yd,ye,yf){
+#
+   a0 = x0 ^ y0;
+   a1 = x1 ^ y1;
+   a2 = x2 ^ y2;
+   a3 = x3 ^ y3;
+   a4 = x4 ^ y4;
+   a5 = x5 ^ y5;
+   a6 = x6 ^ y6;
+   a7 = x7 ^ y7;
+   a8 = x8 ^ y8;
+   a9 = x9 ^ y9;
+   aa = xa ^ ya;
+   ab = xb ^ yb;
+   ac = xc ^ yc;
+   ad = xd ^ yd;
+   ae = xe ^ ye;
+   af = xf ^ yf;
+
+   a0 -> out:0;
+   a1 -> out:1;
+   a2 -> out:2;
+   a3 -> out:3;
+   a4 -> out:4;
+   a5 -> out:5;
+   a6 -> out:6;
+   a7 -> out:7;
+   a8 -> out:8;
+   a9 -> out:9;
+   aa -> out:10;
+   ab -> out:11;
+   ac -> out:12;
+   ad -> out:13;
+   ae -> out:14;
+   af -> out:15;
+}
+
+module FirstLineKey(x0,x1,x2,x3,w0,w1,w2,w3,rcon){
+   LookupTable b0;
+   LookupTable b1;
+#
+   x1 -> b0:0;
+   x2 -> b0:1;
+
+   x3 -> b1:0;
+   x0 -> b1:1;
+
+   a1 = b0:0 ^ w0;
+
+   d0 = a1 ^ rcon;
+   d1 = b0:1 ^ w1;
+   d2 = b1:0 ^ w2;
+   d3 = b1:1 ^ w3;
+
+   d0 -> out:0; 
+   d1 -> out:1; 
+   d2 -> out:2; 
+   d3 -> out:3; 
+}
+
+module KeySchedule(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,rcon){
+   FirstLineKey s;
+#
+   x3 -> s:0;
+   x7 -> s:1;
+   xb -> s:2;
+   xf -> s:3;
+   x0 -> s:4;
+   x4 -> s:5;
+   x8 -> s:6;
+   xc -> s:7;
+   rcon -> s:8;
+
+   a0 = s:0 ^ x1;
+   a1 = s:1 ^ x5;
+   a2 = s:2 ^ x9;
+   a3 = s:3 ^ xd;
+
+   b0 = a0 ^ x2;
+   b1 = a1 ^ x6;
+   b2 = a2 ^ xa;
+   b3 = a3 ^ xe;
+
+   c0 = b0 ^ x3;
+   c1 = b1 ^ x7;
+   c2 = b2 ^ xb;
+   c3 = b3 ^ xf;
+
+   s:0 -> out:0;
+   s:1 -> out:4;
+   s:2 -> out:8;
+   s:3 -> out:12;
+   a0 -> out:1;
+   a1 -> out:5;
+   a2 -> out:9;
+   a3 -> out:13;
+   b0 -> out:2;
+   b1 -> out:6;
+   b2 -> out:10;
+   b3 -> out:14;
+   c0 -> out:3;
+   c1 -> out:7;
+   c2 -> out:11;
+   c3 -> out:15;
+}
+
+module MainRound(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf){
+   SBox subBytes;
+   ShiftRows shiftRows;
+   MixColumns mixColumns;
+   AddRoundKey addRoundKey;
+#
+   x0 -> subBytes:0;
+   x1 -> subBytes:1;
+   x2 -> subBytes:2;
+   x3 -> subBytes:3;
+   x4 -> subBytes:4;
+   x5 -> subBytes:5;
+   x6 -> subBytes:6;
+   x7 -> subBytes:7;
+   x8 -> subBytes:8;
+   x9 -> subBytes:9;
+   xa -> subBytes:10;
+   xb -> subBytes:11;
+   xc -> subBytes:12;
+   xd -> subBytes:13;
+   xe -> subBytes:14;
+   xf -> subBytes:15;
+   
+   subBytes:0..15 -> shiftRows:0..15;
+   shiftRows:0..15 -> mixColumns:0..15;
+   mixColumns:0..15 -> addRoundKey:0..15;
+
+   k0 -> addRoundKey:16;
+   k1 -> addRoundKey:17;
+   k2 -> addRoundKey:18;
+   k3 -> addRoundKey:19;
+   k4 -> addRoundKey:20;
+   k5 -> addRoundKey:21;
+   k6 -> addRoundKey:22;
+   k7 -> addRoundKey:23;
+   k8 -> addRoundKey:24;
+   k9 -> addRoundKey:25;
+   ka -> addRoundKey:26;
+   kb -> addRoundKey:27;
+   kc -> addRoundKey:28;
+   kd -> addRoundKey:29;
+   ke -> addRoundKey:30;
+   kf -> addRoundKey:31;
+
+   addRoundKey:0..15 -> out:0..15;
+}
+
+module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf){
+   Const rcon0;
+   Const rcon1;
+   Const rcon2;
+   Const rcon3;
+   Const rcon4;
+   Const rcon5;
+   Const rcon6;
+   Const rcon7;
+   Const rcon8;
+   Const rcon9;
+   
+   KeySchedule key0;
+   KeySchedule key1;
+   KeySchedule key2;
+   KeySchedule key3;
+   KeySchedule key4;
+   KeySchedule key5;
+   KeySchedule key6;
+   KeySchedule key7;
+   KeySchedule key8;
+   KeySchedule key9;
+
+   AddRoundKey firstKey;
+   MainRound round0;
+   MainRound round1;
+   MainRound round2;
+   MainRound round3;
+   MainRound round4;
+   MainRound round5;
+   MainRound round6;
+   MainRound round7;
+   MainRound round8;
+   SBox subBytes;
+   ShiftRows shiftRows;
+   AddRoundKey lastKey;
+#
+   x0 -> firstKey:0;
+   x1 -> firstKey:1;
+   x2 -> firstKey:2;
+   x3 -> firstKey:3;
+   x4 -> firstKey:4;
+   x5 -> firstKey:5;
+   x6 -> firstKey:6;
+   x7 -> firstKey:7;
+   x8 -> firstKey:8;
+   x9 -> firstKey:9;
+   xa -> firstKey:10;
+   xb -> firstKey:11;
+   xc -> firstKey:12;
+   xd -> firstKey:13;
+   xe -> firstKey:14;
+   xf -> firstKey:15;
+   k0 -> firstKey:16;
+   k1 -> firstKey:17;
+   k2 -> firstKey:18;
+   k3 -> firstKey:19;
+   k4 -> firstKey:20;
+   k5 -> firstKey:21;
+   k6 -> firstKey:22;
+   k7 -> firstKey:23;
+   k8 -> firstKey:24;
+   k9 -> firstKey:25;
+   ka -> firstKey:26;
+   kb -> firstKey:27;
+   kc -> firstKey:28;
+   kd -> firstKey:29;
+   ke -> firstKey:30;
+   kf -> firstKey:31;
+
+   k0 -> key0:0;
+   k1 -> key0:1;
+   k2 -> key0:2;
+   k3 -> key0:3;
+   k4 -> key0:4;
+   k5 -> key0:5;
+   k6 -> key0:6;
+   k7 -> key0:7;
+   k8 -> key0:8;
+   k9 -> key0:9;
+   ka -> key0:10;
+   kb -> key0:11;
+   kc -> key0:12;
+   kd -> key0:13;
+   ke -> key0:14;
+   kf -> key0:15;
+   rcon0 -> key0:16;
+
+   key0:0..15 -> key1:0..15;
+   rcon1 -> key1:16;
+
+   key1:0..15 -> key2:0..15;
+   rcon2 -> key2:16;
+
+   key2:0..15 -> key3:0..15;
+   rcon3 -> key3:16;
+
+   key3:0..15 -> key4:0..15;
+   rcon4 -> key4:16;
+
+   key4:0..15 -> key5:0..15;
+   rcon5 -> key5:16;
+
+   key5:0..15 -> key6:0..15;
+   rcon6 -> key6:16;
+
+   key6:0..15 -> key7:0..15;
+   rcon7 -> key7:16;
+
+   key7:0..15 -> key8:0..15;
+   rcon8 -> key8:16;
+
+   key8:0..15 -> key9:0..15;
+   rcon9 -> key9:16;
+
+   firstKey:0..15 -> round0:0..15;
+   round0:0..15 -> round1:0..15;
+   round1:0..15 -> round2:0..15;
+   round2:0..15 -> round3:0..15;
+   round3:0..15 -> round4:0..15;
+   round4:0..15 -> round5:0..15;
+   round5:0..15 -> round6:0..15;
+   round6:0..15 -> round7:0..15;
+   round7:0..15 -> round8:0..15;
+
+   key0:0..15 -> round0:16..31;
+   key1:0..15 -> round1:16..31;
+   key2:0..15 -> round2:16..31;
+   key3:0..15 -> round3:16..31;
+   key4:0..15 -> round4:16..31;
+   key5:0..15 -> round5:16..31;
+   key6:0..15 -> round6:16..31;
+   key7:0..15 -> round7:16..31;
+   key8:0..15 -> round8:16..31;
+
+   round8:0..15 -> subBytes:0..15;
+   subBytes:0..15 -> shiftRows:0..15;
+   shiftRows:0..15 -> lastKey:0..15;
+
+   key9:0..15 -> lastKey:16..31;
+
+   lastKey:0..15 -> out:0..15;
+}
+
+module ReadWriteAES(){
+   VRead cypher;
+   VRead key;
+   VWrite results;
+   Merge merge;
+   AES aes;
+#
+   cypher[0..15] -> aes:0..15;
+   key[0..15] -> aes:16..31;
+
+   aes:0..15 -> merge:0..15;
+
+   merge->results;
+}

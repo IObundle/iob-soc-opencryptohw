@@ -63,7 +63,7 @@ static void store_bigendian_64(uint8_t *x, uint64_t u) {
 
 #define Sigma0_64(x) (ROTR_64(x, 28) ^ ROTR_64(x, 34) ^ ROTR_64(x, 39))
 #define Sigma1_64(x) (ROTR_64(x, 14) ^ ROTR_64(x, 18) ^ ROTR_64(x, 41))
-#define sigma0_64(x) (ROTR_64(x, 1)  ^ ROTR_64(x, 8)  ^ SHR(x, 7))
+#define sigma0_64(x) (ROTR_64(x, 1) ^ ROTR_64(x, 8) ^ SHR(x, 7))
 #define sigma1_64(x) (ROTR_64(x, 19) ^ ROTR_64(x, 61) ^ SHR(x, 6))
 
 #define M_32(w0, w14, w9, w1) w0 = sigma1_32(w14) + (w9) + sigma0_32(w1) + (w0);
@@ -143,6 +143,9 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
     uint32_t T1;
     uint32_t T2;
 
+#ifdef PROFILE
+    PROF_START(ld_big_endian)
+#endif
     a = load_bigendian_32(statebytes + 0);
     state[0] = a;
     b = load_bigendian_32(statebytes + 4);
@@ -159,8 +162,14 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
     state[6] = g;
     h = load_bigendian_32(statebytes + 28);
     state[7] = h;
+#ifdef PROFILE
+    PROF_STOP(ld_big_endian)
+#endif
 
     while (inlen >= 64) {
+#ifdef PROFILE
+    PROF_START(ld_big_endian)
+#endif
         uint32_t w0  = load_bigendian_32(in + 0);
         uint32_t w1  = load_bigendian_32(in + 4);
         uint32_t w2  = load_bigendian_32(in + 8);
@@ -177,6 +186,10 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         uint32_t w13 = load_bigendian_32(in + 52);
         uint32_t w14 = load_bigendian_32(in + 56);
         uint32_t w15 = load_bigendian_32(in + 60);
+#ifdef PROFILE
+    PROF_STOP(ld_big_endian)
+    PROF_START(F_32)
+#endif
 
         F_32(w0, 0x428a2f98)
         F_32(w1, 0x71374491)
@@ -194,8 +207,16 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w13, 0x80deb1fe)
         F_32(w14, 0x9bdc06a7)
         F_32(w15, 0xc19bf174)
+#ifdef PROFILE
+    PROF_STOP(F_32)
+    PROF_START(Expand32)
+#endif
 
         EXPAND_32
+#ifdef PROFILE
+    PROF_STOP(Expand32)
+    PROF_START(F_32)
+#endif
 
         F_32(w0, 0xe49b69c1)
         F_32(w1, 0xefbe4786)
@@ -214,7 +235,15 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w14, 0x06ca6351)
         F_32(w15, 0x14292967)
 
+#ifdef PROFILE
+    PROF_STOP(F_32)
+    PROF_START(Expand32)
+#endif
         EXPAND_32
+#ifdef PROFILE
+    PROF_STOP(Expand32)
+    PROF_START(F_32)
+#endif
 
         F_32(w0, 0x27b70a85)
         F_32(w1, 0x2e1b2138)
@@ -233,7 +262,15 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w14, 0xf40e3585)
         F_32(w15, 0x106aa070)
 
+#ifdef PROFILE
+    PROF_STOP(F_32)
+    PROF_START(Expand32)
+#endif
         EXPAND_32
+#ifdef PROFILE
+    PROF_STOP(Expand32)
+    PROF_START(F_32)
+#endif
 
         F_32(w0, 0x19a4c116)
         F_32(w1, 0x1e376c08)
@@ -251,6 +288,10 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         F_32(w13, 0xa4506ceb)
         F_32(w14, 0xbef9a3f7)
         F_32(w15, 0xc67178f2)
+
+#ifdef PROFILE
+    PROF_STOP(F_32)
+#endif
 
         a += state[0];
         b += state[1];
@@ -274,6 +315,10 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
         inlen -= 64;
     }
 
+#ifdef PROFILE
+    PROF_START(st_big_endian)
+#endif
+
     store_bigendian_32(statebytes + 0, state[0]);
     store_bigendian_32(statebytes + 4, state[1]);
     store_bigendian_32(statebytes + 8, state[2]);
@@ -282,6 +327,9 @@ static size_t crypto_hashblocks_sha256(uint8_t *statebytes,
     store_bigendian_32(statebytes + 20, state[5]);
     store_bigendian_32(statebytes + 24, state[6]);
     store_bigendian_32(statebytes + 28, state[7]);
+#ifdef PROFILE
+    PROF_STOP(st_big_endian)
+#endif
 
     return inlen;
 }
@@ -496,7 +544,7 @@ static const uint8_t iv_512[64] = {
     0x2b, 0x3e, 0x6c, 0x1f, 0x1f, 0x83, 0xd9, 0xab, 0xfb, 0x41, 0xbd,
     0x6b, 0x5b, 0xe0, 0xcd, 0x19, 0x13, 0x7e, 0x21, 0x79
 };
-#endif 
+#endif
 
 void sha224_inc_init(sha224ctx *state) {
     state->ctx = (uint8_t*) malloc(PQC_SHA256CTX_BYTES);
@@ -640,7 +688,13 @@ void sha256_inc_finalize(uint8_t *out, sha256ctx *state, const uint8_t *in, size
     uint8_t padded[128];
     uint64_t bytes = load_bigendian_64(state->ctx + 32) + inlen;
 
+#ifdef PROFILE
+    PROF_START(crypto_hashblocks)
+#endif
     crypto_hashblocks_sha256(state->ctx, in, inlen);
+#ifdef PROFILE
+    PROF_STOP(crypto_hashblocks)
+#endif
     in += inlen;
     inlen &= 63;
     in -= inlen;
@@ -662,7 +716,13 @@ void sha256_inc_finalize(uint8_t *out, sha256ctx *state, const uint8_t *in, size
         padded[61] = (uint8_t) (bytes >> 13);
         padded[62] = (uint8_t) (bytes >> 5);
         padded[63] = (uint8_t) (bytes << 3);
+#ifdef PROFILE
+    PROF_START(crypto_hashblocks)
+#endif
         crypto_hashblocks_sha256(state->ctx, padded, 64);
+#ifdef PROFILE
+    PROF_STOP(crypto_hashblocks)
+#endif
     } else {
         for (size_t i = inlen + 1; i < 120; ++i) {
             padded[i] = 0;
@@ -675,13 +735,25 @@ void sha256_inc_finalize(uint8_t *out, sha256ctx *state, const uint8_t *in, size
         padded[125] = (uint8_t) (bytes >> 13);
         padded[126] = (uint8_t) (bytes >> 5);
         padded[127] = (uint8_t) (bytes << 3);
+#ifdef PROFILE
+    PROF_START(crypto_hashblocks)
+#endif
         crypto_hashblocks_sha256(state->ctx, padded, 128);
+#ifdef PROFILE
+    PROF_STOP(crypto_hashblocks)
+#endif
     }
 
     for (size_t i = 0; i < 32; ++i) {
         out[i] = state->ctx[i];
     }
+#ifdef PROFILE
+    PROF_START(sha_ctxrelease)
+#endif
     sha256_inc_ctx_release(state);
+#ifdef PROFILE
+    PROF_STOP(sha_ctxrelease)
+#endif
 }
 
 void sha224_inc_finalize(uint8_t *out, sha224ctx *state, const uint8_t *in, size_t inlen) {
@@ -764,8 +836,18 @@ void sha224(uint8_t *out, const uint8_t *in, size_t inlen) {
 void sha256(uint8_t *out, const uint8_t *in, size_t inlen) {
     sha256ctx state;
 
+#ifdef PROFILE
+    PROF_START(sha_init)
+#endif
     sha256_inc_init(&state);
+#ifdef PROFILE
+    PROF_STOP(sha_init)
+    PROF_START(sha_finalize)
+#endif
     sha256_inc_finalize(out, &state, in, inlen);
+#ifdef PROFILE
+    PROF_STOP(sha_finalize)
+#endif
 }
 
 #if 0

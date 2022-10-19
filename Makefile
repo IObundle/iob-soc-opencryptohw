@@ -1,154 +1,208 @@
-all: sim
+SHELL = /bin/bash
+export 
 
+#run on external memory implies DDR use
+ifeq ($(RUN_EXTMEM),1)
+USE_DDR=1
+endif
 
-ROOT_DIR:=.
-include ./system.mk
+#ILA_DIR=./submodules/ILA
+#ILA_PYTHON_DIR=$(ILA_DIR)/software/python
+#ila-build: ilaFormat.txt
+#	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
+#	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
+#	cp ila.c $(FIRM_DIR)/
+#	cp ila.c $(PC_DIR)/
+
+#ila-generate-vcd: ilaFormat.txt ilaData.txt
+#	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd
+
+ila-clean:
+	@rm -f $(HW_DIR)/include/signal_inst.vh $(FIRM_DIR)/ila.c $(PC_DIR)/ila.c ila.c
 
 #
-# SOFTWARE
+# BUILD EMBEDDED SOFTWARE
 #
+SW_DIR:=./software
+FIRM_DIR:=$(SW_DIR)/firmware
 
-sw:
-	make -C $(BOARD_DIR) sw
+#default baud and frequency if not given
+BAUD ?=$(SIM_BAUD)
+FREQ ?=$(SIM_FREQ)
 
-#
-# SIMULATE RTL
-#
+fw-build: #ila-build
+	make -C $(FIRM_DIR) build-all
 
-sim: $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c
-	make -C $(SIM_DIR) all
+fw-clean:
+	make -C $(FIRM_DIR) clean-all
 
-sim-clean:
-	make -C $(SIM_DIR) clean clean-testlog
+fw-debug:
+	make -C $(FIRM_DIR) debug
 
 #
 # EMULATE ON PC
 #
 
-pc-emul:
-	make -C $(PC_DIR) all
+PC_DIR:=$(SW_DIR)/pc-emul
+pc-emul-build: #ila-build
+	make -C $(PC_DIR) build
 
-pc-emul-clean:
+pc-emul-run: pc-emul-build
+	make -C $(PC_DIR) run
+
+pc-emul-clean: fw-clean
 	make -C $(PC_DIR) clean
+
+pc-emul-test: pc-emul-clean
+	make -C $(PC_DIR) test
+
+
+HW_DIR=./hardware
+#
+# SIMULATE RTL
+#
+#default simulator running locally or remotely
+SIMULATOR ?=verilator
+SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
+#default baud and system clock frequency
+SIM_BAUD = 2500000
+SIM_FREQ =50000000
+sim-build: #ila-build
+	make -C $(PC_DIR) run
+	make fw-build
+	make -C $(SIM_DIR) build
+
+./hardware/src/versat_instance.v:
+	make -C $(PC_DIR) run
+	make fw-build SIM=1
+	make -C $(SIM_DIR) build
+
+sim-run: sim-build ./hardware/src/versat_instance.v
+	make -C $(SIM_DIR) run
+
+sim-clean: fw-clean
+	make -C $(SIM_DIR) clean
+
+sim-test:
+	make -C $(SIM_DIR) test
+
+sim-versat-fus:
+	make -C $(SIM_DIR) xunitM SIMULATOR=icarus
+	make -C $(SIM_DIR) xunitF SIMULATOR=icarus
+
+sim-debug:
+	make -C $(SIM_DIR) debug
 
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
+#default board running locally or remotely
+BOARD ?=AES-KU040-DB-G
+BOARD_DIR =$(shell find hardware -name $(BOARD))
+#default baud and system clock freq for boards
+BOARD_BAUD = 115200
+#default board frequency
+BOARD_FREQ ?=100000000
+ifeq ($(BOARD), CYCLONEV-GT-DK)
+BOARD_FREQ =50000000
+endif
 
-fpga-all:
-	make -C $(BOARD_DIR) all TEST_LOG="$(TEST_LOG)"
+fpga-fw-build: #ila-build
+	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
-fpga-run:
-	make -C $(BOARD_DIR) sw
-	make -C $(BOARD_DIR) run
-
-fpga-build:
+fpga-build: #ila-build
+	make -C $(PC_DIR) run
+	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 	make -C $(BOARD_DIR) build
 
-fpga-clean:
-	make -C $(BOARD_DIR) clean clean-testlog
+fpga-run: fpga-fw-build
+	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"
 
+fpga-clean: fw-clean
+	make -C $(BOARD_DIR) clean
 
-#
-# SYNTHESIZE AND SIMULATE ASIC
-#
+fpga-veryclean:
+	make -C $(BOARD_DIR) veryclean
 
-asic-synt:
-	make -C $(ASIC_DIR) all
+fpga-debug:
+	make -C $(BOARD_DIR) debug
 
-asic-sim-post-synt:
-	make -C $(ASIC_DIR) all
+fpga-test:
+	make -C $(BOARD_DIR) test
 
 #
 # COMPILE DOCUMENTS
 #
-doc:
-	make -C $(DOC_DIR) all
+DOC_DIR=document/$(DOC)
+doc-build:
+	make -C $(DOC_DIR) $(DOC).pdf
 
 doc-clean:
 	make -C $(DOC_DIR) clean
 
+doc-test:
+	make -C $(DOC_DIR) test
 
 #
-# TEST ON SIMULATORS AND BOARDS
+# CLEAN
 #
 
-test:
-	@echo TEST REPORT `date`> test_report.log;\
-	make test-pc-emul;\
-	make test-all-simulators;\
-	make test-all-boards;\
-	make test-all-docs;\
-	echo TEST FINISHED `date`>> test_report.log
+clean: pc-emul-clean sim-clean fpga-clean doc-clean ila-clean
 
-test-pc-emul:
-	@make -C $(PC_DIR) all TEST_LOG="> test.log";\
-	if [ "`diff -q $(PC_DIR)/test.log $(PC_DIR)/test.expected`" ]; then \
-	echo PC EMULATION TEST FAILED; else \
-	echo PC EMULATION TEST PASSED; fi >> test_report.log
+#
+# TEST ALL PLATFORMS
+#
 
+test-pc-emul: pc-emul-test
 
-test-simulator:
-	@make -C $(SIM_DIR) clean-testlog;\
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log";\
-	make -C $(SIM_DIR) all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log";\
-	if [ "`diff -q $(SIM_DIR)/test.log $(SIM_DIR)/test.expected`" ]; then \
-	echo SIMULATOR $(SIMULATOR) TEST FAILED; else \
-	echo SIMULATOR $(SIMULATOR) TEST PASSED; fi >> test_report.log
+test-pc-emul-clean: pc-emul-clean
 
-test-all-simulators:
-	$(foreach s, $(SIM_LIST), make test-simulator SIMULATOR=$s;)
+test-sim:
+	make sim-test SIMULATOR=verilator
+	make sim-test SIMULATOR=icarus
 
-clean-all-simulators:
-	$(foreach s, $(SIM_LIST), make -C $(HW_DIR)/simulation/$s clean clean-testlog SIMULATOR=$s;)
+test-sim-clean:
+	make sim-clean SIMULATOR=verilator
+	make sim-clean SIMULATOR=icarus
 
-test-board:
-	@make -C $(BOARD_DIR) clean-testlog;\
-	make -C $(BOARD_DIR) clean;\
-	make -C $(BOARD_DIR) all INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(BOARD_DIR) all INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log";\
-	make -C $(BOARD_DIR) clean;\
-	make -C $(BOARD_DIR) all INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log";\
-	if [ "`diff -q $(CONSOLE_DIR)/test.log $(BOARD_DIR)/test.expected`" ]; then \
-	echo BOARD $(BOARD) TEST FAILED; else \
-	echo BOARD $(BOARD) TEST PASSED; fi >> test_report.log
+test-fpga:
+	make fpga-test BOARD=CYCLONEV-GT-DK
+	make fpga-test BOARD=AES-KU040-DB-G
 
-test-all-boards:
-	$(foreach b, $(BOARD_LIST), make test-board BOARD=$b;)
-
-clean-all-boards:
-	$(foreach s, $(BOARD_LIST), make -C $(BOARD_DIR) clean BOARD=$s;)
+test-fpga-clean:
+	make fpga-clean BOARD=CYCLONEV-GT-DK
+	make fpga-clean BOARD=AES-KU040-DB-G
 
 test-doc:
-	@make -C $(DOC_DIR) clean;\
-	make -C $(DOC_DIR) all DOC=$(DOC);\
-	if [ "`diff -q $(DOC_DIR)/$(DOC).aux $(DOC_DIR)/$(DOC).expected`" ]; then \
-	echo DOC $(DOC) TEST FAILED; else \
-	echo DOC $(DOC) TEST PASSED; fi >> test_report.log
+	make fpga-clean BOARD=CYCLONEV-GT-DK
+	make fpga-clean BOARD=AES-KU040-DB-G
+	make fpga-build BOARD=CYCLONEV-GT-DK
+	make fpga-build BOARD=AES-KU040-DB-G
+	make doc-test DOC=pb
+	make doc-test DOC=presentation
 
-test-all-docs:
-	$(foreach b, $(DOC_LIST), make test-doc DOC=$b;)
+test-doc-clean:
+	make doc-clean DOC=pb
+	make doc-clean DOC=presentation
 
-clean-all-docs:
-	$(foreach s, $(DOC_LIST), make -C document/$s clean DOC=$s;)
+test: test-clean test-pc-emul test-sim test-fpga test-doc
 
-$(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c: pc-emul
+test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean test-doc-clean
 
-clean: 
-	make -C $(PC_DIR) clean
-	make -C $(DOC_DIR) clean
-	make clean-all-simulators
-	make clean-all-boards
-	make clean-all-docs
-	@rm -f $(HW_DIR)/include/versat_defs.vh $(HW_DIR)/src/versat_instance.v $(FIRM_DIR)/versat_constants.c
+debug:
+	@echo $(UART_DIR)
+	@echo $(CACHE_DIR)
 
-.PHONY: all pc-emul pc-emul-clean \
-	sim sim-clean\
-	fpga-all fpga-run fpga-build fpga-clean\
-	asic-synt asic-sim-post-synt
-	doc doc-clean \
-	test test-all-simulators test-simulator test-all-boards test-board\
-	clean-all-simulators clean-all-boards clean
+.PHONY: fw-build fw-clean fw-debug\
+	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test \
+	sim-build sim-run sim-clean sim-test \
+	fpga-build fpga-run fpga-clean fpga-test \
+	doc-build doc-clean doc-test \
+	clean \
+	test-pc-emul test-pc-emul-clean \
+	test-sim test-sim-clean \
+	test-fpga test-fpga-clean \
+	test-doc test-doc-clean \
+	test test-clean \
+	debug
+	#ila-build ila-generate-vcd ila-clean
