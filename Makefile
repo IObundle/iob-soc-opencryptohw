@@ -68,6 +68,7 @@ pc-emul-output-versat:
 #
 # SIMULATE RTL
 #
+HW_DIR=./hardware
 #default simulator running locally or remotely
 SIMULATOR ?=verilator
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)

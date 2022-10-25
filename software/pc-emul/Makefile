@@ -32,12 +32,6 @@ INCLUDE+=$(incdir)./build
 
 SOC_OUT_BIN:=soc-out.bin
 
-#unit wrapper
-# CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
-
-#firmware object
-# CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
-
 #PROFILE
 ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
