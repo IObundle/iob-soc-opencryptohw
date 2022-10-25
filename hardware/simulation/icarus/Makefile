@@ -11,7 +11,7 @@ SIM_PROC=a.out
 include ../simulation.mk
 
 #simulator flags
-VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE)
+VLOG = iverilog -pfileline=1 -ptrace=off -W all -g2005-sv $(INCLUDE) $(DEFINE)
 
 comp: $(SIM_PROC)
 
@@ -24,8 +24,6 @@ exec:
 
 clean: clean-remote
 	@rm -f $(SIM_PROC)
-	@make -C $(HW_DIR)/src/spinalHDL clean
-
 
 xunitM: $(XUNITM_VSRC)
 	make -C $(SW_TEST_DIR) gen_xunitM_bin

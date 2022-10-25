@@ -25,7 +25,7 @@ SRAM_ADDR_W ?=17
 
 #DDR
 USE_DDR ?=1
-RUN_EXTMEM ?=0
+RUN_EXTMEM ?=1
 
 #DATA CACHE ADDRESS WIDTH (tag + index + offset)
 DCACHE_ADDR_W:=24
@@ -36,12 +36,8 @@ BOOTROM_ADDR_W:=12
 #PRE-INIT MEMORY WITH PROGRAM AND DATA
 INIT_MEM ?=1
 
-#ETHERNET RMAC_ADDR
-RMAC_ADDR=4437e6a6893b
-
 #PERIPHERAL LIST
 #must match respective submodule CORE_NAME in the core.mk file of the submodule
-#PERIPHERALS:=UART
 PERIPHERALS ?=UART TIMER ETHERNET VERSAT
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
@@ -56,12 +52,16 @@ REMOTE_ROOT_DIR ?=sandbox/iob-soc-opencryptohw
 #SIMULATION
 #default simulator running locally or remotely
 #check the respective Makefile in hardware/simulation/$(SIMULATOR) for specific settings
-SIMULATOR ?=icarus
+SIMULATOR ?=verilator
 
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in hardware/fpga/$(BOARD) for specific settings
 BOARD ?=AES-KU040-DB-G
+
+#DOCUMENTATION
+#default document to compile
+DOC ?= pb
 
 #IOB LIBRARY
 UART_HW_DIR:=$(UART_DIR)/hardware
@@ -93,6 +93,9 @@ VERSAT_DIR=$(ROOT_DIR)/submodules/VERSAT
 LIB_DIR=$(ROOT_DIR)/submodules/LIB
 MEM_DIR=$(ROOT_DIR)/submodules/MEM
 AXI_DIR=$(ROOT_DIR)/submodules/AXI
+ILA_DIR=$(ROOT_DIR)/submodules/ILA
+
+ILA_PYTHON_DIR=$(ILA_DIR)/software/python
 
 #sw paths
 SW_DIR:=$(ROOT_DIR)/software
@@ -102,11 +105,16 @@ BOOT_DIR:=$(SW_DIR)/bootloader
 CONSOLE_DIR:=$(SW_DIR)/console
 SW_TEST_DIR:=$(SW_DIR)/test
 
+#scripts paths
+PYTHON_DIR=$(LIB_DIR)/software/python
+
 #hw paths
 HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
-DOC_DIR=$(ROOT_DIR)/document
+
+#doc paths
+DOC_DIR=$(ROOT_DIR)/document/$(DOC)
 
 #define macros
 DEFINE+=$(defmacro)DATA_W=$(DATA_W)
@@ -119,13 +127,8 @@ DEFINE+=$(defmacro)N_SLAVES=$(N_SLAVES) #peripherals
 
 #address selection bits
 E:=31 #extra memory bit
-ifeq ($(USE_DDR),1)
 P:=30 #periphs
 B:=29 #boot controller
-else
-P:=31
-B:=30
-endif
 
 DEFINE+=$(defmacro)E=$E
 DEFINE+=$(defmacro)P=$P
@@ -141,15 +144,20 @@ $(foreach p, $(PERIPHERALS), $(eval DEFINE+=$(defmacro)$p=$($p)))
 N_SLAVES_W = $(shell echo "import math; print(math.ceil(math.log($(N_SLAVES),2)))"|python3 )
 DEFINE+=$(defmacro)N_SLAVES_W=$(N_SLAVES_W)
 
-
-#default baud and system clock freq
-BAUD ?=5000000 #simulation default
-FREQ ?=100000000
-
-SHELL = /bin/bash
+ifneq ($(HARDWARE_TEST),)
+DEFINE+=$(defmacro)HARDWARE_TEST=$(HARDWARE_TEST)
+endif
 
 #RULES
+
+#kill "console", the background running program seriving simulators,
+#emulators and boards
+CNSL_PID:=ps aux | grep $(USER) | grep console | grep python3 | grep -v grep
+kill-cnsl:
+	@if [ "`$(CNSL_PID)`" ]; then \
+	kill -9 $$($(CNSL_PID) | awk '{print $$2}'); fi
+
 gen-clean:
 	@rm -f *# *~
 
-.PHONY: gen-clean
+.PHONY: gen-clean kill-cnsl

@@ -2,7 +2,7 @@
 `include "xversat.vh"
 
 module xunitF #(
-         parameter DELAY_W = 10,
+         parameter DELAY_W = 32,
          parameter DATA_W = 32
               )
     (
@@ -11,6 +11,7 @@ module xunitF #(
     input               rst,
     
     input               run,
+    output              done,
 
     //input / output data
     input [DATA_W-1:0]  in0,
@@ -34,14 +35,11 @@ module xunitF #(
     (* latency=16 *) output [DATA_W-1:0] out6,
     (* latency=16 *) output [DATA_W-1:0] out7,
 
-    output              done,
-
     //configurations
-    input [7:0]         delay0 // Encodes delay
+    input [DELAY_W-1:0]         delay0 // Encodes delay
     );
 
-reg [7:0] delay;
-reg [0:0] latency;
+reg [DELAY_W-1:0] delay;
 reg [31:0] a,b,c,d,e,f,g,h;
 
 assign out0 = a;
@@ -61,6 +59,12 @@ wire [31:0] k = in9;
 function [31:0] ROTR_32(input [31:0] x,input [4:0] c);
 begin
    ROTR_32 = (((x) >> (c)) | ((x) << (32 - (c))));
+end
+endfunction
+
+function [31:0] SHR(input [31:0] x,input [4:0] c); 
+begin
+   SHR = ((x) >> (c));
 end
 endfunction
 
@@ -94,10 +98,13 @@ wire [31:0] T2 = Sigma0_32(a) + Maj(a,b,c);
 wire [31:0] T1_init = in7 + Sigma1_32(in4) + Ch(in4,in5,in6) + k + w;
 wire [31:0] T2_init = Sigma0_32(in0) + Maj(in0,in1,in2);
 
+reg working;
+
 always @(posedge clk,posedge rst)
 begin
    if(rst) begin
       delay <= 0;
+      working <= 0;
       a <= 0;
       b <= 0;
       c <= 0;
@@ -107,16 +114,10 @@ begin
       g <= 0;
       h <= 0;
    end else if(run) begin
-      delay <= delay0; 
-      latency <= 1'h1;
-   end else if(|delay) begin
-      delay <= delay - 1;
-   end else begin
-      if(|latency) begin
-         latency <= latency - 1;
-      end
-
-      if(latency == 1'h1) begin
+      delay <= delay0;
+      working <= 0;
+   end else if(!working) begin
+      if(delay == 0) begin
          a <= T1_init + T2_init;
          b <= in0;
          c <= in1;
@@ -125,18 +126,19 @@ begin
          f <= in4;
          g <= in5;
          h <= in6;
+         working <= 1'b1;
+      end else begin
+         delay <= delay - 1;
       end
-
-      if(latency == 0) begin
-         a <= T1 + T2;
-         b <= a;
-         c <= b;
-         d <= c;
-         e <= d + T1;
-         f <= e;
-         g <= f;
-         h <= g;
-      end
+   end else begin
+      a <= T1 + T2;
+      b <= a;
+      c <= b;
+      d <= c;
+      e <= d + T1;
+      f <= e;
+      g <= f;
+      h <= g;
    end
 end
 

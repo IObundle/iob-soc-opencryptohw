@@ -1,0 +1,5 @@
+$buffer 12
+
+$trigger versat.valid
+
+versat.wdata 32

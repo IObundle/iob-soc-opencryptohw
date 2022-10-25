@@ -1,8 +1,14 @@
-#DEFINES
+include $(ROOT_DIR)/hardware/hardware.mk
+
+
+#axi portmap for axi ram
+VHDR+=s_axi_portmap.vh
+s_axi_portmap.vh:
+	$(LIB_DIR)/software/python/axi_gen.py axi_portmap 's_' 's_' 'm_'
 
 #default baud and freq for simulation
-BAUD ?=5000000
-FREQ ?=100000000
+BAUD=$(SIM_BAUD)
+FREQ=$(SIM_FREQ)
 
 #define for testbench
 DEFINE+=$(defmacro)BAUD=$(BAUD)
@@ -11,7 +17,7 @@ DEFINE+=$(defmacro)FREQ=$(FREQ)
 #ddr controller address width
 DDR_ADDR_W=$(DCACHE_ADDR_W)
 
-CONSOLE_CMD=$(CONSOLE_DIR)/console -L
+CONSOLE_CMD=$(PYTHON_DIR)/console -L
 
 #produce waveform dump
 VCD ?=0
@@ -20,18 +26,15 @@ ifeq ($(VCD),1)
 DEFINE+=$(defmacro)VCD
 endif
 
-include $(ROOT_DIR)/hardware/hardware.mk
-
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
 
-FW_SIZE=$(shell if [ -f firmware.hex ]; then wc -l firmware.hex | awk '{print $$1}'; else echo "0"; fi)
+ifneq ($(wildcard  firmware.hex),)
+FW_SIZE=$(shell wc -l firmware.hex | awk '{print $$1}')
+endif
 
 DEFINE+=$(defmacro)FW_SIZE=$(FW_SIZE)
-SIM=1
-DEFINE+=$(defmacro)SIM=$(SIM)
-
 
 #SOURCES
 
@@ -46,12 +49,6 @@ TB_DIR:=$(HW_DIR)/simulation/verilog_tb
 include $(AXI_DIR)/hardware/axiram/hardware.mk
 include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
 
-#TEST OUTPUT
-SOC_OUT_BIN:=soc-out.bin
-
-# Simulation images
-SIM_IN_BIN:=sim_in.bin
-
 VSRC+=system_top.v
 
 #testbench
@@ -60,7 +57,7 @@ VSRC+=system_tb.v
 endif
 
 #RULES
-build: $(VSRC) $(VHDR) $(HEXPROGS) $(SIM_IN_BIN)
+build: $(VSRC) $(VHDR) $(HEXPROGS)
 ifeq ($(SIM_SERVER),)
 	make comp
 else
@@ -71,7 +68,7 @@ endif
 
 run: sim
 ifeq ($(VCD),1)
-	if [ ! `pgrep -u $(USER) gtkwave` ]; then gtkwave -a ../waves.gtkw system.vcd; fi &
+	if [ ! `pgrep -u $(USER) gtkwave` ]; then gtkwave system.vcd; fi &
 endif
 
 sim:
@@ -79,7 +76,7 @@ ifeq ($(SIM_SERVER),)
 	cp $(FIRM_DIR)/firmware.bin .
 	@rm -f soc2cnsl cnsl2soc
 	$(CONSOLE_CMD) $(TEST_LOG) &
-	bash -c "trap 'make kill-sim' INT TERM KILL EXIT; make exec"
+	bash -c "trap 'make kill-cnsl' INT TERM KILL EXIT; make exec"
 else
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
@@ -112,7 +109,7 @@ system_top.v: $(TB_DIR)/system_top_core.v
 
 
 #add peripheral testbench sources
-VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $($p_DIR)/hardware/testbench/module_tb.sv; then echo $($p_DIR)/hardware/testbench/module_tb.sv; fi;)) 
+VSRC+=$(foreach p, $(PERIPHERALS), $(shell if test -f $($p_DIR)/hardware/testbench/module_tb.sv; then echo $($p_DIR)/hardware/testbench/module_tb.sv; fi;))
 
 spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)
 
@@ -122,7 +119,7 @@ $(XUNITM_VSRC) $(XUNITF_VSRC):
 kill-remote-sim:
 	@echo "INFO: Remote simulator $(SIMULATOR) will be killed"
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'killall -q -u $(SIM_USER) -9 $(SIM_PROC); \
-	make -C $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR) kill-sim'
+	make -C $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR) kill-cnsl'
 ifeq ($(VCD),1)
 	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/*.vcd $(SIM_DIR)
 endif
@@ -138,20 +135,11 @@ test-shortmsg: sim-shortmsg validate
 sim-shortmsg:
 	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=0
 
-validate:
-	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)/
-	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
-
-$(SIM_IN_BIN):
-	$(eval TEST_VECTOR_RSP_BIN = $(basename $(TEST_VECTOR_RSP))_d_in.bin)
-	$(eval TEST_VECTOR_RSP_PATH = $(shell find $(ROOT_DIR) -name "$(TEST_VECTOR_RSP_BIN)"))
-	cp $(TEST_VECTOR_RSP_PATH) $(SIM_IN_BIN)
 
 #clean target common to all simulators
 clean-remote: hw-clean
-	@rm -f soc2cnsl cnsl2soc
-	@rm -f system.vcd *.log *.bin
-	@make -C $(SW_TEST_DIR) clean
+	@rm -f soc2cnsl cnsl2soc *.txt
+	@rm -f system.vcd
 ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
@@ -167,9 +155,18 @@ ifneq ($(SIM_SERVER),)
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'rm -f $(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/test.log'
 endif
 
+debug:
+	@echo $(VHDR)
+	@echo $(VSRC)
+	@echo $(INCLUDE)
+	@echo $(DEFINE)
+	@echo $(MEM_DIR)
+	@echo $(CPU_DIR)
+	@echo $(CACHE_DIR)
+	@echo $(UART_DIR)
+
 .PRECIOUS: system.vcd test.log
 
-.PHONY: build run sim\
-	kill-remote-sim kill-sim \
-	test test-shortmsg sim-shortmsg validate \
-	clean-remote clean-testlog
+.PHONY: build run sim \
+	kill-remote-sim clean-remote \
+	test test1 test2 test3 test4 test5 clean-testlog
