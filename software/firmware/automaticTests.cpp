@@ -1163,7 +1163,7 @@ TEST(ComplexFlatten){
    AcceleratorRun(flatten);
 
    //CheckMemory(flatten,flatten);
-   DisplayAcceleratorMemory(flatten);
+   //DisplayAcceleratorMemory(flatten);
 
    OutputVersatSource(versat,flatten,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
@@ -1268,6 +1268,15 @@ TEST(SimpleMergeInputOutputCommon){
    return EXPECT("9 6","%d %d",resA,resB);
 }
 
+TEST(ComplexMerge){
+   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SHA"));
+   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("SHA_AES"));
+
+   TEST_PASSED;
+}
+
 TEST(SHA){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1314,7 +1323,9 @@ void AutomaticTests(Versat* versat){
 
 #if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,false);
+#endif
+#if 0
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
 #endif
 
 #if 1
@@ -1332,6 +1343,8 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,LookupTable);
    TEST_INST( 1 ,VersatSubBytes);
    TEST_INST( 1 ,VersatShiftRows);
+#endif
+#if 1
    TEST_INST( 1 ,VersatDoRows);
    TEST_INST( 1 ,VersatMixColumns);
    TEST_INST( 1 ,FirstLineKey);
@@ -1342,19 +1355,20 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,ShareConfig);
 #endif
 #if 0
-   TEST_INST( 0 ,SimpleFlatten);
+   TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
-   TEST_INST( 0 ,ComplexFlatten);
+   TEST_INST( 1 ,ComplexFlatten);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
    TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
    TEST_INST( 1 ,SimpleMergeInputOutputCommon);
+   TEST_INST( 1 ,ComplexMerge);
 #endif
 
    //Free(versat);
@@ -1364,55 +1378,13 @@ void AutomaticTests(Versat* versat){
 
 /*
 
-How to handle flattening of static units?
+Change the way name information is stored:
 
-Static units are units that share the configuration pointer among any unit in the accelerator that has the same parent module and the same name
-
-After flattening, those units will have the same module and different names
-
-Therefore, need a way of sharing configurations for units inside the same module and with different names
-
-A Share block can be uniquely identified by the module it belongs too as well as a index, for the case where a module has multiple share blocks
-
-Share state?
-
-   Makes no sense, except for the merge case? Or if I intend to implement the concept of instance unions
-
-Share memory?
-
-   Makes sense and possible, because we can share the iob_native wires and as such, accessing one unit is equivalent to accessing all of them
-
-Share IO?
-
-   Don't even know what that would look like, specially because for IO, each unit is a Master, so hard to "share".
-
-Share anything more?
-
-Share config + memory (+ state) = Same unit (If unit is a source of data, sharing both might be better, but only if unit is less complex than the "Delay" unit)
-
-Share config + state (and no memory mapped) = Same unit (If unit is a source of data, sharing both might be better, but only if unit is less complex than the "Delay" unit)
-
-Share state + memory - Not very useful, I think
-
-Flatten static units become share blocks
-
-Share blocks flatten become share blocks
-
-Probably need to rework the static info thing
-   - Make it generic for any kind of sharing and stuff
-   - Because it is literally all it is, a "global" accelerator tracker of which units interfaces are shared with one another
-
-Populate with shared units
-
-   Need to keep track when a shared region is first encountered
-   Since regions are module specific, put code inside the for loop that loops through instances
-      Then hijack the config pointer to point to the section previously pushed
-
-Shared Static?
-
-   Do not allow static inside a share config block
-      Makes no sense,
-
+   Remove the hierarchical naming scheme and replace it with the SizedString alternative.
+      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol
+   Remove the name mapping. Instead, make GetInstance function to parse the node name to figure out what to do.
+      To handle the case where units of different types have the same name, add a type disambiguator.
+         Something like: Instead of GetInstance("Test","a1") -> GetInstance("Test","a1:Mul");
 
 */
 

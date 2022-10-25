@@ -52,7 +52,7 @@ int main(int argc,const char* argv[])
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
 #if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,false);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,true);
 #endif
 
    ParseCommandLineOptions(versat,argc,argv);

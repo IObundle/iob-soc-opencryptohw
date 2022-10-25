@@ -261,7 +261,7 @@ module M_Stage(w0,w14,w9,w1){
    r -> out;
 }
 
-module M(w){ 
+module M(w){
    M_Stage m0;
    M_Stage m1;
    M_Stage m2;
