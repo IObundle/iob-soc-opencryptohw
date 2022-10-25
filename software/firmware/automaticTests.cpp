@@ -1138,7 +1138,7 @@ TEST(ComplexFlatten){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst =  CreateFUInstance(accel,type,MakeSizedString("Test"));
 
-   FUInstance* delay = GetInstanceByName(accel,"Test","delay0");
+   FUInstance* delay = GetInstanceByName(accel,"Test","buffer0");
 
    Accelerator* flatten = Flatten(versat,accel,99);
 
@@ -1293,8 +1293,6 @@ TEST(SHA){
 
    VersatSHA(digest,msg_64,64);
 
-   DisplayAcceleratorMemory(accel);
-
    return EXPECT("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa","%s",GetHexadecimal(digest, HASH_SIZE));
 }
 
@@ -1360,7 +1358,7 @@ void AutomaticTests(Versat* versat){
 #if 1
    TEST_INST( 1 ,ShareConfig);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
    TEST_INST( 1 ,ComplexFlatten);
