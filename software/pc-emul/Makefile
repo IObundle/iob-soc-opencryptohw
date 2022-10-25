@@ -32,16 +32,11 @@ INCLUDE+=$(incdir)./build
 
 SOC_OUT_BIN:=soc-out.bin
 
-#units to verilate
-CUSTOM_VERILATE_UNIT = xunitF xunitM
-HDR+=$(foreach obj,$(CUSTOM_VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
-UNIT_VERILOG+=$(foreach unit,$(CUSTOM_VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
-
 #unit wrapper
-CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
+# CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
 
 #firmware object
-CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
+# CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
 
 #PROFILE
 ifeq ($(PROFILE),1)
