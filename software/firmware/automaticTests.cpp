@@ -1293,6 +1293,8 @@ TEST(SHA){
 
    VersatSHA(digest,msg_64,64);
 
+   DisplayAcceleratorMemory(accel);
+
    return EXPECT("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa","%s",GetHexadecimal(digest, HASH_SIZE));
 }
 
@@ -1321,10 +1323,10 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 0
+#if 1
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
 #endif
-#if 0
+#if 1
    SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
 #endif
 
@@ -1378,13 +1380,32 @@ void AutomaticTests(Versat* versat){
 
 /*
 
-Change the way name information is stored:
+- Test SHA on FPGA
 
+- Change the way name information is stored:
    Remove the hierarchical naming scheme and replace it with the SizedString alternative.
-      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol
+      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol (comma ?)
    Remove the name mapping. Instead, make GetInstance function to parse the node name to figure out what to do.
       To handle the case where units of different types have the same name, add a type disambiguator.
          Something like: Instead of GetInstance("Test","a1") -> GetInstance("Test","a1:Mul");
+
+- Fix the Complex flatten code
+
+- Add the flattening of static units to shared config units
+
+- Create a random merging algorithm to handle large graphs
+
+- Test the AES,SHA merging
+
+- Find a new name for delays and for the "Delay" unit.
+   Different things and same name starting to get confusing
+   Maybe Buffer?
+   Change files to reflect change
+
+- Figure out how to handle buffering calculation for merged graphs.
+   Technically, calculating buffers for the final graph should work fine.
+   But in order to maximize the fact that "Delay" (Buffer) units can be programmed, it should be possible to calculate different values for different accelerators, and change them when changing accelerators
+
 
 */
 

@@ -51,6 +51,9 @@ int main(int argc,const char* argv[])
 
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
+#if 1
+   SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,false);
+#endif
 #if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,true);
 #endif
@@ -75,15 +78,6 @@ Current plan:
 Change the calculated inputs and outputs on the FUInstances to be full vector likes for the size
    If there isn't a connection, simply store a nullptr
       [Objective] Implement a way so that the memory units that have unconnected inputs can have a zero input
-Take a look at hierarchical names (and how would I implemented them for a flatten operation)
-At the very least, the specification parser must have good error reporting, on what is expected from the language
-Simplify the process of creating FU units.
-   Code a complete realloc routine that can be used at any point to make a valid accelerator
-      Possible use it to implement the Removal of units
-   Move any allocation needed to the Locking interface
-      The units do not need output allocations before running the accelerator
-      Maybe make it so that outputs allocations are allocated globally throught the accelerator
-         Simplify the process of copying the stored outputs (a simple memcpy)
 
 */
 
