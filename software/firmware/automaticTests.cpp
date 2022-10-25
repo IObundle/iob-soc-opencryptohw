@@ -859,7 +859,6 @@ TEST(AESRound){
 static void FillAES(FUInstance* inst){
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
    for(int i = 0; i < 10; i++){
-      //printf("%d\n",i);
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
@@ -867,9 +866,7 @@ static void FillAES(FUInstance* inst){
    }
    FillSubBytes(GetInstanceByName(inst,"subBytes"));
 
-   //printf("\n");
    for(int i = 0; i < 9; i++){
-      //printf("%d\n",i);
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -1064,6 +1061,45 @@ TEST(ComplexMultiplier){
    return EXPECT("20","%d",result);
 }
 
+TEST(ShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ShareConfig"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   FUInstance* a1 = GetInstanceByName(accel,"Test","a1");
+   FUInstance* a2 = GetInstanceByName(accel,"Test","a2");
+   FUInstance* b1 = GetInstanceByName(accel,"Test","b1");
+   FUInstance* b2 = GetInstanceByName(accel,"Test","b2");
+   FUInstance* out0 = GetInstanceByName(accel,"Test","out0");
+   FUInstance* out1 = GetInstanceByName(accel,"Test","out1");
+   FUInstance* out2 = GetInstanceByName(accel,"Test","out2");
+
+   a1->config[0] = 2;
+   AcceleratorRun(accel);
+   int res0 = out0->state[0];
+
+   a1->config[0] = 0;
+   a2->config[0] = 3;
+   AcceleratorRun(accel);
+   int res1 = out0->state[0];
+
+   b2->config[0] = 4;
+   AcceleratorRun(accel);
+   int res2 = out1->state[0];
+
+   a1->config[0] = 0;
+   a2->config[0] = 0;
+   b1->config[0] = 0;
+   b2->config[0] = 0;
+
+   a2->config[0] = 3;
+   b2->config[0] = 4;
+   AcceleratorRun(accel);
+   int res3 = out2->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
+}
+
 TEST(SimpleFlatten){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1232,6 +1268,15 @@ TEST(SimpleMergeInputOutputCommon){
    return EXPECT("9 6","%d %d",resA,resB);
 }
 
+TEST(ComplexMerge){
+   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SHA"));
+   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("SHA_AES"));
+
+   TEST_PASSED;
+}
+
 TEST(SHA){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1278,7 +1323,9 @@ void AutomaticTests(Versat* versat){
 
 #if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,false);
+#endif
+#if 0
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
 #endif
 
 #if 1
@@ -1296,6 +1343,8 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,LookupTable);
    TEST_INST( 1 ,VersatSubBytes);
    TEST_INST( 1 ,VersatShiftRows);
+#endif
+#if 1
    TEST_INST( 1 ,VersatDoRows);
    TEST_INST( 1 ,VersatMixColumns);
    TEST_INST( 1 ,FirstLineKey);
@@ -1307,21 +1356,49 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
 #if 1
+   TEST_INST( 1 ,ShareConfig);
+#endif
+#if 0
    TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
-   TEST_INST( DISABLED ,ComplexFlatten);
+   TEST_INST( 1 ,ComplexFlatten);
 #endif
 #if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
    TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
    TEST_INST( 1 ,SimpleMergeInputOutputCommon);
+   TEST_INST( 1 ,ComplexMerge);
 #endif
 
    //Free(versat);
 
    printf("\nAutomatic tests done (passed/total): %d / %d\n",info.testsPassed,info.numberTests);
 }
+
+/*
+
+Change the way name information is stored:
+
+   Remove the hierarchical naming scheme and replace it with the SizedString alternative.
+      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol
+   Remove the name mapping. Instead, make GetInstance function to parse the node name to figure out what to do.
+      To handle the case where units of different types have the same name, add a type disambiguator.
+         Something like: Instead of GetInstance("Test","a1") -> GetInstance("Test","a1:Mul");
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

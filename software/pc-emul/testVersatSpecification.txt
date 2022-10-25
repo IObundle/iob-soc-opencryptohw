@@ -59,6 +59,28 @@ module VReadToVWrite(){
    read -> write;
 }
 
+module ShareConfig(){
+   share config Const {
+      a1;     
+      a2;
+   }
+   share config Const{
+      b1;
+      b2;
+   }
+   Reg out0;
+   Reg out1;
+   Reg out2;
+#
+   a = a1 + a2;
+   b = b1 + b2;
+   c = a1 + b1;
+
+   a -> out0;
+   b -> out1;
+   c -> out2;
+} 
+
 module StringHasher(){
    Const weight1;
    Const weight2;
@@ -239,7 +261,7 @@ module M_Stage(w0,w14,w9,w1){
    r -> out;
 }
 
-module M(w){ 
+module M(w){
    M_Stage m0;
    M_Stage m1;
    M_Stage m2;

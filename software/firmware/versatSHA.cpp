@@ -42,6 +42,9 @@ static void InstantiateSHA(Versat* versat){
             VersatUnitWrite(mem,ii,kConstants[i][ii]);
          }
       }
+
+      FUInstance* swap = GetInstanceByName(shaInstance,"Swap");
+      swap->config[0] = 1;
    } else { // Assume that accel is a flatten instance of SHA
       FUInstance* read = GetInstanceByName(accel,"Test","MemRead");
       readConfig = (volatile VReadConfig*) read->config;
@@ -59,6 +62,9 @@ static void InstantiateSHA(Versat* versat){
             VersatUnitWrite(mem,ii,kConstants[i][ii]);
          }
       }
+
+      FUInstance* swap = GetInstanceByName(accel,"Test","Swap");
+      swap->config[0] = 1;
    }
 }
 
