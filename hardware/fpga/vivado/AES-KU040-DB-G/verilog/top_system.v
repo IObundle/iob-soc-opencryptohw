@@ -291,56 +291,6 @@ module top_system
       .S01_AXI_ACLK         (clk),
       
       //Write address
-      .S00_AXI_AWID         (sys_awid[0*1+:1]),
-      .S00_AXI_AWADDR       (sys_awaddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S00_AXI_AWLEN        (sys_awlen[0*8+:8]),
-      .S00_AXI_AWSIZE       (sys_awsize[0*3+:3]),
-      .S00_AXI_AWBURST      (sys_awburst[0*2+:2]),
-      .S00_AXI_AWLOCK       (sys_awlock[0*1+:1]),
-      .S00_AXI_AWCACHE      (sys_awcache[0*4+:4]),
-      .S00_AXI_AWPROT       (sys_awprot[0*3+:3]),
-      .S00_AXI_AWQOS        (sys_awqos[0*4+:4]),
-      .S00_AXI_AWVALID      (sys_awvalid[0*1+:1]),
-      .S00_AXI_AWREADY      (sys_awready[0*1+:1]),
-
-      //Write data
-      .S00_AXI_WDATA        (sys_wdata[0*32+:32]),
-      .S00_AXI_WSTRB        (sys_wstrb[0*4+:4]),
-      .S00_AXI_WLAST        (sys_wlast[0*1+:1]),
-      .S00_AXI_WVALID       (sys_wvalid[0*1+:1]),
-      .S00_AXI_WREADY       (sys_wready[0*1+:1]),
-      
-      //Write response
-      .S00_AXI_BID           (sys_bid[0*1+:1]),
-      .S00_AXI_BRESP         (sys_bresp[0*2+:2]),
-      .S00_AXI_BVALID        (sys_bvalid[0*1+:1]),
-      .S00_AXI_BREADY        (sys_bready[0*1+:1]),
-      
-      //Read address
-      .S00_AXI_ARID         (sys_arid[0*1+:1]),
-      .S00_AXI_ARADDR       (sys_araddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]),
-      .S00_AXI_ARLEN        (sys_arlen[0*8+:8]),
-      .S00_AXI_ARSIZE       (sys_arsize[0*3+:3]),
-      .S00_AXI_ARBURST      (sys_arburst[0*2+:2]),
-      .S00_AXI_ARLOCK       (sys_arlock[0*1+:1]),
-      .S00_AXI_ARCACHE      (sys_arcache[0*4+:4]),
-      .S00_AXI_ARPROT       (sys_arprot[0*3+:3]),
-      .S00_AXI_ARQOS        (sys_arqos[0*4+:4]),
-      .S00_AXI_ARVALID      (sys_arvalid[0*1+:1]),
-      .S00_AXI_ARREADY      (sys_arready[0*1+:1]),
-      
-      //Read data
-      .S00_AXI_RID          (sys_rid[0*1+:1]),
-      .S00_AXI_RDATA        (sys_rdata[0*`DATA_W+:`DATA_W]),
-      .S00_AXI_RRESP        (sys_rresp[0*2+:2]),
-      .S00_AXI_RLAST        (sys_rlast[0*1+:1]),
-      .S00_AXI_RVALID       (sys_rvalid[0*1+:1]),
-      .S00_AXI_RREADY       (sys_rready[0*1+:1]),
-
-      .S01_AXI_ARESET_OUT_N (),
-      .S01_AXI_ACLK         (sys_clk),
-      
-      //Write address
       .S01_AXI_AWID         (sys_awid[1*1+:1]),
       .S01_AXI_AWADDR       (sys_awaddr[1*`DDR_ADDR_W+:`DDR_ADDR_W]),
       .S01_AXI_AWLEN        (sys_awlen[1*8+:8]),
