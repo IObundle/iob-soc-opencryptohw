@@ -38,9 +38,6 @@ include $(VERSAT_DIR)/hardware/hardware.mk
 #AXI
 include $(AXI_DIR)/hardware/axiinterconnect/hardware.mk
 
-#VERSAT
-include $(VERSAT_DIR)/hardware/hardware.mk
-
 #HARDWARE PATHS
 INC_DIR:=$(HW_DIR)/include
 SRC_DIR:=$(HW_DIR)/src
@@ -126,8 +123,5 @@ versat_instance.v versat_defs.vh: $(PC_DIR)/$(@F)
 
 $(PC_DIR)/versat_instance.v $(PC_DIR)/versat_defs.vh:
 	make -C $(ROOT_DIR) pc-emul-output-versat
-
-$(XUNIT_DIR)/%.v:
-	make -C $(SIM_DIR) spinal-sources
 
 .PHONY: hw-clean

@@ -43,7 +43,7 @@ fw-debug:
 # GENERATE SPINALHDL VERILOG SOURCES
 #
 gen-spinal-sources:
-	make -C $(SIM_DIR) gen-spinal-sources
+	make -C $(HW_DIR) gen-spinal-sources
 
 #
 # EMULATE ON PC
