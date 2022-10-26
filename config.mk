@@ -147,6 +147,25 @@ ifneq ($(HARDWARE_TEST),)
 DEFINE+=$(defmacro)HARDWARE_TEST=$(HARDWARE_TEST)
 endif
 
+#BOARD and FREQ
+#default baud and system clock frequency
+SIM_BAUD = 2500000
+SIM_FREQ =50000000
+#default baud and frequency if not given
+BAUD ?=$(SIM_BAUD)
+FREQ ?=$(SIM_FREQ)
+#default board running locally or remotely
+BOARD_DIR =$(shell find hardware -name $(BOARD))
+#default baud and system clock freq for boards
+BOARD_BAUD = 115200
+#default board frequency
+BOARD_FREQ ?=100000000
+ifeq ($(BOARD), CYCLONEV-GT-DK)
+BOARD_FREQ =50000000
+endif
+
+
+
 #RULES
 
 #kill "console", the background running program seriving simulators,

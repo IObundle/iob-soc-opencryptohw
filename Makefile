@@ -1,10 +1,7 @@
-SHELL = /bin/bash
-export 
+ROOT_DIR=.
+include $(ROOT_DIR)/config.mk
 
-#run on external memory implies DDR use
-ifeq ($(RUN_EXTMEM),1)
-USE_DDR=1
-endif
+SHELL = /bin/bash
 
 #ILA_DIR=./submodules/ILA
 #ILA_PYTHON_DIR=$(ILA_DIR)/software/python
@@ -23,12 +20,6 @@ ila-clean:
 #
 # BUILD EMBEDDED SOFTWARE
 #
-SW_DIR:=./software
-FIRM_DIR:=$(SW_DIR)/firmware
-
-#default baud and frequency if not given
-BAUD ?=$(SIM_BAUD)
-FREQ ?=$(SIM_FREQ)
 
 fw-build: #ila-build
 	make -C $(FIRM_DIR) build-all
@@ -49,7 +40,6 @@ gen-spinal-sources:
 # EMULATE ON PC
 #
 
-PC_DIR:=$(SW_DIR)/pc-emul
 pc-emul-build: #ila-build
 	make -C $(PC_DIR) build
 
@@ -68,13 +58,7 @@ pc-emul-output-versat:
 #
 # SIMULATE RTL
 #
-HW_DIR=./hardware
-#default simulator running locally or remotely
-SIMULATOR ?=verilator
-SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
-#default baud and system clock frequency
-SIM_BAUD = 2500000
-SIM_FREQ =50000000
+
 sim-build: #ila-build
 	make -C $(PC_DIR) run
 	make fw-build
@@ -104,16 +88,6 @@ sim-debug:
 #
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
-#default board running locally or remotely
-BOARD ?=AES-KU040-DB-G
-BOARD_DIR =$(shell find hardware -name $(BOARD))
-#default baud and system clock freq for boards
-BOARD_BAUD = 115200
-#default board frequency
-BOARD_FREQ ?=100000000
-ifeq ($(BOARD), CYCLONEV-GT-DK)
-BOARD_FREQ =50000000
-endif
 
 fpga-fw-build: #ila-build
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
@@ -144,7 +118,7 @@ fpga-build-versat: pc-emul-output-versat
 #
 # COMPILE DOCUMENTS
 #
-DOC_DIR=document/$(DOC)
+
 doc-build:
 	make -C $(DOC_DIR) $(DOC).pdf
 
