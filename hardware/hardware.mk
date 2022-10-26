@@ -74,16 +74,11 @@ ifeq ($(USE_DDR),1)
 VSRC+=$(SRC_DIR)/ext_mem.v
 endif
 
-#versat accelerator
-VSRC+=versat_instance.v
-VSRC+=$(XUNIT_DIR)/xunitF.v
-VSRC+=$(XUNIT_DIR)/xunitM.v
-VSRC+=$(wildcard $(SW_DIR)/pc-emul/src/*.v)
-
 #system
 VSRC+=$(SRC_DIR)/boot_ctr.v $(SRC_DIR)/int_mem.v $(SRC_DIR)/sram.v
 VSRC+=system.v
 
+#versat accelerator
 VSRC+=$(wildcard $(SRC_DIR)/GeneratedUnits/*.v)
 VSRC+=$(SRC_DIR)/versat_instance.v
 VSRC+=$(SRC_DIR)/units/xunitF.v
