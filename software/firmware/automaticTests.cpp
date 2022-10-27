@@ -1321,7 +1321,7 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 1
+#if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
 #endif
 #if 1
@@ -1361,7 +1361,7 @@ void AutomaticTests(Versat* versat){
 #if 1
    TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
-   TEST_INST( 1 ,ComplexFlatten);
+   // TEST_INST( 1 ,ComplexFlatten);
 #endif
 #if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
