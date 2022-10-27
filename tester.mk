@@ -30,12 +30,12 @@ INIT_MEM:=1
 #SIMULATION
 #default simulator running locally or remotely
 #check the respective Makefile in TESTER/hardware/simulation/$(SIMULATOR) for specific settings
-SIMULATOR:=verilator
+SIMULATOR ?=verilator
 
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in TESTER/hardware/fpga/$(BOARD) for specific settings
-BOARD:=AES-KU040-DB-G
+BOARD ?=AES-KU040-DB-G
 
 #Add Unit Under Test to Tester peripherals list
 #this works even if UUT is not a "perihpheral"
@@ -58,7 +58,7 @@ REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 #Mac address of pc interface connected to ethernet peripheral
 ifeq ($(BOARD),AES-KU040-DB-G) # Arroz eth if mac
 RMAC_ADDR:=4437e6a6893b
-else # Pudim eth if mac #TODO: ssh to pudim with root perms. Install pyeth3 environment. Configure enp3s0 to 100mbps
+else # Pudim eth if mac
 RMAC_ADDR:=309c231e624a
 endif
 ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
