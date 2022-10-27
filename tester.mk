@@ -1,7 +1,7 @@
 # Tester configuration file
 # Use this file to set/override tester parameters and makefile targets
 #
-ifeq ($(INCLUDING_PATHS),)
+ifneq ($(INCLUDING_VARS),)
 # MAKEFILE VARIABLES: PLACE BELOW VARIABLES USED BY TESTER
 #
 
@@ -38,7 +38,7 @@ SIMULATOR ?=verilator
 BOARD ?=AES-KU040-DB-G
 
 #Add Unit Under Test to Tester peripherals list
-#this works even if UUT is not a "perihpheral"
+#this works even if UUT is not a "peripheral"
 PERIPHERALS+=$(UUT_NAME)[\`ADDR_W,\`DATA_W,AXI_ID_W]
 # Tester peripherals to add (besides the default ones in IOb-SoC-Tester)
 PERIPHERALS+=UART
@@ -61,10 +61,8 @@ RMAC_ADDR:=4437e6a6893b
 else # Pudim eth if mac
 RMAC_ADDR:=309c231e624a
 endif
+#Auto-set ethernet interface name based on MAC address
 ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)
-#Define real mac address based on RMAC_ADDR
-#This is required because the software.mk script of ETHERNET overrides the value of ETH_MAC_ADDR with the simulation mac address when the SIM variable is set.
-DEFINE+=$(defmacro)ETH_REAL_RMAC_ADDR=0x$(RMAC_ADDR)
 
 #Configure Tester to use ethernet
 USE_ETHERNET:=1
@@ -72,7 +70,6 @@ DEFINE+=$(defmacro)USE_ETHERNET=1
 
 #Use UART to transfer files from/to console, as these transfers are not compatible with ETHERNET during simulation.
 ifneq ($(ISSIMULATION),)
-SIM=1
 DEFINE+=$(defmacro)SIM=1
 endif
 
@@ -105,7 +102,7 @@ clean-top-module:
 
 #Target to build UUT bootloader and firmware
 $($(UUT_NAME)_DIR)/software/firmware/boot.hex $($(UUT_NAME)_DIR)/software/firmware/firmware.hex:
-	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD) FREQ=$(FREQ)
+	make -C $($(UUT_NAME)_DIR)/software/firmware build-all BAUD=$(BAUD) FREQ=$(FREQ) BOARD=$(BOARD)
 	make -C $($(UUT_NAME)_DIR)/software/firmware -f ../../hardware/hardware.mk boot.hex firmware.hex ROOT_DIR=../..
 
 #Targets to generate and copy sim_in.bin, soc_out.bin

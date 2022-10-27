@@ -39,7 +39,11 @@ BOOTROM_ADDR_W:=12
 INIT_MEM ?=1
 
 #ETHERNET RMAC_ADDR
-RMAC_ADDR=4437e6a6893b
+ifeq ($(BOARD),AES-KU040-DB-G) # Arroz eth if mac
+RMAC_ADDR:=4437e6a6893b
+else # Pudim eth if mac
+RMAC_ADDR:=309c231e624a
+endif
 
 #PERIPHERAL LIST
 #list with corename of peripherals to be attached to peripheral bus.

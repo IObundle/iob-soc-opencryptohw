@@ -142,18 +142,18 @@ jobs:
       - name: tester-fpga-test
         run: make tester-fpga-test BOARD=AES-KU040-DB-G
 
-#  tester-cyclonev: #Ethernet was not yet verified on CYCLONE V
-#    runs-on: self-hosted
-#    timeout-minutes: 90
-#    # always run, except when previous job was cancelled
-#    if: ${{ !cancelled() }}
-#    needs: fpga
-#
-#    steps:
-#      - uses: actions/checkout@v3
-#        with:
-#          submodules: 'recursive'
-#      - name: clean
-#        run: make clean
-#      - name: tester-fpga-test
-#        run: make tester-fpga-test BOARD=CYCLONEV-GT-DK
+  tester-cyclonev:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: fpga
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: clean
+        run: make clean
+      - name: tester-fpga-test
+        run: make tester-fpga-test BOARD=CYCLONEV-GT-DK

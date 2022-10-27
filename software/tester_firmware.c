@@ -111,7 +111,7 @@ int main()
   //Switch and init instance 1 of ETHERNET (Connected to SUT)
   //This instance has ETH_RMAC_ADDR as its mac addr (emulating the mac addr of the console)
   //It expects to connect to the ETH_MAC_ADDR (it is the mac address of the eth interface in UUT)
-  eth_init_mac(ETHERNET1_BASE, ETH_REAL_RMAC_ADDR, ETH_MAC_ADDR);
+  eth_init_mac(ETHERNET1_BASE, ETH_RMAC_ADDR, ETH_MAC_ADDR);
 
   //Send input file by ethernet to SUT
   printf("Sent %d bytes.\n", eth_send_variable_file(file_buffer[0], file_size[0]) );
