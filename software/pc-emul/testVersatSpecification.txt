@@ -59,9 +59,9 @@ module VReadToVWrite(){
    read -> write;
 }
 
-module ShareConfig(){
+module SimpleShareConfig(){ // 2
    share config Const {
-      a1;     
+      a1;
       a2;
    }
    share config Const{
@@ -71,6 +71,8 @@ module ShareConfig(){
    Reg out0;
    Reg out1;
    Reg out2;
+   Reg out3;
+   Const extra;
 #
    a = a1 + a2;
    b = b1 + b2;
@@ -79,7 +81,32 @@ module ShareConfig(){
    a -> out0;
    b -> out1;
    c -> out2;
-} 
+   extra -> out3;
+}
+
+module StaticConst(){
+   static Const var;
+#
+   var -> out:0;
+}
+
+module ComplexShareConfig(){ // 4 config, 1 static - flatten should have 5 configs
+   share config SimpleShareConfig { // 2
+      a1;
+      a2;
+   }
+   StaticConst var1; // 1 static
+   StaticConst var2; // Same static
+   share config SimpleShareConfig { // 2
+      shared1;
+      shared2;
+   }
+   Reg out0;
+   Reg out1;
+#
+   var1 -> out0;
+   var2 -> out1;
+}
 
 module StringHasher(){
    Const weight1;

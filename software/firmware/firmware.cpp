@@ -51,7 +51,7 @@ int main(int argc,const char* argv[])
 
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
-#if 1
+#if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,false);
 #endif
 #if 0

@@ -1061,8 +1061,8 @@ TEST(ComplexMultiplier){
    return EXPECT("20","%d",result);
 }
 
-TEST(ShareConfig){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ShareConfig"));
+TEST(SimpleShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleShareConfig"));
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
@@ -1100,6 +1100,48 @@ TEST(ShareConfig){
    return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
 }
 
+TEST(ComplexShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   // Test by changing config for shared 1
+   FUInstance* a11 = GetInstanceByName(accel,"Test","shared1","a1");
+   FUInstance* a12 = GetInstanceByName(accel,"Test","shared1","a2");
+   FUInstance* b11 = GetInstanceByName(accel,"Test","shared1","b1");
+   FUInstance* b12 = GetInstanceByName(accel,"Test","shared1","b2");
+
+   // But reading the output of shared 2 (should be the same, since same configuration = same results)
+   FUInstance* out20 = GetInstanceByName(accel,"Test","shared2","out0");
+   FUInstance* out21 = GetInstanceByName(accel,"Test","shared2","out1");
+   FUInstance* out22 = GetInstanceByName(accel,"Test","shared2","out2");
+
+   a11->config[0] = 2;
+   AcceleratorRun(accel);
+   int res0 = out20->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 3;
+   AcceleratorRun(accel);
+   int res1 = out20->state[0];
+
+   b12->config[0] = 4;
+   AcceleratorRun(accel);
+   int res2 = out21->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 0;
+   b11->config[0] = 0;
+   b12->config[0] = 0;
+
+   a12->config[0] = 3;
+   b12->config[0] = 4;
+   AcceleratorRun(accel);
+   int res3 = out22->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
+}
+
 TEST(SimpleFlatten){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1110,6 +1152,50 @@ TEST(SimpleFlatten){
    int result = SimpleAdderInstance(flatten,4,5);
 
    return EXPECT("9","%d",result);
+}
+
+TEST(FlattenShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   Accelerator* accel_ = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel_,type,MakeSizedString("Test"));
+
+   Accelerator* flatten = Flatten(versat,accel_,99);
+
+   // Test by changing config for shared 1
+   FUInstance* a11 = GetInstanceByName(flatten,"Test","shared1","a1");
+   FUInstance* a12 = GetInstanceByName(flatten,"Test","shared1","a2");
+   FUInstance* b11 = GetInstanceByName(flatten,"Test","shared1","b1");
+   FUInstance* b12 = GetInstanceByName(flatten,"Test","shared1","b2");
+
+   // But reading the output of shared 2 (should be the same, since same configuration = same results)
+   FUInstance* out20 = GetInstanceByName(flatten,"Test","shared2","out0");
+   FUInstance* out21 = GetInstanceByName(flatten,"Test","shared2","out1");
+   FUInstance* out22 = GetInstanceByName(flatten,"Test","shared2","out2");
+
+   a11->config[0] = 2;
+   AcceleratorRun(flatten);
+   int res0 = out20->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 3;
+   AcceleratorRun(flatten);
+   int res1 = out20->state[0];
+
+   b12->config[0] = 4;
+   AcceleratorRun(flatten);
+   int res2 = out21->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 0;
+   b11->config[0] = 0;
+   b12->config[0] = 0;
+
+   a12->config[0] = 3;
+   b12->config[0] = 4;
+   AcceleratorRun(flatten);
+   int res3 = out22->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
 }
 
 TEST(FlattenSHA){
@@ -1129,6 +1215,8 @@ TEST(FlattenSHA){
    }
 
    VersatSHA(digest,msg_64,64);
+
+   DisplayAcceleratorMemory(flatten);
 
    return EXPECT("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa","%s",GetHexadecimal(digest, HASH_SIZE));
 }
@@ -1321,10 +1409,10 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 1
+#if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
 #endif
-#if 1
+#if 0
    SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
 #endif
 
@@ -1356,12 +1444,14 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
 #if 1
-   TEST_INST( 1 ,ShareConfig);
+   TEST_INST( 1 ,SimpleShareConfig);
+   TEST_INST( 1 ,ComplexShareConfig);
 #endif
 #if 1
    TEST_INST( 1 ,SimpleFlatten);
-   TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
+   TEST_INST( 1 ,FlattenShareConfig);
    TEST_INST( 1 ,ComplexFlatten);
+   TEST_INST( 1 ,FlattenSHA); // Problem on top level static buffers. Maybe do flattening of accelerators with buffers already fixed.
 #endif
 #if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
@@ -1378,31 +1468,11 @@ void AutomaticTests(Versat* versat){
 
 /*
 
-- Test SHA on FPGA
+- Test the AES,SHA merging on PC-Emul
 
-- Change the way name information is stored:
-   Remove the hierarchical naming scheme and replace it with the SizedString alternative.
-      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol (comma ?)
-   Remove the name mapping. Instead, make GetInstance function to parse the node name to figure out what to do.
-      To handle the case where units of different types have the same name, add a type disambiguator.
-         Something like: Instead of GetInstance("Test","a1") -> GetInstance("Test","a1:Mul");
-
-- Fix the Complex flatten code
-
-- Add the flattening of static units to shared config units
-
-- Create a random merging algorithm to handle large graphs
-
-- Test the AES,SHA merging
-
-- Find a new name for delays and for the "Delay" unit.
-   Different things and same name starting to get confusing
-   Maybe Buffer?
-   Change files to reflect change
-
-- Figure out how to handle buffering calculation for merged graphs.
-   Technically, calculating buffers for the final graph should work fine.
-   But in order to maximize the fact that "Delay" (Buffer) units can be programmed, it should be possible to calculate different values for different accelerators, and change them when changing accelerators
+- Start working towards sim-run of merged accelerators.
+   Just store the info for any unit that is not an operation into a array with a hierarchical structure.
+      Might need to store a pointer to a string with the name of the declaration in order to resolve GetInstance("name:type") calls
 
 
 */

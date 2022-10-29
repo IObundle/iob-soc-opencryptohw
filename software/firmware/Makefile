@@ -55,6 +55,7 @@ firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
 clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h *swreg.h \
 		*swreg_emb.c \
-		*d_in.bin *d_out.bin
+		*d_in.bin *d_out.bin \
+		verilogWrapper.inc versat_data.inc
 
 .PHONY: build clean
