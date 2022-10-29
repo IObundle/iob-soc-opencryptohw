@@ -138,7 +138,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: clean
-        run: make clean
+        run: make clean BOARD=AES-KU040-DB-G
       - name: tester-fpga-test
         run: make tester-fpga-test BOARD=AES-KU040-DB-G
 
@@ -154,6 +154,6 @@ jobs:
         with:
           submodules: 'recursive'
       - name: clean
-        run: make clean
+        run: make clean BOARD=CYCLONEV-GT-DK
       - name: tester-fpga-test
         run: make tester-fpga-test BOARD=CYCLONEV-GT-DK
