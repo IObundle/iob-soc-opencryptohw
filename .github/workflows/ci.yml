@@ -10,6 +10,7 @@ on:
     branches:
       - main
       - versat_integration
+      - tester
   # Don't forget to require approval for all outside collaborators
   pull_request:
     branches: '*'
