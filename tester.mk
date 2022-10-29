@@ -59,7 +59,7 @@ REMOTE_UUT_DIR ?=sandbox/iob-soc-sha
 ifeq ($(BOARD),AES-KU040-DB-G) # Arroz eth if mac
 RMAC_ADDR:=4437e6a6893b
 else # Pudim eth if mac
-RMAC_ADDR:=309c231e624a
+RMAC_ADDR:=309c231e624b
 endif
 #Auto-set ethernet interface name based on MAC address
 ETH_IF:=$(shell ip -br link | sed 's/://g' | grep $(RMAC_ADDR) | cut -d " " -f1)

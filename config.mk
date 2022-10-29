@@ -42,7 +42,7 @@ INIT_MEM ?=1
 ifeq ($(BOARD),AES-KU040-DB-G) # Arroz eth if mac
 RMAC_ADDR:=4437e6a6893b
 else # Pudim eth if mac
-RMAC_ADDR:=309c231e624a
+RMAC_ADDR:=309c231e624b
 endif
 
 #PERIPHERAL LIST
