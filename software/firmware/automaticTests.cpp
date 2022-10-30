@@ -1216,8 +1216,6 @@ TEST(FlattenSHA){
 
    VersatSHA(digest,msg_64,64);
 
-   DisplayAcceleratorMemory(flatten);
-
    return EXPECT("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa","%s",GetHexadecimal(digest, HASH_SIZE));
 }
 
@@ -1409,19 +1407,12 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
-#endif
-#if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
-#endif
-
 #if 1
    TEST_INST( 1 ,TestMStage);
    TEST_INST( 1 ,TestFStage);
    TEST_INST( 1 ,SHA);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,VReadToVWrite);
    TEST_INST( 1 ,StringHasher);
    TEST_INST( 1 ,Convolution);
@@ -1432,7 +1423,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,VersatSubBytes);
    TEST_INST( 1 ,VersatShiftRows);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,VersatDoRows);
    TEST_INST( 1 ,VersatMixColumns);
    TEST_INST( 1 ,FirstLineKey);
@@ -1443,17 +1434,17 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,SimpleShareConfig);
    TEST_INST( 1 ,ComplexShareConfig);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( 1 ,FlattenShareConfig);
    TEST_INST( 1 ,ComplexFlatten);
    TEST_INST( 1 ,FlattenSHA); // Problem on top level static buffers. Maybe do flattening of accelerators with buffers already fixed.
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,SimpleMergeNoCommon);
    TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
@@ -1467,6 +1458,8 @@ void AutomaticTests(Versat* versat){
 }
 
 /*
+
+- The simplest way to fix the flattenSHA testcase is to probably do the flattening of the fixed delay graphs.
 
 - Test the AES,SHA merging on PC-Emul
 
