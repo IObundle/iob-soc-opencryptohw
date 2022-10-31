@@ -1408,11 +1408,12 @@ void AutomaticTests(Versat* versat){
    int currentTest = 0;
 
 #if 1
+#if 1
    TEST_INST( 1 ,TestMStage);
    TEST_INST( 1 ,TestFStage);
    TEST_INST( 1 ,SHA);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,VReadToVWrite);
    TEST_INST( 1 ,StringHasher);
    TEST_INST( 1 ,Convolution);
@@ -1423,7 +1424,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,VersatSubBytes);
    TEST_INST( 1 ,VersatShiftRows);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,VersatDoRows);
    TEST_INST( 1 ,VersatMixColumns);
    TEST_INST( 1 ,FirstLineKey);
@@ -1434,22 +1435,23 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,SimpleShareConfig);
    TEST_INST( 1 ,ComplexShareConfig);
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,SimpleFlatten);
    TEST_INST( 1 ,FlattenShareConfig);
    TEST_INST( 1 ,ComplexFlatten);
-   TEST_INST( 1 ,FlattenSHA); // Problem on top level static buffers. Maybe do flattening of accelerators with buffers already fixed.
+   TEST_INST( DISABLED ,FlattenSHA); // Problem on top level static buffers. Maybe do flattening of accelerators with buffers already fixed.
 #endif
-#if 0
+#if 1
    TEST_INST( 1 ,SimpleMergeNoCommon);
    TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
    TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
    TEST_INST( 1 ,SimpleMergeInputOutputCommon);
    TEST_INST( 1 ,ComplexMerge);
+#endif
 #endif
 
    //Free(versat);
@@ -1463,9 +1465,8 @@ void AutomaticTests(Versat* versat){
 
 - Test the AES,SHA merging on PC-Emul
 
-- Start working towards sim-run of merged accelerators.
-   Just store the info for any unit that is not an operation into a array with a hierarchical structure.
-      Might need to store a pointer to a string with the name of the declaration in order to resolve GetInstance("name:type") calls
+- Start working towards sim-run of merged accelerators with shared and static units.
+   Might need to store a pointer to a string with the name of the declaration in order to resolve GetInstance("name:type") calls
 
 
 */

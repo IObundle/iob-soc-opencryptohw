@@ -53,7 +53,7 @@ int main(int argc,const char* argv[])
 
    SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,1);
    SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,1);
-   SetDebug(versat,VersatDebugFlags::USE_FIXED_BUFFERS,1);
+   SetDebug(versat,VersatDebugFlags::USE_FIXED_BUFFERS,0);
    SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,0);
    SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,0);
 

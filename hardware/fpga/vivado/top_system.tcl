@@ -97,16 +97,22 @@ if { $USE_DDR < 0 } {
 }
 
 file mkdir reports
+file mkdir checkpoints
 
 synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $TOP -debug_log -verbose
 report_utilization -hierarchical -file reports/synth_utilization.txt
+write_checkpoint -force checkpoints/post_synth
+
+start_gui
 
 opt_design -debug_log -verbose
 report_timing_summary -file reports/opt_timing.txt -max_paths 3000
 
 place_design
+write_checkpoint -force checkpoints/post_place
 
 route_design
+write_checkpoint -force checkpoints/post_route
 
 report_timing -file reports/timing.txt -max_paths 3000
 report_clocks -file reports/clocks.txt
