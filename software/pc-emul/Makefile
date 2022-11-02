@@ -27,9 +27,13 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
+SRC+= $(FIRM_DIR)/fullSHATests.cpp
 
+# INCLUDE+=$(incdir)$(FIRM_DIR)
 INCLUDE+=$(incdir)./build
 
+SOC_IN_BIN=soc-in.bin
+TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
 #PROFILE
@@ -48,7 +52,7 @@ UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
 OBJ+=./build/firmware.o
 
 #CONSOLE
-CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
+CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
 
 #RULES
 
@@ -60,10 +64,11 @@ build: gen_data fw_emul
 fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
 	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
 	
-run: build
+run: build $(SOC_IN_BIN)
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
 	@mkdir -p debug
 	@mkdir -p src
+	$(CONSOLE_CMD) $(TEST_LOG) &
 	./fw_emul $(TEST_LOG)
 	cp versat_instance.v $(HW_DIR)/src/
 	cp versat_defs.vh $(HW_DIR)/include/
@@ -73,19 +78,20 @@ run: build
 
 clean:
 	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG)
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
 	@rm -f versat_data.inc versat_defs.vh versat_instance.v
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
+	@rm -f $(FIRM_DIR)/*.inc
+	@rm -f $(HW_DIR)/src/versat_instance.v
+	@rm -f $(HW_DIR)/include/versat_defs.vh
 	@rm -f -r ./build
 	@rm -f -r ./debug
 	@rm -f -r ./src
 	@rm -f -r ./trace_out
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 
-test: 
-	make run
-	make validate
+test: run validate
 
 validate:
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
@@ -110,6 +116,12 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	mkdir -p ./build; mv ./obj/*.o ./build/;
 	mv ./obj/*.h ./build/
 	rm -r -f ./obj
+
+$(SOC_IN_BIN): $(TEST_IN_BIN)
+	cp $< $@
+
+$(TEST_IN_BIN): gen_data
+
 
 .PHONY: build run \
 	test validate profile \

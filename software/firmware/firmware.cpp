@@ -15,8 +15,11 @@ extern "C"{
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
 
+
 int printf_(const char* format, ...);
 }
+
+#include "fullSHATests.hpp"
 
 // Automatically times a block in number of counts
 struct TimeIt{
@@ -63,6 +66,8 @@ int main(int argc,const char* argv[])
    ParseVersatSpecification(versat,"testVersatSpecification.txt");
 
    AutomaticTests(versat);
+
+   Full_SHA_Test(versat);
 
    uart_finish();
 

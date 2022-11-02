@@ -79,9 +79,9 @@ static void store_bigendian_32(uint8_t *x, uint64_t u) {
 }
 
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
-   readConfig->ext_addr = (int) in;
 
    while (inlen >= 64) {
+      readConfig->ext_addr = (int) in;
       // Loads data + performs work
       AcceleratorRun(accel);
 
