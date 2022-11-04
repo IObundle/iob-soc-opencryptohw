@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-g -m32 -Wall #-fsanitize=address
+GLOBAL_CFLAGS:=-m32 -Wall -g #-fsanitize=address
 
 include ../software.mk
 

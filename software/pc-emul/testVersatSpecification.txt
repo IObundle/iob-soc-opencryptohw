@@ -640,6 +640,10 @@ module Constants(){
    mem -> out:0;
 }
 
+//F : 16
+//specF : 1
+//xunitF : 1
+
 module SHA(){
    VRead MemRead;
    SwapEndian Swap(1);
@@ -647,9 +651,9 @@ module SHA(){
    F F1;
    F F2;
    F F3;
-   xunitM M0;
-   xunitM M1;
-   xunitM M2;
+   M M0;
+   M M1;
+   M M2;
    Constants cMem0;
    Constants cMem1;
    Constants cMem2;
