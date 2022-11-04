@@ -3,6 +3,9 @@
 
 extern "C"{
 #include "iob-uart.h"
+#ifndef PC
+#include "printf.h"
+#endif
 }
 #include "versat.hpp"
 #include "versatSHA.hpp"

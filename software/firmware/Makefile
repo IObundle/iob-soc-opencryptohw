@@ -37,7 +37,7 @@ SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
-#SRC+= $(FIRM_DIR)/ila.c
+SRC+= $(FIRM_DIR)/fullSHATests.cpp
 
 #PROFILE
 ifeq ($(PROFILE),1)

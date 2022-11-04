@@ -36,6 +36,9 @@ SOC_IN_BIN=soc-in.bin
 TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
+ifneq ($(GENERATE_ONLY),)
+DEFINE+=$(defmacro)GENERATE_ONLY
+endif
 #PROFILE
 ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
@@ -94,7 +97,8 @@ clean:
 test: run validate
 
 validate:
-	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
 
 profile: clean $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"

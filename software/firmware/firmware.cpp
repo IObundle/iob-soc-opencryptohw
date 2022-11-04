@@ -67,7 +67,9 @@ int main(int argc,const char* argv[])
 
    AutomaticTests(versat);
 
+#ifndef GENERATE_ONLY
    Full_SHA_Test(versat);
+#endif
 
    uart_finish();
 

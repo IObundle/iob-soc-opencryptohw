@@ -34,20 +34,20 @@ jobs:
       - name: test-clean
         run: make pc-emul-clean
       - name: test-pc-emul
-        run: make test-pc-emul
+        run: make test-pc-emul HARDWARE_TEST=2
 
-  generate-versat:
-    runs-on: self-hosted
-    timeout-minutes: 30
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: test-clean
-        run: make pc-emul-clean
-      - name: generate versat instance
-        run: make pc-emul-output-versat
+  # generate-versat:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 30
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: test-clean
+  #       run: make pc-emul-clean
+  #     - name: generate versat instance
+  #       run: make pc-emul-output-versat
 
   simulation:
     runs-on: self-hosted
@@ -57,37 +57,33 @@ jobs:
       - uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: simulate system with verilog FUs
-        run: make sim-test SIMULATOR=verilator
+      - name: simulate system
+        run: make sim-test HARDWARE_TEST=2
       - name: simulation clean
-        run: make sim-clean SIMULATOR=verilator
-      - name: simulate system with SpinalHDL FUs
-        run: make sim-test SIMULATOR=verilator SPINAL=1
-      - name: simulation clean
-        run: make sim-clean SIMULATOR=verilator SPINAL=1
+        run: make sim-clean 
 
-  versat-synthesis:
-    runs-on: self-hosted
-    timeout-minutes: 15
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: fpga clean
-        run: make fpga-clean
-      - name: fpga build
-        run: make fpga-build-versat
-
-  system-synthesis:
-    runs-on: self-hosted
-    timeout-minutes: 60
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: fpga clean
-        run: make fpga-clean
-      - name: fpga build
-        run: make fpga-build
+  # versat-synthesis:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 15
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: fpga clean
+  #       run: make fpga-clean
+  #     - name: fpga build
+  #       run: make fpga-build-versat
+  #
+  # system-synthesis:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 60
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: fpga clean
+  #       run: make fpga-clean
+  #     - name: fpga build
+  #       run: make fpga-build

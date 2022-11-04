@@ -22,7 +22,7 @@ int get_int(char* ptr, unsigned int *i_val){
 
 /* get pointer to message and increment pointer */
 /* get pointer to message
- * return size of message */
+ * return size of message + padding */
 int get_msg(char *ptr, uint8_t **msg_ptr, int size){
     /* check for valid ptr */
     if(ptr == NULL){
@@ -31,7 +31,10 @@ int get_msg(char *ptr, uint8_t **msg_ptr, int size){
     }
     /* update message pointer */
     *msg_ptr = (uint8_t*) ptr;
-    return sizeof(uint8_t)*size;
+    /* calculate padding to next multiple of 4 */
+    int padding = (4-(size%4))%4;
+
+    return (sizeof(uint8_t)*size) + padding;
 }
 
 /* copy memory from pointer to another */
@@ -108,7 +111,7 @@ void Full_SHA_Test(Versat* versat) {
         // Parse messages and length
         din_ptr += get_int(din_fp + din_ptr, &msg_len);
         din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
-        printf("iteration %d...", i);
+        printf("\ttest vector #%d/%d...", i+1,num_msgs);
 
         VersatSHA(digest, msg, msg_len);
         printf("done!\n");

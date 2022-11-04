@@ -60,16 +60,11 @@ pc-emul-output-versat:
 #
 
 sim-build: #ila-build
-	make -C $(PC_DIR) run
-	make fw-build
-	make -C $(SIM_DIR) build
-
-./hardware/src/versat_instance.v:
-	make -C $(PC_DIR) run
+	make -C $(PC_DIR) run GENERATE_ONLY=1
 	make fw-build SIM=1
 	make -C $(SIM_DIR) build
 
-sim-run: sim-build ./hardware/src/versat_instance.v
+sim-run: sim-build
 	make -C $(SIM_DIR) run
 
 sim-clean: fw-clean
