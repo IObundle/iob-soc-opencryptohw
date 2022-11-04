@@ -88,11 +88,11 @@ fpga-fw-build: #ila-build
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
 fpga-build: #ila-build
-	make -C $(PC_DIR) run
+	make -C $(PC_DIR) run GENERATE_ONLY=1
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 	make -C $(BOARD_DIR) build
 
-fpga-run: fpga-fw-build
+fpga-run: fpga-build
 	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"
 
 fpga-clean: fw-clean

@@ -23,6 +23,10 @@ ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
 
+# Input/Output
+SOC_IN_BIN=soc-in.bin
+TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
+SOC_OUT_BIN:=soc-out.bin
 
 #RULES
 
@@ -32,7 +36,7 @@ endif
 
 FORCE ?= 1
 
-run:
+run: $(SOC_IN_BIN)
 ifeq ($(NORUN),0)
 ifeq ($(BOARD_SERVER),)
 	cp $(FIRM_DIR)/firmware.bin .
@@ -43,6 +47,7 @@ else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
 	bash -c "trap 'make queue-out-remote' INT TERM KILL; ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) FORCE=$(FORCE) TEST_LOG=\"$(TEST_LOG)\"'"
+	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(SOC_OUT_BIN) .
 ifneq ($(TEST_LOG),)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
 endif
@@ -113,21 +118,16 @@ endif
 # Testing
 #
 
-test: clean-testlog test1 test2 test3
-	diff test.log test.expected
+test: clean-testlog test-shortmsg
 
-test1:
-	make -C $(ROOT_DIR) fpga-clean BOARD=$(BOARD)
-	make -C $(ROOT_DIR) fpga-run INIT_MEM=1 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log"
+test-shortmsg: run-shortmsg test-validate
 
-test2:
-	make -C $(ROOT_DIR) fpga-clean BOARD=$(BOARD)
-	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=0 RUN_EXTMEM=0 TEST_LOG=">> test.log"
+run-shortmsg:
+	make -C $(ROOT_DIR) fpga-run HARDWARE_TEST=2
 
-test3:
-	make -C $(ROOT_DIR) fpga-clean BOARD=$(BOARD)
-	make -C $(ROOT_DIR) fpga-run INIT_MEM=0 USE_DDR=1 RUN_EXTMEM=1 TEST_LOG=">> test.log"
-
+test-validate:
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 #
 # Clean
@@ -157,6 +157,11 @@ ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@'
 endif
 
+$(SOC_IN_BIN): $(TEST_IN_BIN)
+	cp $< $@
+
+$(TEST_IN_BIN):
+	make -C $(FIRM_DIR) gen_data
 
 debug:
 	@echo $(VHDR)
