@@ -174,5 +174,5 @@ debug:
 
 .PHONY: run build \
 	queue-in queue-out queue-wait queue-out-remote \
-	test test1 test2 test3 \
+	test test-shortmsg run-shortmsg test-validate \
 	clean-all clean-testlog
