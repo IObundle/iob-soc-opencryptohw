@@ -20,9 +20,6 @@ include $(TIMER_DIR)/software/embedded/embedded.mk
 #versat
 include $(VERSAT_DIR)/software/embedded/embedded.mk
 
-#ila
-include $(ILA_DIR)/software/embedded/embedded.mk
-
 #HEADERS
 HDR+=periphs.h
 HDR+=versat_data.inc

@@ -31,10 +31,7 @@ struct TimeIt{
 };
 #define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
 
-#ifdef PC
-#define uart_finish(...) ((void)0)
-#define uart_init(...) ((void)0)
-#else
+#ifndef PC
 #define printf printf_
 #endif
 
