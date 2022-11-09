@@ -24,7 +24,7 @@ ila-clean:
 fw-build: #ila-build
 	make -C $(FIRM_DIR) build-all
 
-fw-clean: pc-emul-clean
+fw-clean:
 	make -C $(FIRM_DIR) clean-all
 
 fw-debug:
@@ -52,15 +52,15 @@ pc-emul-clean: fw-clean
 pc-emul-test: pc-emul-clean
 	make -C $(PC_DIR) test
 
-pc-emul-output-versat:
-	make -C $(PC_DIR) output-versat
+pc-emul-gen-versat:
+	make -C $(PC_DIR) gen-versat
 
 #
 # SIMULATE RTL
 #
 
 sim-build: #ila-build
-	make -C $(PC_DIR) run GENERATE_ONLY=1
+	make -C $(PC_DIR) gen-versat
 	make fw-build SIM=1
 	make -C $(SIM_DIR) build
 
@@ -88,7 +88,7 @@ fpga-fw-build: #ila-build
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
 fpga-build: #ila-build
-	make -C $(PC_DIR) run GENERATE_ONLY=1
+	make -C $(PC_DIR) gen-versat
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 	make -C $(BOARD_DIR) build
 
@@ -107,7 +107,7 @@ fpga-debug:
 fpga-test:
 	make -C $(BOARD_DIR) test
 
-fpga-build-versat: pc-emul-output-versat
+fpga-build-versat: pc-emul-gen-versat
 	make -C $(BOARD_DIR) build-versat
 
 #
@@ -174,7 +174,7 @@ test: test-clean
 	make test-pc-emul 
 	make pc-emul-profile
 	make test-pc-emul-clean
-	make pc-emul-output-versat
+	make pc-emul-gen-versat
 	make test-pc-emul-clean
 	make test-sim
 	make test-sim-clean
@@ -197,7 +197,7 @@ clean-all: test-clean
 .PHONY: ila-clean \
 	fw-build fw-clean fw-debug \
 	gen-spinal-sources \
-	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-output-versat \
+	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-gen-versat \
 	sim-build sim-run sim-clean sim-test sim-versat-fus sim-debug \
 	fpga-fw-build fpga-build fpga-run fpga-clean fpga-veryclean fpga-debug \
 	fpga-test fpga-build-versat \

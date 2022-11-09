@@ -54,17 +54,25 @@ UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
 UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
 OBJ+=./build/firmware.o
 
+FW_EMUL=fw_emul
+
 #CONSOLE
 CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
 
+#PC EMUL OUTPUTS
+VERSAT_GEN=versat_instance.v
+VERSAT_GEN+=versat_data.inc
+VERSAT_GEN+=versat_defs.vh
+VERSAT_GEN+=$(wildcard src/*)
+
 #RULES
 
-build: gen_data fw_emul
+build: $(FW_EMUL)
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
 
-fw_emul: $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
+$(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
 	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
 	
 run: build $(SOC_IN_BIN)
@@ -72,15 +80,10 @@ run: build $(SOC_IN_BIN)
 	@mkdir -p debug
 	@mkdir -p src
 	$(CONSOLE_CMD) $(TEST_LOG) &
-	./fw_emul $(TEST_LOG)
-	cp versat_instance.v $(HW_DIR)/src/
-	cp versat_defs.vh $(HW_DIR)/include/
-	cp versat_data.inc $(FIRM_DIR)/
-	cp ./build/verilogWrapper.inc $(FIRM_DIR)/
-	cp src/* $(HW_DIR)/src/GeneratedUnits/
+	./$(FW_EMUL) $(TEST_LOG)
 
 clean:
-	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
+	@rm -rf $(FW_EMUL) periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
 	@rm -f versat_data.inc versat_defs.vh versat_instance.v
 	@make -C $(SW_DIR)/python clean
@@ -93,12 +96,23 @@ clean:
 	@rm -f -r ./src
 	@rm -f -r ./trace_out
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
+	@rm -f -r *.dot
 
-test: run validate
+test: clean run validate
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
+
+gen-versat: $(VERSAT_GEN)
+	cp -u versat_instance.v $(HW_DIR)/src/
+	cp -u versat_defs.vh $(HW_DIR)/include/
+	cp -u versat_data.inc $(FIRM_DIR)/
+	cp -u ./build/verilogWrapper.inc $(FIRM_DIR)/
+	cp -u src/* $(HW_DIR)/src/GeneratedUnits/
+
+$(VERSAT_GEN):
+	make run GENERATE_ONLY=1
 
 profile: clean $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
@@ -124,11 +138,11 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 $(SOC_IN_BIN): $(TEST_IN_BIN)
 	cp $< $@
 
-$(TEST_IN_BIN): gen_data
+$(TEST_IN_BIN):
+	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
-
-.PHONY: build run \
+.PHONY: run \
 	test validate profile \
-	output-versat \
+	gen-versat \
 	clean
 

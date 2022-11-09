@@ -144,7 +144,7 @@ $(SOC_IN_BIN): $(TEST_IN_BIN)
 	cp $< $@
 
 $(TEST_IN_BIN):
-	make -C $(FIRM_DIR) gen_data
+	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 #clean target common to all simulators
 clean-remote: hw-clean

@@ -55,7 +55,7 @@ endif
 
 build: firmware.elf
 
-firmware.elf: ../template.lds $(HDR) $(SRC) gen_data
+firmware.elf: ../template.lds $(HDR) $(SRC) 
 	$(TOOLCHAIN_PREFIX)gcc -o $@ $(CFLAGS) $(LFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(LLIBS) -lgcc -lc -lnosys -fno-exceptions
 	$(TOOLCHAIN_PREFIX)objcopy -O binary firmware.elf firmware.bin
 
@@ -66,7 +66,7 @@ verilogWrapper.inc: $(PC_DIR)/build/verilogWrapper.inc
 	cp $< $@
 
 $(PC_DIR)/%.inc:
-	@make -C $(ROOT_DIR) pc-emul-output-versat
+	@make -C $(ROOT_DIR) pc-emul-gen-versat HARDWARE_TEST=2
 
 $(BUILD_DIR)/%.o: %.cpp
 	mkdir -p $(BUILD_DIR)

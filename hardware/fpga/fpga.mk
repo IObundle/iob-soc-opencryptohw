@@ -36,7 +36,7 @@ SOC_OUT_BIN:=soc-out.bin
 
 FORCE ?= 1
 
-run: $(SOC_IN_BIN)
+run: $(FPGA_OBJ) $(SOC_IN_BIN)
 ifeq ($(NORUN),0)
 ifeq ($(BOARD_SERVER),)
 	cp $(FIRM_DIR)/firmware.bin .
@@ -68,7 +68,7 @@ ifeq ($(NORUN),0)
 ifeq ($(FPGA_SERVER),)
 	@rm -f $(FPGA_LOG)
 	make local-build
-else 
+else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR) fpga-build BOARD=$(BOARD) INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM)'
@@ -161,7 +161,7 @@ $(SOC_IN_BIN): $(TEST_IN_BIN)
 	cp $< $@
 
 $(TEST_IN_BIN):
-	make -C $(FIRM_DIR) gen_data
+	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
 debug:
 	@echo $(VHDR)
