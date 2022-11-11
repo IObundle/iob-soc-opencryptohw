@@ -43,7 +43,7 @@ module system_top (
    wire [2*8-1:0]     sys_awlen;
    wire [2*3-1:0]     sys_awsize;
    wire [2*2-1:0]     sys_awburst;
-   wire [2*1-1:0]     sys_awlock;
+   wire [2*2-1:0]     sys_awlock;
    wire [2*4-1:0]     sys_awcache;
    wire [2*3-1:0]     sys_awprot;
    wire [2*4-1:0]     sys_awqos;
@@ -68,7 +68,7 @@ module system_top (
    wire [2*8-1:0]        sys_arlen;
    wire [2*3-1:0]        sys_arsize;
    wire [2*2-1:0]        sys_arburst;
-   wire [2*1-1:0]        sys_arlock;
+   wire [2*2-1:0]        sys_arlock;
    wire [2*4-1:0]        sys_arcache;
    wire [2*3-1:0]        sys_arprot;
    wire [2*4-1:0]        sys_arqos;
@@ -91,7 +91,7 @@ module system_top (
    wire [7:0]              ddr_awlen;
    wire [2:0]              ddr_awsize;
    wire [1:0]              ddr_awburst;
-   wire                    ddr_awlock;
+   wire [0:0]              ddr_awlock;
    wire [3:0]              ddr_awcache;
    wire [2:0]              ddr_awprot;
    wire [3:0]              ddr_awqos;
@@ -115,7 +115,7 @@ module system_top (
    wire [7:0]              ddr_arlen;
    wire [2:0]              ddr_arsize;
    wire [1:0]              ddr_arburst;
-   wire                    ddr_arlock;
+   wire [0:0]              ddr_arlock;
    wire [3:0]              ddr_arcache;
    wire [2:0]              ddr_arprot;
    wire [3:0]              ddr_arqos;
@@ -148,7 +148,7 @@ module system_top (
             .s_axi_awlen(sys_awlen),
             .s_axi_awsize(sys_awsize),
             .s_axi_awburst(sys_awburst),
-            .s_axi_awlock(sys_awlock),
+            .s_axi_awlock(sys_awlock[1:0]),
             .s_axi_awcache(sys_awcache),
             .s_axi_awprot(sys_awprot),
             .s_axi_awqos(sys_awqos),
@@ -172,7 +172,7 @@ module system_top (
             .s_axi_arlen(sys_arlen),
             .s_axi_arsize(sys_arsize),
             .s_axi_arburst(sys_arburst),
-            .s_axi_arlock(sys_arlock),
+            .s_axi_arlock(sys_arlock[1:0]),
             .s_axi_arcache(sys_arcache),
             .s_axi_arprot(sys_arprot),
             .s_axi_arqos(sys_arqos),
@@ -262,7 +262,7 @@ module system_top (
          .m_axi_wready  (sys_wready),
                
          //write response
-         //.m_axi_bid     (sys_bid),
+         .m_axi_bid     (sys_bid),
          .m_axi_bresp   (sys_bresp),
          .m_axi_bvalid  (sys_bvalid),
          .m_axi_bready  (sys_bready),
@@ -281,7 +281,7 @@ module system_top (
          .m_axi_arready (sys_arready),
                
          //read   
-         //.m_axi_rid     (sys_rid),
+         .m_axi_rid     (sys_rid),
          .m_axi_rdata   (sys_rdata),
          .m_axi_rresp   (sys_rresp),
          .m_axi_rlast   (sys_rlast),
@@ -306,31 +306,32 @@ module system_top (
        .ADDR_WIDTH (`DDR_ADDR_W)
        )
    ddr_model_mem(
-                 //address write
-                 .clk            (clk),
-                 .rst            (rst),
+       //address write
+       .clk            (clk),
+       .rst            (rst),
        .s_axi_awid     ({8{ddr_awid}}),
        .s_axi_awaddr   (ddr_awaddr[`DDR_ADDR_W-1:0]),
-                 .s_axi_awlen    (ddr_awlen),
-                 .s_axi_awsize   (ddr_awsize),
-                 .s_axi_awburst  (ddr_awburst),
-                 .s_axi_awlock   (ddr_awlock),
+       .s_axi_awlen    (ddr_awlen),
+       .s_axi_awsize   (ddr_awsize),
+       .s_axi_awburst  (ddr_awburst),
+       .s_axi_awlock   ({2{ddr_awlock}}),
        .s_axi_awprot   (ddr_awprot),
        .s_axi_awcache  (ddr_awcache),
-          .s_axi_awvalid  (ddr_awvalid),
+       .s_axi_awvalid  (ddr_awvalid),
        .s_axi_awready  (ddr_awready),
+       .s_axi_awqos  (ddr_awqos),
       
        //write  
        .s_axi_wvalid   (ddr_wvalid),
        .s_axi_wready   (ddr_wready),
        .s_axi_wdata    (ddr_wdata),
        .s_axi_wstrb    (ddr_wstrb),
-                 .s_axi_wlast    (ddr_wlast),
+       .s_axi_wlast    (ddr_wlast),
       
        //write response
        .s_axi_bready   (ddr_bready),
-                 .s_axi_bid      (ddr_bid),
-                 .s_axi_bresp    (ddr_bresp),
+       .s_axi_bid      (ddr_bid),
+       .s_axi_bresp    (ddr_bresp),
        .s_axi_bvalid   (ddr_bvalid),
       
        //address read
@@ -338,19 +339,20 @@ module system_top (
        .s_axi_araddr   (ddr_araddr[`DDR_ADDR_W-1:0]),
        .s_axi_arlen    (ddr_arlen), 
        .s_axi_arsize   (ddr_arsize),    
-                 .s_axi_arburst  (ddr_arburst),
-                 .s_axi_arlock   (ddr_arlock),
-                 .s_axi_arcache  (ddr_arcache),
-                 .s_axi_arprot   (ddr_arprot),
+       .s_axi_arburst  (ddr_arburst),
+       .s_axi_arlock   ({2{ddr_arlock}}),
+       .s_axi_arcache  (ddr_arcache),
+       .s_axi_arprot   (ddr_arprot),
        .s_axi_arvalid  (ddr_arvalid),
        .s_axi_arready  (ddr_arready),
+       .s_axi_arqos  (ddr_arqos),
       
        //read   
        .s_axi_rready   (ddr_rready),
        .s_axi_rid      (ddr_rid),
        .s_axi_rdata    (ddr_rdata),
        .s_axi_rresp    (ddr_rresp),
-                 .s_axi_rlast    (ddr_rlast),
+       .s_axi_rlast    (ddr_rlast),
        .s_axi_rvalid   (ddr_rvalid)
                  );   
 `endif
