@@ -1,4 +1,9 @@
 
+module OnlyInputToOutput(x){
+#
+   x -> out:0;
+}
+
 module SimpleAdder(){
    Const a1;
    Const a2;
@@ -460,16 +465,8 @@ module T_Stage(a,b,c,e,f,g,h,k,w){
    t2 -> out:1;
 }
 
-module F_Stage(a,b,c,d,e,f,g,h,k,w){
+module Comb_F_Stage(a,b,c,d,e,f,g,h,k,w){
    static T_Stage t;
-   PipelineRegister d0;
-   PipelineRegister d1;
-   PipelineRegister d2;
-   PipelineRegister d3;
-   PipelineRegister d4;
-   PipelineRegister d5;
-   PipelineRegister d6;
-   PipelineRegister d7;
 #
    a -> t:0;
    b -> t:1;
@@ -485,14 +482,46 @@ module F_Stage(a,b,c,d,e,f,g,h,k,w){
    a1 = t:0 + t:1;
    a2 = d + t:0;
 
-   a1 -> d0; // a
-   a -> d1;  // b
-   b -> d2;  // c
-   c -> d3;  // d
-   a2 -> d4; // e
-   e -> d5;  // f
-   f -> d6;  // g
-   g -> d7;  // h
+   a1 -> out:0;
+   a  -> out:1;
+   b  -> out:2;
+   c  -> out:3;
+   a2 -> out:4;
+   e  -> out:5;
+   f  -> out:6;
+   g  -> out:7;
+}
+
+module F_Stage(a,b,c,d,e,f,g,h,k,w){
+   Comb_F_Stage f_stage;
+   PipelineRegister d0;
+   PipelineRegister d1;
+   PipelineRegister d2;
+   PipelineRegister d3;
+   PipelineRegister d4;
+   PipelineRegister d5;
+   PipelineRegister d6;
+   PipelineRegister d7;
+#
+   a -> f_stage:0;
+   b -> f_stage:1;
+   c -> f_stage:2;
+   d -> f_stage:3;
+   e -> f_stage:4;
+   f -> f_stage:5;
+   g -> f_stage:6;
+   h -> f_stage:7;
+   k -> f_stage:8;
+   w -> f_stage:9;
+
+   f_stage:0 -> d0; // a
+   f_stage:1 -> d1; // b
+   f_stage:2 -> d2; // c
+   f_stage:3 -> d3; // d
+   f_stage:4 -> d4; // e
+   f_stage:5 -> d5; // f
+   f_stage:6 -> d6; // g
+   f_stage:7 -> d7; // h
 
    d0 -> out:0;
    d1 -> out:1;
@@ -647,13 +676,13 @@ module Constants(){
 module SHA(){
    VRead MemRead;
    SwapEndian Swap(1);
-   F F0;
-   F F1;
-   F F2;
-   F F3;
-   M M0;
-   M M1;
-   M M2;
+   xunitF F0;
+   xunitF F1;
+   xunitF F2;
+   xunitF F3;
+   xunitM M0;
+   xunitM M1;
+   xunitM M2;
    Constants cMem0;
    Constants cMem1;
    Constants cMem2;
@@ -1177,3 +1206,28 @@ module ReadWriteAES(){
 
    merge->results;
 }
+
+
+/*
+   Two graphs:
+
+      One graph for the initial phase
+      Another graph for everything else?
+         If allow only one unit, then it's very easy to perform the templating code
+
+   Initial
+      Statements can only be: input -> state
+
+      input -> comb presents a problem. Need to provide a mux 
+
+   For loop:
+      Statements can only be: input -> state
+                              input -> out
+                              input -> comb
+                              comb -> state
+                              comb -> out
+                              state -> comb
+                              state -> out
+   
+
+*/

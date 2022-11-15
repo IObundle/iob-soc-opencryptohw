@@ -103,7 +103,7 @@ synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $
 report_utilization -hierarchical -file reports/synth_utilization.txt
 write_checkpoint -force checkpoints/post_synth
 
-start_gui
+#start_gui
 
 opt_design -debug_log -verbose
 report_timing_summary -file reports/opt_timing.txt -max_paths 3000

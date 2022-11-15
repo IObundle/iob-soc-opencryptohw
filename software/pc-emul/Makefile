@@ -28,7 +28,7 @@ SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 
-#SRC+= ./ila.c
+SRC+= ./ila.c
 
 INCLUDE+=$(incdir)./build
 

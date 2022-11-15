@@ -10,7 +10,7 @@ extern "C"{
 #include "string.h"
 
 #include "iob-timer.h"
-//#include "iob-ila.h"
+#include "iob-ila.h"
 
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
@@ -45,7 +45,7 @@ int main(int argc,const char* argv[])
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
    timer_init(TIMER_BASE);
-   //ila_init(ILA_BASE);
+   ila_init(ILA_BASE);
 
    printf("Init base modules\n");
 
