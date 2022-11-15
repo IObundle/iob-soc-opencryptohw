@@ -52,7 +52,7 @@ module top_system
    wire [2*8-1:0] 			sys_awlen;
    wire [2*3-1:0] 			sys_awsize;
    wire [2*2-1:0] 			sys_awburst;
-   wire [2*1-1:0] 			sys_awlock;
+   wire [2*2-1:0] 			sys_awlock;
    wire [2*4-1:0]			sys_awcache;
    wire [2*3-1:0] 			sys_awprot;
    wire [2*4-1:0] 			sys_awqos;
@@ -75,7 +75,7 @@ module top_system
    wire [2*8-1:0] 			sys_arlen;
    wire [2*3-1:0] 			sys_arsize;
    wire [2*2-1:0] 			sys_arburst;
-   wire [2*1-1:0] 			sys_arlock;
+   wire [2*2-1:0] 			sys_arlock;
    wire [2*4-1:0] 			sys_arcache;
    wire [2*3-1:0] 			sys_arprot;
    wire [2*4-1:0] 			sys_arqos;
@@ -246,7 +246,7 @@ module top_system
       .S00_AXI_AWLEN        (sys_awlen[0*8+:8]),
       .S00_AXI_AWSIZE       (sys_awsize[0*3+:3]),
       .S00_AXI_AWBURST      (sys_awburst[0*2+:2]),
-      .S00_AXI_AWLOCK       (sys_awlock[0*1+:1]),
+      .S00_AXI_AWLOCK       (sys_awlock[0*2+:1]),
       .S00_AXI_AWCACHE      (sys_awcache[0*4+:4]),
       .S00_AXI_AWPROT       (sys_awprot[0*3+:3]),
       .S00_AXI_AWQOS        (sys_awqos[0*4+:4]),
@@ -272,7 +272,7 @@ module top_system
       .S00_AXI_ARLEN        (sys_arlen[0*8+:8]),
       .S00_AXI_ARSIZE       (sys_arsize[0*3+:3]),
       .S00_AXI_ARBURST      (sys_arburst[0*2+:2]),
-      .S00_AXI_ARLOCK       (sys_arlock[0*1+:1]),
+      .S00_AXI_ARLOCK       (sys_arlock[0*2+:1]),
       .S00_AXI_ARCACHE      (sys_arcache[0*4+:4]),
       .S00_AXI_ARPROT       (sys_arprot[0*3+:3]),
       .S00_AXI_ARQOS        (sys_arqos[0*4+:4]),
@@ -296,7 +296,7 @@ module top_system
       .S01_AXI_AWLEN        (sys_awlen[1*8+:8]),
       .S01_AXI_AWSIZE       (sys_awsize[1*3+:3]),
       .S01_AXI_AWBURST      (sys_awburst[1*2+:2]),
-      .S01_AXI_AWLOCK       (sys_awlock[1*1+:1]),
+      .S01_AXI_AWLOCK       (sys_awlock[1*2+:1]),
       .S01_AXI_AWCACHE      (sys_awcache[1*4+:4]),
       .S01_AXI_AWPROT       (sys_awprot[1*3+:3]),
       .S01_AXI_AWQOS        (sys_awqos[1*4+:4]),
@@ -322,7 +322,7 @@ module top_system
       .S01_AXI_ARLEN        (sys_arlen[1*8+:8]),
       .S01_AXI_ARSIZE       (sys_arsize[1*3+:3]),
       .S01_AXI_ARBURST      (sys_arburst[1*2+:2]),
-      .S01_AXI_ARLOCK       (sys_arlock[1*1+:1]),
+      .S01_AXI_ARLOCK       (sys_arlock[1*2+:1]),
       .S01_AXI_ARCACHE      (sys_arcache[1*4+:4]),
       .S01_AXI_ARPROT       (sys_arprot[1*3+:3]),
       .S01_AXI_ARQOS        (sys_arqos[1*4+:4]),
