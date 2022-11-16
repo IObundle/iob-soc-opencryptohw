@@ -142,12 +142,6 @@ $(SOC_IN_BIN): $(TEST_IN_BIN)
 $(TEST_IN_BIN):
 	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
-ila.c: $(ROOT_DIR)/ila.c
-	cp $< $@
-
-$(ROOT_DIR)/ila.c:
-	make -C $(ROOT_DIR) ila-build
-
 .PHONY: run \
 	test validate profile \
 	gen-versat \
