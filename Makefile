@@ -3,13 +3,9 @@ include $(ROOT_DIR)/config.mk
 
 SHELL = /bin/bash
 
-ILA_DIR=./submodules/ILA
-ILA_PYTHON_DIR=$(ILA_DIR)/software/python
 ila-build: ilaFormat.txt
 	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
 	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
-	cp ila.c $(FIRM_DIR)/
-	cp ila.c $(PC_DIR)/
 
 ila-generate-vcd: ilaFormat.txt ilaData.txt
 	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd

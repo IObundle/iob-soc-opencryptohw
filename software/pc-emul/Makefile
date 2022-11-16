@@ -28,6 +28,7 @@ SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/fullSHATests.cpp
+SRC+= ila.c
 
 INCLUDE+=$(incdir)./build
 
@@ -96,6 +97,7 @@ clean:
 	@rm -f -r ./trace_out
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 	@rm -f -r *.dot
+	@make -C $(ROOT_DIR) ila-clean
 
 test: clean run validate
 
@@ -135,10 +137,16 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	rm -r -f ./obj
 
 $(SOC_IN_BIN): $(TEST_IN_BIN)
-	cp $< $@
+	mv $< $@
 
 $(TEST_IN_BIN):
 	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+
+ila.c: $(ROOT_DIR)/ila.c
+	cp $< $@
+
+$(ROOT_DIR)/ila.c:
+	make -C $(ROOT_DIR) ila-build
 
 .PHONY: run \
 	test validate profile \
