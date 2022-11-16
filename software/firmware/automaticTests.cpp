@@ -10,8 +10,9 @@
 
 extern "C"{
 #include "../test_vectors.h"
+//#include "crypto/sha2.h"
 
-//#include "iob-ila.h"
+#include "iob-ila.h"
 int printf_(const char* format, ...);
 }
 
@@ -29,7 +30,11 @@ int printf_(const char* format, ...);
 #endif
 #endif
 
-int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberInputs,int numberOutputs,...){
+const char* regIn[] = {"regIn0","regIn1","regIn2","regIn3","regIn4","regIn5","regIn6","regIn7","regIn8","regIn9","regIn10","regIn11","regIn12","regIn13","regIn14","regIn15","regIn16",
+                       "regIn17","regIn18","regIn19","regIn20","regIn21","regIn22","regIn23","regIn24","regIn25","regIn26","regIn27","regIn28","regIn29","regIn30","regIn31","regIn32",};
+const char* regOut[] = {"regOut0","regOut1","regOut2","regOut3","regOut4","regOut5","regOut6","regOut7","regOut8","regOut9","regOut10","regOut11","regOut12","regOut13","regOut14","regOut15","regOut16","regOut17"};
+
+int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,unsigned int numberInputs,unsigned int numberOutputs,...){
    static int out[99];
    FUInstance* inputs[99];
    FUInstance* outputs[99];
@@ -37,26 +42,22 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberI
    va_list args;
    va_start(args,numberOutputs);
 
-   int registersAdded = 0;
-   for(int i = 0; i < numberInputs; i++){
+   for(unsigned int i = 0; i < numberInputs; i++){
+      Assert(i < ARRAY_SIZE(regIn));
 
-      char buffer[128];
-      int size = snprintf(buffer,128,"regIn%d",registersAdded++);
-
-      inputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),MakeSizedString(buffer,size));
+      SizedString name = MakeSizedString(regIn[i]);
+      inputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),name);
+      ConnectUnits(inputs[i],0,inst,i);
 
       int val = va_arg(args,int);
-
       VersatUnitWrite(inputs[i],0,val);
-
-      ConnectUnits(inputs[i],0,inst,i);
    }
 
-   registersAdded = 0;
-   for(int i = 0; i < numberOutputs; i++){
-      char buffer[128];
-      int size = snprintf(buffer,128,"regOut%d",registersAdded++);
-      outputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),MakeSizedString(buffer,size));
+   for(unsigned int i = 0; i < numberOutputs; i++){
+      Assert(i < ARRAY_SIZE(regOut));
+
+      SizedString name = MakeSizedString(regOut[i]);
+      outputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),name);
 
       ConnectUnits(inst,i,outputs[i],0);
    }
@@ -65,7 +66,7 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,int numberI
 
    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
-   for(int i = 0; i < numberOutputs; i++){
+   for(unsigned int i = 0; i < numberOutputs; i++){
       out[i] = outputs[i]->state[0];
    }
 
@@ -164,7 +165,7 @@ TEST(TestFStage){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
-   FUInstance* t = GetInstanceByName(accel,"Test","t");
+   FUInstance* t = GetInstanceByName(accel,"Test","f_stage","t");
    int constants[] = {6,11,25,2,13,22};
    for(size_t i = 0; i < ARRAY_SIZE(constants); i++){
       t->config[i] = constants[i];
@@ -1061,8 +1062,8 @@ TEST(ComplexMultiplier){
    return EXPECT("20","%d",result);
 }
 
-TEST(ShareConfig){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ShareConfig"));
+TEST(SimpleShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleShareConfig"));
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
@@ -1100,6 +1101,48 @@ TEST(ShareConfig){
    return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
 }
 
+TEST(ComplexShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   // Test by changing config for shared 1
+   FUInstance* a11 = GetInstanceByName(accel,"Test","shared1","a1");
+   FUInstance* a12 = GetInstanceByName(accel,"Test","shared1","a2");
+   FUInstance* b11 = GetInstanceByName(accel,"Test","shared1","b1");
+   FUInstance* b12 = GetInstanceByName(accel,"Test","shared1","b2");
+
+   // But reading the output of shared 2 (should be the same, since same configuration = same results)
+   FUInstance* out20 = GetInstanceByName(accel,"Test","shared2","out0");
+   FUInstance* out21 = GetInstanceByName(accel,"Test","shared2","out1");
+   FUInstance* out22 = GetInstanceByName(accel,"Test","shared2","out2");
+
+   a11->config[0] = 2;
+   AcceleratorRun(accel);
+   int res0 = out20->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 3;
+   AcceleratorRun(accel);
+   int res1 = out20->state[0];
+
+   b12->config[0] = 4;
+   AcceleratorRun(accel);
+   int res2 = out21->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 0;
+   b11->config[0] = 0;
+   b12->config[0] = 0;
+
+   a12->config[0] = 3;
+   b12->config[0] = 4;
+   AcceleratorRun(accel);
+   int res3 = out22->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
+}
+
 TEST(SimpleFlatten){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
@@ -1110,6 +1153,50 @@ TEST(SimpleFlatten){
    int result = SimpleAdderInstance(flatten,4,5);
 
    return EXPECT("9","%d",result);
+}
+
+TEST(FlattenShareConfig){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   Accelerator* accel_ = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel_,type,MakeSizedString("Test"));
+
+   Accelerator* flatten = Flatten(versat,accel_,99);
+
+   // Test by changing config for shared 1
+   FUInstance* a11 = GetInstanceByName(flatten,"Test","shared1","a1");
+   FUInstance* a12 = GetInstanceByName(flatten,"Test","shared1","a2");
+   FUInstance* b11 = GetInstanceByName(flatten,"Test","shared1","b1");
+   FUInstance* b12 = GetInstanceByName(flatten,"Test","shared1","b2");
+
+   // But reading the output of shared 2 (should be the same, since same configuration = same results)
+   FUInstance* out20 = GetInstanceByName(flatten,"Test","shared2","out0");
+   FUInstance* out21 = GetInstanceByName(flatten,"Test","shared2","out1");
+   FUInstance* out22 = GetInstanceByName(flatten,"Test","shared2","out2");
+
+   a11->config[0] = 2;
+   AcceleratorRun(flatten);
+   int res0 = out20->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 3;
+   AcceleratorRun(flatten);
+   int res1 = out20->state[0];
+
+   b12->config[0] = 4;
+   AcceleratorRun(flatten);
+   int res2 = out21->state[0];
+
+   a11->config[0] = 0;
+   a12->config[0] = 0;
+   b11->config[0] = 0;
+   b12->config[0] = 0;
+
+   a12->config[0] = 3;
+   b12->config[0] = 4;
+   AcceleratorRun(flatten);
+   int res3 = out22->state[0];
+
+   return EXPECT("4 6 8 7","%d %d %d %d",res0,res1,res2,res3);
 }
 
 TEST(FlattenSHA){
@@ -1135,10 +1222,10 @@ TEST(FlattenSHA){
 
 TEST(ComplexFlatten){
    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+   #if 1
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst =  CreateFUInstance(accel,type,MakeSizedString("Test"));
-
-   FUInstance* delay = GetInstanceByName(accel,"Test","buffer0");
+   #endif
 
    Accelerator* flatten = Flatten(versat,accel,99);
 
@@ -1282,6 +1369,9 @@ TEST(SHA){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
+   ila_set_different_signal_storing(1);
+   ila_enable_all_triggers();
+
    SetSHAAccelerator(accel,inst);
 
    InitVersatSHA(versat,true);
@@ -1293,7 +1383,50 @@ TEST(SHA){
 
    VersatSHA(digest,msg_64,64);
 
+   int samples = ila_number_samples();
+   int size = ila_output_data_size(samples);
+
+   char* buffer = (char*) malloc(size+1);
+   ila_output_data(buffer,samples);
+
+   //printf("%s\n",buffer);
+
    return EXPECT("42e61e174fbb3897d6dd6cef3dd2802fe67b331953b06114a65c772859dfc1aa","%s",GetHexadecimal(digest, HASH_SIZE));
+}
+
+TEST(MultipleSHATests){
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   SetSHAAccelerator(accel,inst);
+
+   InitVersatSHA(versat,true);
+
+   //unsigned char digestSW[256];
+   unsigned char digestHW[256];
+   int passed = 0;
+   for(int i = 0; i < NUM_MSGS; i++){
+      for(int ii = 0; ii < 256; ii++){
+         //digestSW[ii] = 0;
+         digestHW[ii] = 0;
+      }
+
+      //sha256(digestSW,msg_array[i],msg_len[i]);
+      VersatSHA(digestHW,msg_array[i],msg_len[i]);
+
+      printf("%s\n",GetHexadecimal(digestHW, HASH_SIZE));
+
+      #if 0
+      if(memcmp(digestSW,digestHW,256) == 0){
+         passed += 1;
+      } else {
+         printf("%d\n",i);
+      }
+      #endif
+   }
+
+   return EXPECT("0","%d",passed);
 }
 
 // When 1, need to pass 0 to enable test (changes enabler from 1 to 0)
@@ -1321,19 +1454,14 @@ void AutomaticTests(Versat* versat){
    int hardwareTest = HARDWARE_TEST;
    int currentTest = 0;
 
-#if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,false);
-#endif
 #if 1
-   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,true);
-#endif
-
 #if 1
-   TEST_INST( 1 ,TestMStage);
-   TEST_INST( 1 ,TestFStage);
+   TEST_INST( 0 ,TestMStage);
+   TEST_INST( 0 ,TestFStage);
    TEST_INST( 1 ,SHA);
+   TEST_INST( 1 ,MultipleSHATests);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,VReadToVWrite);
    TEST_INST( 1 ,StringHasher);
    TEST_INST( 1 ,Convolution);
@@ -1344,7 +1472,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,VersatSubBytes);
    TEST_INST( 1 ,VersatShiftRows);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,VersatDoRows);
    TEST_INST( 1 ,VersatMixColumns);
    TEST_INST( 1 ,FirstLineKey);
@@ -1355,20 +1483,23 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,SimpleAdder);
    TEST_INST( 1 ,ComplexMultiplier);
 #endif
-#if 1
-   TEST_INST( 1 ,ShareConfig);
+#if 0
+   TEST_INST( 1 ,SimpleShareConfig);
+   TEST_INST( 1 ,ComplexShareConfig);
 #endif
-#if 1
+#if 0
    TEST_INST( 1 ,SimpleFlatten);
-   TEST_INST( DISABLED ,FlattenSHA); // Without handling static units, probably will not work
-   // TEST_INST( 1 ,ComplexFlatten);
+   TEST_INST( 0 ,FlattenShareConfig);
+   TEST_INST( 0 ,ComplexFlatten);
+   TEST_INST( 0 ,FlattenSHA); // Problem on top level static buffers. Maybe do flattening of accelerators with buffers already fixed.
 #endif
-#if 1
-   TEST_INST( 1 ,SimpleMergeNoCommon);
-   TEST_INST( 1 ,SimpleMergeUnitCommonNoEdge);
-   TEST_INST( 1 ,SimpleMergeUnitAndEdgeCommon);
-   TEST_INST( 1 ,SimpleMergeInputOutputCommon);
-   TEST_INST( 1 ,ComplexMerge);
+#if 0
+   TEST_INST( 0 ,SimpleMergeNoCommon);
+   TEST_INST( 0 ,SimpleMergeUnitCommonNoEdge);
+   TEST_INST( 0 ,SimpleMergeUnitAndEdgeCommon);
+   TEST_INST( 0 ,SimpleMergeInputOutputCommon);
+   TEST_INST( 0 ,ComplexMerge);
+#endif
 #endif
 
    //Free(versat);
@@ -1378,31 +1509,14 @@ void AutomaticTests(Versat* versat){
 
 /*
 
-- Test SHA on FPGA
+- Add the concept of free and fixed graph. Free graphs do not have an associated FUDeclaration. Fixed graphs do.
 
-- Change the way name information is stored:
-   Remove the hierarchical naming scheme and replace it with the SizedString alternative.
-      Merge nodes names are implemented by concatenating all the names together, separated by some special symbol (comma ?)
-   Remove the name mapping. Instead, make GetInstance function to parse the node name to figure out what to do.
-      To handle the case where units of different types have the same name, add a type disambiguator.
-         Something like: Instead of GetInstance("Test","a1") -> GetInstance("Test","a1:Mul");
+- The simplest way to fix the flattenSHA testcase is to probably do the flattening of the fixed delay graphs.
 
-- Fix the Complex flatten code
+- Test the AES,SHA merging on PC-Emul
 
-- Add the flattening of static units to shared config units
-
-- Create a random merging algorithm to handle large graphs
-
-- Test the AES,SHA merging
-
-- Find a new name for delays and for the "Delay" unit.
-   Different things and same name starting to get confusing
-   Maybe Buffer?
-   Change files to reflect change
-
-- Figure out how to handle buffering calculation for merged graphs.
-   Technically, calculating buffers for the final graph should work fine.
-   But in order to maximize the fact that "Delay" (Buffer) units can be programmed, it should be possible to calculate different values for different accelerators, and change them when changing accelerators
+- Start working towards sim-run of merged accelerators with shared and static units.
+   Might need to store a pointer to a string with the name of the declaration in order to resolve GetInstance("name:type") calls
 
 
 */

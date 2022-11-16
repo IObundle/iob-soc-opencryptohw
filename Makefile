@@ -3,16 +3,16 @@ include $(ROOT_DIR)/config.mk
 
 SHELL = /bin/bash
 
-#ILA_DIR=./submodules/ILA
-#ILA_PYTHON_DIR=$(ILA_DIR)/software/python
-#ila-build: ilaFormat.txt
-#	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
-#	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
-#	cp ila.c $(FIRM_DIR)/
-#	cp ila.c $(PC_DIR)/
+ILA_DIR=./submodules/ILA
+ILA_PYTHON_DIR=$(ILA_DIR)/software/python
+ila-build: ilaFormat.txt
+	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
+	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
+	cp ila.c $(FIRM_DIR)/
+	cp ila.c $(PC_DIR)/
 
-#ila-generate-vcd: ilaFormat.txt ilaData.txt
-#	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd
+ila-generate-vcd: ilaFormat.txt ilaData.txt
+	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd
 
 ila-clean:
 	@rm -f $(HW_DIR)/include/signal_inst.vh $(FIRM_DIR)/ila.c $(PC_DIR)/ila.c ila.c
@@ -21,7 +21,7 @@ ila-clean:
 # BUILD EMBEDDED SOFTWARE
 #
 
-fw-build: #ila-build
+fw-build: ila-build
 	make -C $(FIRM_DIR) build-all
 
 fw-clean:
@@ -84,7 +84,7 @@ sim-debug:
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
 
-fpga-fw-build: #ila-build
+fpga-fw-build: ila-build
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 
 fpga-build: #ila-build

@@ -26,14 +26,14 @@ module xunitF #(
     input [DATA_W-1:0]  in8,
     input [DATA_W-1:0]  in9,
 
-    (* latency=16 *) output [DATA_W-1:0] out0,
-    (* latency=16 *) output [DATA_W-1:0] out1,
-    (* latency=16 *) output [DATA_W-1:0] out2,
-    (* latency=16 *) output [DATA_W-1:0] out3,
-    (* latency=16 *) output [DATA_W-1:0] out4,
-    (* latency=16 *) output [DATA_W-1:0] out5,
-    (* latency=16 *) output [DATA_W-1:0] out6,
-    (* latency=16 *) output [DATA_W-1:0] out7,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out0,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out1,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out2,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out3,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out4,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out5,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out6,
+    (* versat_latency = 16 *) output [DATA_W-1:0] out7,
 
     //configurations
     input [DELAY_W-1:0]         delay0 // Encodes delay

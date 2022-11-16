@@ -10,7 +10,7 @@ extern "C"{
 #include "string.h"
 
 #include "iob-timer.h"
-//#include "iob-ila.h"
+#include "iob-ila.h"
 
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
@@ -45,18 +45,17 @@ int main(int argc,const char* argv[])
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
    timer_init(TIMER_BASE);
-   //ila_init(ILA_BASE);
+   ila_init(ILA_BASE);
 
    printf("Init base modules\n");
 
    Versat* versat = InitVersat(VERSAT_BASE,1);
 
-#if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,false);
-#endif
-#if 0
-   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,true);
-#endif
+   SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,1);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,1);
+   SetDebug(versat,VersatDebugFlags::USE_FIXED_BUFFERS,0);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,0);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,0);
 
    ParseCommandLineOptions(versat,argc,argv);
 

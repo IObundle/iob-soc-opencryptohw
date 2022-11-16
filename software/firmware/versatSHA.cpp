@@ -82,6 +82,7 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
 
    while (inlen >= 64) {
       readConfig->ext_addr = (int) in;
+
       // Loads data + performs work
       AcceleratorRun(accel);
 
@@ -101,7 +102,7 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
 
 void VersatSHA(uint8_t *out, const uint8_t *in, size_t inlen) {
    uint8_t padded[128];
-   uint64_t bytes = 0 + inlen;
+   uint64_t bytes = inlen;
 
    versat_crypto_hashblocks_sha256(in, inlen);
    in += inlen;

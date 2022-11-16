@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-g -m32 -Wall #-fsanitize=address
+GLOBAL_CFLAGS:=-m32 -Wall -g #-fsanitize=address
 
 include ../software.mk
 
@@ -29,7 +29,6 @@ SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/fullSHATests.cpp
 
-# INCLUDE+=$(incdir)$(FIRM_DIR)
 INCLUDE+=$(incdir)./build
 
 SOC_IN_BIN=soc-in.bin
