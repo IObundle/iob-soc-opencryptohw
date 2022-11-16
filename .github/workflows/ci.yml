@@ -75,15 +75,15 @@ jobs:
   #     - name: fpga build
   #       run: make fpga-build-versat
   #
-  # system-synthesis:
-  #   runs-on: self-hosted
-  #   timeout-minutes: 60
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: fpga clean
-  #       run: make fpga-clean
-  #     - name: fpga build
-  #       run: make fpga-build
+  fpga:
+    runs-on: self-hosted
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: fpga build
+        run: make fpga-test
+      - name: fpga clean
+        run: make fpga-clean

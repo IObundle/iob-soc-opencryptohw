@@ -94,7 +94,7 @@ module system
    wire [`RESP_W-1:0] cpu_d_resp;
    
    //instantiate the cpu
-   iob_VexRiscv cpu
+   iob_picorv32 cpu
        (
         .clk (clk),
         .rst (cpu_reset),
@@ -107,11 +107,8 @@ module system
         
         //data bus
         .dbus_req(cpu_d_req),
-        .dbus_resp(cpu_d_resp),
+        .dbus_resp(cpu_d_resp)
 
-        //interrupt
-        .timerInterrupt(1'b0),
-        .softwareInterrupt(1'b0)
         );
 
 
