@@ -18,7 +18,7 @@ INIT_MEM=0
 endif
 
 #console command
-CONSOLE_CMD=$(PYTHON_DIR)/eth_console -s /dev/usb-uart
+CONSOLE_CMD=$(CONSOLE_DIR)/eth_console -s /dev/usb-uart
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
@@ -27,6 +27,7 @@ endif
 SOC_IN_BIN=soc-in.bin
 TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
+ETH_LOG=ethernet.log
 
 #RULES
 
@@ -47,10 +48,10 @@ else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
 	bash -c "trap 'make queue-out-remote' INT TERM KILL; ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) $@ INIT_MEM=$(INIT_MEM) FORCE=$(FORCE) TEST_LOG=\"$(TEST_LOG)\"'"
-	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(SOC_OUT_BIN) .
 ifneq ($(TEST_LOG),)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
 endif
+	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/software/python/$(SOC_OUT_BIN) .
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/ethernet.log .
 endif
 endif

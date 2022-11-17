@@ -6,6 +6,7 @@ import sys
 import importlib.util
 import time
 import curses.ascii
+import time
 
 # Global variables
 ser = None
@@ -16,6 +17,7 @@ ENQ = b'\x05' # Enquiry in Hexadecimal
 ACK = b'\x06' # Acknowledgement in Hexadecimal
 FTX = b'\x07' # Receive file request
 FRX = b'\x08' # Send file request
+DC1 = b'\x11' # Device Control 1 <-> End of file transfers
 
 
 def tb_write(data, number_of_bytes = 1, is_file = False):
@@ -133,6 +135,15 @@ def cnsl_recvfile():
     print(PROGNAME, end = '')
     print(': file received'.format(file_size))
 
+def endFileTransfer():
+    # unset the Bytes used in IOb-SoC comunication protocol
+    global DC1
+    global FTX
+    global FRX
+    DC1 = None
+    FTX = None
+    FRX = None
+
 def usage(message):
     print('{}:{}'.format(PROGNAME, "usage: ./console -s <serial port> [ -f ] [ -L/--local ]"))
     cnsl_perror(message)
@@ -174,18 +185,16 @@ def init_serial():
 
     # configure the serial connections (the parameters differs on the device connected to)
     ser = serial.Serial()
-    ser.port = "/dev/usb-uart"
-    ser.baudrate = 115200
-    ser.bytesize = serial.EIGHTBITS #number of bits per bytes
-    ser.parity = serial.PARITY_NONE #set parity check: no parity
-    ser.stopbits = serial.STOPBITS_ONE #number of stop bits
-    #ser.timeout = None          #block read
-    #ser.timeout = 1            #non-block read
-    ser.timeout = 2              #timeout block read
-    ser.xonxoff = False     #disable software flow control
-    ser.rtscts = False     #disable hardware (RTS/CTS) flow control
-    ser.dsrdtr = False       #disable hardware (DSR/DTR) flow control
-    ser.writeTimeout = 4     #timeout for write
+    ser.port = "/dev/usb-uart"         # serial port
+    ser.baudrate = 115200              # baudrate
+    ser.bytesize = serial.EIGHTBITS    # number of bits per bytes
+    ser.parity = serial.PARITY_NONE    # set parity check: no parity
+    ser.stopbits = serial.STOPBITS_ONE # number of stop bits
+    ser.timeout = None                 # block read
+    ser.xonxoff = False                # disable software flow control
+    ser.rtscts = False                 # disable hardware (RTS/CTS) flow control
+    ser.dsrdtr = False                 # disable hardware (DSR/DTR) flow control
+    ser.writeTimeout = None            # block write
 
 
 def init_files():
@@ -209,12 +218,16 @@ def init_console():
         # open connection
         try:
             init_serial()
+        except Exception:
+            cnsl_perror("Error init serial port.")
+        try:
+            time.sleep(2)
             ser.port = sys.argv[sys.argv.index('-s')+1]
             ser.open()
             ser.flushInput()
             ser.flushOutput()
         except Exception:
-            usage("Error open serial port.")
+            cnsl_perror("Error open serial port.")
     else:
         usage("PROGNAME: not enough program arguments")
     if ('-f' in sys.argv): load_fw = True
@@ -259,6 +272,10 @@ def main():
             print(PROGNAME, end = '')
             print(': got file send request')
             cnsl_sendfile()
+        elif (byte == DC1):
+            print(PROGNAME, end = '')
+            print(': end of file transfers')
+            endFileTransfer()
         else:
             print(str(byte, 'iso-8859-1'), end = '')
             sys.stdout.flush()
