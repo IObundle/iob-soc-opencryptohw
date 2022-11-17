@@ -18,7 +18,7 @@ INIT_MEM=0
 endif
 
 #console command
-CONSOLE_CMD=$(PYTHON_DIR)/console -s /dev/usb-uart
+CONSOLE_CMD=$(PYTHON_DIR)/eth_console -s /dev/usb-uart
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
@@ -51,6 +51,7 @@ else
 ifneq ($(TEST_LOG),)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
 endif
+	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/ethernet.log .
 endif
 endif
 

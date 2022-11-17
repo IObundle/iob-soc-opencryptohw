@@ -57,7 +57,7 @@ OBJ+=./build/firmware.o
 FW_EMUL=fw_emul
 
 #CONSOLE
-CONSOLE_CMD=$(ROOT_DIR)/software/console/console -L
+CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
 #PC EMUL OUTPUTS
 VERSAT_GEN=versat_instance.v
@@ -82,7 +82,7 @@ run: build $(SOC_IN_BIN)
 	$(CONSOLE_CMD) $(TEST_LOG) &
 	./$(FW_EMUL) $(TEST_LOG)
 
-clean:
+clean: clean-eth-socket
 	@rm -rf $(FW_EMUL) periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
 	@rm -f versat_data.inc versat_defs.vh versat_instance.v
@@ -102,7 +102,7 @@ clean:
 test: clean run validate
 
 validate:
-	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
+	cp $(SW_DIR)/python/$(SOC_OUT_BIN) $(SW_TEST_DIR)
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
 
 gen-versat: $(VERSAT_GEN)

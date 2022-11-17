@@ -25,3 +25,6 @@
 [submodule "submodules/PICORV32"]
 	path = submodules/PICORV32
 	url = git@github.com:iobundle/iob-picorv32.git
+[submodule "submodules/ETHERNET"]
+	path = submodules/ETHERNET
+	url = git@github.com:IObundle/iob-eth.git

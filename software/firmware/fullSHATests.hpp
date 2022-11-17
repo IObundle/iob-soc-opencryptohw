@@ -3,7 +3,9 @@
 
 extern "C"{
 // #include "iob-cache.h"
+#include "periphs.h"
 #include "iob-uart.h"
+#include "iob-eth.h"
 #ifndef PC
 #include "printf.h"
 #endif

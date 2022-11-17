@@ -28,6 +28,9 @@ include $(UART_DIR)/hardware/hardware.mk
 
 #TIMER
 include $(TIMER_DIR)/hardware/hardware.mk
+	
+#ETHERNET
+include $(ETHERNET_DIR)/hardware/hardware.mk
 
 #VERSAT
 include $(VERSAT_DIR)/hardware/hardware.mk

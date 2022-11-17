@@ -17,6 +17,9 @@ include $(UART_DIR)/software/embedded/embedded.mk
 #timer
 include $(TIMER_DIR)/software/embedded/embedded.mk
 
+#ethernet	
+include $(ETHERNET_DIR)/software/embedded/embedded.mk
+
 #versat
 include $(VERSAT_DIR)/software/embedded/embedded.mk
 
