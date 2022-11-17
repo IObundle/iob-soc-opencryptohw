@@ -3,21 +3,11 @@ include $(ROOT_DIR)/config.mk
 
 SHELL = /bin/bash
 
-ila-build: ilaFormat.txt
-	$(ILA_PYTHON_DIR)/ilaGenerateSource.py ilaFormat.txt ila.c
-	$(ILA_PYTHON_DIR)/ilaGenerateVerilog.py ilaFormat.txt $(HW_DIR)/include/
-
-ila-generate-vcd: ilaFormat.txt ilaData.txt
-	$(ILA_PYTHON_DIR)/ilaDataToVCD.py ilaFormat.txt ilaData.txt ilaOut.vcd
-
-ila-clean:
-	@rm -f $(HW_DIR)/include/signal_inst.vh $(FIRM_DIR)/ila.c $(PC_DIR)/ila.c ila.c
-
 #
 # BUILD EMBEDDED SOFTWARE
 #
 
-fw-build: ila-build
+fw-build:
 	make -C $(FIRM_DIR) build-all
 
 fw-clean:
@@ -36,7 +26,7 @@ gen-spinal-sources:
 # EMULATE ON PC
 #
 
-pc-emul-build: #ila-build
+pc-emul-build:
 	make -C $(PC_DIR) build
 
 pc-emul-run: pc-emul-build
@@ -55,7 +45,7 @@ pc-emul-gen-versat:
 # SIMULATE RTL
 #
 
-sim-build: #ila-build
+sim-build:
 	make -C $(PC_DIR) gen-versat
 	make fw-build SIM=1
 	make -C $(SIM_DIR) build
@@ -80,10 +70,7 @@ sim-debug:
 # BUILD, LOAD AND RUN ON FPGA BOARD
 #
 
-fpga-fw-build: ila-build
-	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
-
-fpga-build: #ila-build
+fpga-build:
 	make -C $(PC_DIR) gen-versat
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
 	make -C $(BOARD_DIR) build
@@ -182,16 +169,15 @@ test: test-clean
 test-clean: test-pc-emul-clean test-sim-clean test-fpga-clean
 
 #generic clean
-clean: pc-emul-clean sim-clean fpga-clean doc-clean ila-clean
+clean: pc-emul-clean sim-clean fpga-clean doc-clean
 
 clean-all: test-clean
 
-.PHONY: ila-clean \
-	fw-build fw-clean fw-debug \
+.PHONY: fw-build fw-clean fw-debug \
 	gen-spinal-sources \
 	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-gen-versat \
 	sim-build sim-run sim-clean sim-test sim-versat-fus sim-debug \
-	fpga-fw-build fpga-build fpga-run fpga-clean fpga-veryclean fpga-debug \
+	fpga-build fpga-run fpga-clean fpga-veryclean fpga-debug \
 	fpga-test fpga-build-versat \
 	doc-build doc-clean doc-test \
 	test-pc-emul test-pc-emul-clean \

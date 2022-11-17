@@ -12,7 +12,6 @@ extern "C"{
 #include "../test_vectors.h"
 //#include "crypto/sha2.h"
 
-#include "iob-ila.h"
 int printf_(const char* format, ...);
 }
 
@@ -1369,9 +1368,6 @@ TEST(SHA){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
-   ila_set_different_signal_storing(1);
-   ila_enable_all_triggers();
-
    SetSHAAccelerator(accel,inst);
 
    InitVersatSHA(versat,true);
@@ -1382,12 +1378,6 @@ TEST(SHA){
    }
 
    VersatSHA(digest,msg_64,64);
-
-   int samples = ila_number_samples();
-   int size = ila_output_data_size(samples);
-
-   char* buffer = (char*) malloc(size+1);
-   ila_output_data(buffer,samples);
 
    //printf("%s\n",buffer);
 

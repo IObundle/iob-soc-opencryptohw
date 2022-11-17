@@ -23,10 +23,6 @@ include $(ETHERNET_DIR)/software/embedded/embedded.mk
 #versat
 include $(VERSAT_DIR)/software/embedded/embedded.mk
 
-#ila
-include $(ILA_DIR)/software/embedded/embedded.mk
-
-
 #HEADERS
 HDR+=periphs.h
 HDR+=versat_data.inc
@@ -42,7 +38,6 @@ SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/fullSHATests.cpp
-SRC+= ila.c
 
 #PROFILE
 ifeq ($(PROFILE),1)

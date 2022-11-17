@@ -43,12 +43,6 @@ periphs.h: periphs_tmp.h
 periphs_tmp.h:
 	$(foreach p, $(PERIPHERALS), $(shell echo "#define $p_BASE (1<<$P) |($p<<($P-N_SLAVES_W))" >> $@) )
 
-ila.c: $(ROOT_DIR)/ila.c
-	cp $< $@
-
-$(ROOT_DIR)/ila.c:
-	make -C $(ROOT_DIR) ila-build
-
 build-all:
 	make -C $(FIRM_DIR) build
 	make -C $(BOOT_DIR) build

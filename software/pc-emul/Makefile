@@ -28,7 +28,6 @@ SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/fullSHATests.cpp
-SRC+= ila.c
 
 INCLUDE+=$(incdir)./build
 
@@ -97,7 +96,6 @@ clean: clean-eth-socket
 	@rm -f -r ./trace_out
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 	@rm -f -r *.dot
-	@make -C $(ROOT_DIR) ila-clean
 
 test: clean
 	make run HARDWARE_TEST=2
