@@ -129,21 +129,17 @@ test-pc-emul-clean: pc-emul-clean
 
 test-sim:
 	make sim-test SIMULATOR=verilator
-	make sim-test SIMULATOR=icarus
 
 test-sim-clean:
 	make sim-clean SIMULATOR=verilator
-	make sim-clean SIMULATOR=icarus
 
 test-fpga:
-	make fpga-test BOARD=CYCLONEV-GT-DK
 	make fpga-test BOARD=AES-KU040-DB-G
 
 test-fpga-versat: test-fpga-clean
 	make fpga-build-versat BOARD=AES-KU040-DB-G
 
 test-fpga-clean:
-	make fpga-clean BOARD=CYCLONEV-GT-DK
 	make fpga-clean BOARD=AES-KU040-DB-G
 
 test-doc:

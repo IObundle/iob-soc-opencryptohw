@@ -135,7 +135,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: sim-shortmsg validate
 
 sim-shortmsg:
-	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=2
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)

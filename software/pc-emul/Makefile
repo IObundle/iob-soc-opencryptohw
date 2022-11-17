@@ -99,7 +99,9 @@ clean: clean-eth-socket
 	@rm -f -r *.dot
 	@make -C $(ROOT_DIR) ila-clean
 
-test: clean run validate
+test: clean
+	make run HARDWARE_TEST=2
+	make validate
 
 validate:
 	cp $(SW_DIR)/python/$(SOC_OUT_BIN) $(SW_TEST_DIR)
