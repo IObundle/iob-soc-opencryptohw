@@ -8,6 +8,8 @@ extern "C"{
 #include "iob-eth.h"
 #ifndef PC
 #include "printf.h"
+#else
+#include <stdio.h>
 #endif
 }
 #include "versat.hpp"
