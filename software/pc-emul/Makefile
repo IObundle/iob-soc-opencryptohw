@@ -1,22 +1,8 @@
 ROOT_DIR:=../..
 
+GLOBAL_CFLAGS:=-m32 -Wall -g #-fsanitize=address
+
 include ../software.mk
-
-BUILD_DIR=./build
-DEBUG_DIR=./debug
-VERSAT_PRG_SRC_DIR=./src
-HW_SRC_DIR=$(HW_DIR)/src
-ifeq ($(SPINAL),1)
-XUNIT_DIR:=$(HW_SRC_DIR)/spinalHDL/rtl
-else
-XUNIT_DIR:=$(HW_SRC_DIR)/units
-endif
-
-#additional compiler flags
-CC_OPTS+=-fno-inline-functions-called-once # exclude optimization
-
-CFLAGS=-O0 -std=gnu99 -g -m32 $(CC_OPTS)
-GLOBAL_CFLAGS=-O0 -g -m32 $(CC_OPTS)
 
 #DEFINE+=-DLONGLONG 
 DEFINE+=$(defmacro)PC
@@ -33,26 +19,25 @@ $(foreach p, $(PERIPHERALS), $(eval include $($p_DIR)/software/pc-emul/pc-emul.m
 #HEADERS
 HDR+=periphs.h 
 
-#INCLUDES
-INCLUDE+=$(incdir)$(FIRM_DIR)/units
+HDR+=$(FIRM_DIR)/unitConfiguration.hpp
 
 #SOURCES
 SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
+SRC+= $(FIRM_DIR)/automaticTests.cpp
+SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= $(FIRM_DIR)/versatSHA.cpp
+SRC+= $(FIRM_DIR)/fullSHATests.cpp
 
+INCLUDE+=$(incdir)./build
+
+SOC_IN_BIN=soc-in.bin
+TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
-#units to verilate
-CUSTOM_VERILATE_UNIT = xunitF xunitM
-HDR+=$(foreach obj,$(CUSTOM_VERILATE_UNIT),$(BUILD_DIR)/V$(obj).h)
-UNIT_VERILOG+=$(foreach unit,$(CUSTOM_VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
-
-#unit wrapper
-CPP_OBJ+=$(BUILD_DIR)/unitWrapper.o
-
-#firmware object
-CPP_OBJ+=$(BUILD_DIR)/versat_sha.o
-
+ifneq ($(GENERATE_ONLY),)
+DEFINE+=$(defmacro)GENERATE_ONLY
+endif
 #PROFILE
 ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
@@ -61,39 +46,74 @@ DEFINE+=$(defmacro)PROFILE
 INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
 
+#UNITS TO VERILATE
+VERILATE_UNIT := xunitF xunitM
+UNIT_VERILOG += $(foreach unit,$(VERILATE_UNIT),$(HW_DIR)/src/units/$(unit).v)
+
+UNIT_HDR+=$(foreach obj,$(VERILATE_UNIT),./build/V$(obj).h)
+OBJ+=./build/firmware.o
+
+FW_EMUL=fw_emul
+
 #CONSOLE
 CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
 
+#PC EMUL OUTPUTS
+VERSAT_GEN=versat_instance.v
+VERSAT_GEN+=versat_data.inc
+VERSAT_GEN+=versat_defs.vh
+VERSAT_GEN+=$(wildcard src/*)
+
 #RULES
 
-build: gen_data fw_emul
-	mkdir -p $(DEBUG_DIR)
-	mkdir -p $(VERSAT_PRG_SRC_DIR)
+build: $(FW_EMUL)
+	mkdir -p debug
+	mkdir -p src
+	mkdir -p trace_out
 
-fw_emul: $(HDR) $(SRC) $(CPP_OBJ) $(BUILD_DIR)/firmware.o
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
-
-run: build
-	@rm -f soc2cnsl cnsl2soc
+$(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
+	
+run: build $(SOC_IN_BIN)
+	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
+	@mkdir -p debug
+	@mkdir -p src
 	$(CONSOLE_CMD) $(TEST_LOG) &
-	./fw_emul $(TEST_LOG)
-	@make clean-eth-socket
+	./$(FW_EMUL) $(TEST_LOG)
 
-clean:
-	@rm -rf fw_emul periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
-		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) \
-		$(BUILD_DIR) $(DEBUG_DIR) $(VERSAT_PRG_SRC_DIR) *.dot
-	@rm -rf *.vh *.v *.inc output-versat
+clean: clean-eth-socket
+	@rm -rf $(FW_EMUL) periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
+		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
+	@rm -f versat_data.inc versat_defs.vh versat_instance.v
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
-	@make clean-eth-socket
+	@rm -f $(FIRM_DIR)/*.inc
+	@rm -f $(HW_DIR)/src/versat_instance.v
+	@rm -f $(HW_DIR)/include/versat_defs.vh
+	@rm -f -r ./build
+	@rm -f -r ./debug
+	@rm -f -r ./src
+	@rm -f -r ./trace_out
+	@rm -f -r $(HW_DIR)/src/GeneratedUnits
+	@rm -f -r *.dot
 
-test: 
-	make run
+test: clean
+	make run HARDWARE_TEST=2
 	make validate
 
 validate:
-	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+	cp $(SW_DIR)/python/$(SOC_OUT_BIN) $(SW_TEST_DIR)
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
+
+gen-versat: $(VERSAT_GEN)
+	cp -u versat_instance.v $(HW_DIR)/src/
+	cp -u versat_defs.vh $(HW_DIR)/include/
+	cp -u versat_data.inc $(FIRM_DIR)/
+	cp -u ./build/verilogWrapper.inc $(FIRM_DIR)/
+	cp -u src/* $(HW_DIR)/src/GeneratedUnits/
+
+$(VERSAT_GEN):
+	make run GENERATE_ONLY=1
 
 profile: clean $(EMUL_PROFILE_LOG)
 	@printf "\n=== PROFILE LOG ===\n"
@@ -106,26 +126,24 @@ $(SOC_LOG):
 $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	@grep "PROFILE:" $< > $(EMUL_PROFILE_LOG)
 
-$(BUILD_DIR)/V%.h: $(XUNIT_DIR)/%.v
-	verilator -CFLAGS "-g -m32 -std=c++11" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir $(BUILD_DIR) $<;
-	cd $(BUILD_DIR) && VM_DEFAULT_RULES=0 make -f V$*.mk;
+./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)
+	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
-$(BUILD_DIR)/%.o: $(FIRM_DIR)/units/%.cpp 
-	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
+./build/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
+	mkdir -p ./build; mv ./obj/*.o ./build/;
+	mv ./obj/*.h ./build/
+	rm -r -f ./obj
 
-$(BUILD_DIR)/%.o: $(FIRM_DIR)/%.cpp
-	g++ -std=c++11 -g -c -o $@ -m32 $(DEFINE) $(INCLUDE) $< -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I $(BUILD_DIR) 
+$(SOC_IN_BIN): $(TEST_IN_BIN)
+	mv $< $@
 
-output-versat: $(HDR) $(CPP_OBJ) $(BUILD_DIR)/versat_source.o
-	mkdir -p $(DEBUG_DIR)
-	mkdir -p $(VERSAT_PRG_SRC_DIR)
-	gcc -o $@ $(CFLAGS) $(DEFINE) $(INCLUDE) $(BUILD_DIR)/*o -lgcc -lc -lstdc++ -lm
-	./$@
+$(TEST_IN_BIN):
+	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
 
-$(XUNIT_DIR)/%.v:
-	make -C $(ROOT_DIR) gen-spinal-sources
-
-.PHONY: build run \
+.PHONY: run \
 	test validate profile \
-	output-versat \
+	gen-versat \
 	clean
+

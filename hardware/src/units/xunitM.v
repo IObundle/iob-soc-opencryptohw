@@ -2,7 +2,7 @@
 `include "xversat.vh"
 
 module xunitM #(
-         parameter DELAY_W = 10,
+         parameter DELAY_W = 32,
          parameter DATA_W = 32
               )
     (
@@ -11,20 +11,20 @@ module xunitM #(
     input               rst,
     
     input               run,
+    output              done,
 
     //input / output data
     input [DATA_W-1:0]  in0,
 
-    (* latency=17 *) output reg [DATA_W-1:0] out0,
-
-    output              done,
+    (* versat_latency = 17 *) output reg [DATA_W-1:0] out0,
 
     //configurations
-    input [7:0]         delay0 // Encodes delay
+    input [DELAY_W-1:0]         delay0 // Encodes delay
     );
 
 assign done = 1'b1;
-reg [7:0] delay;
+
+reg [DELAY_W-1:0] delay;
 reg [4:0] latency;
 reg [31:0] w[15:0];
 

@@ -50,8 +50,9 @@ def run_console():
     # assume console is in same dir as this script
     # deepcopy to keep original arguments list
     console_args = copy.deepcopy(sys.argv)
-    # change the script name to console, use same remaining arguments
-    console_args[0] = f'{os.path.dirname(console_args[0])}/console'
+    # change the script name to LIB/console, use same remaining arguments
+    console_path = f'{get_root_dir()}/submodules/LIB/software/python'
+    console_args[0] = f'{console_path}/console'
     console_cmd = ' '.join(console_args)
 
     subprocess.run(console_cmd, shell=True)

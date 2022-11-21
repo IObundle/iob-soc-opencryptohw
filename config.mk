@@ -4,7 +4,7 @@
 #
 ######################################################################
 
-IOBSOC_NAME:=IOBSOCSHA
+IOBSOC_NAME:=IOBSOCOPENCRYPTOHW
 
 #
 # PRIMARY PARAMETERS: CAN BE CHANGED BY USERS OR OVERRIDEN BY ENV VARS
@@ -25,7 +25,7 @@ SRAM_ADDR_W ?=17
 
 #DDR
 USE_DDR ?=1
-RUN_EXTMEM ?=0
+RUN_EXTMEM ?=1
 
 #DATA CACHE ADDRESS WIDTH (tag + index + offset)
 DCACHE_ADDR_W:=24
@@ -36,13 +36,13 @@ BOOTROM_ADDR_W:=12
 #PRE-INIT MEMORY WITH PROGRAM AND DATA
 INIT_MEM ?=1
 
-#ETHERNET RMAC_ADDR
-RMAC_ADDR=4437e6a6893b
+#RMAC ADDRESS
+RMAC_ADDR := 4437e6a6893b
 
 #PERIPHERAL LIST
 #must match respective submodule CORE_NAME in the core.mk file of the submodule
 #PERIPHERALS:=UART
-PERIPHERALS ?=UART TIMER ETHERNET VERSAT
+PERIPHERALS ?=UART TIMER VERSAT ETHERNET
 
 #RISC-V HARD MULTIPLIER AND DIVIDER INSTRUCTIONS
 USE_MUL_DIV ?=1
@@ -56,12 +56,16 @@ REMOTE_ROOT_DIR ?=sandbox/iob-soc-opencryptohw
 #SIMULATION
 #default simulator running locally or remotely
 #check the respective Makefile in hardware/simulation/$(SIMULATOR) for specific settings
-SIMULATOR ?=icarus
+SIMULATOR ?=verilator
 
 #BOARD
 #default board running locally or remotely
 #check the respective Makefile in hardware/fpga/$(BOARD) for specific settings
 BOARD ?=AES-KU040-DB-G
+
+#DOCUMENTATION
+#default document to compile
+DOC ?= pb
 
 #IOB LIBRARY
 UART_HW_DIR:=$(UART_DIR)/hardware
@@ -84,7 +88,7 @@ DEFINE+=$(defmacro)INIT_MEM
 endif
 
 #submodule paths
-VEXRISCV_DIR=$(ROOT_DIR)/submodules/VEXRISCV
+PICORV32_DIR=$(ROOT_DIR)/submodules/PICORV32
 CACHE_DIR=$(ROOT_DIR)/submodules/CACHE
 UART_DIR=$(ROOT_DIR)/submodules/UART
 TIMER_DIR=$(ROOT_DIR)/submodules/TIMER
@@ -102,11 +106,16 @@ BOOT_DIR:=$(SW_DIR)/bootloader
 CONSOLE_DIR:=$(SW_DIR)/console
 SW_TEST_DIR:=$(SW_DIR)/test
 
+#scripts paths
+PYTHON_DIR=$(LIB_DIR)/software/python
+
 #hw paths
 HW_DIR=$(ROOT_DIR)/hardware
 SIM_DIR=$(HW_DIR)/simulation/$(SIMULATOR)
 BOARD_DIR ?=$(shell find hardware -name $(BOARD))
-DOC_DIR=$(ROOT_DIR)/document
+
+#doc paths
+DOC_DIR=$(ROOT_DIR)/document/$(DOC)
 
 #define macros
 DEFINE+=$(defmacro)DATA_W=$(DATA_W)
@@ -119,13 +128,8 @@ DEFINE+=$(defmacro)N_SLAVES=$(N_SLAVES) #peripherals
 
 #address selection bits
 E:=31 #extra memory bit
-ifeq ($(USE_DDR),1)
 P:=30 #periphs
 B:=29 #boot controller
-else
-P:=31
-B:=30
-endif
 
 DEFINE+=$(defmacro)E=$E
 DEFINE+=$(defmacro)P=$P
@@ -141,15 +145,39 @@ $(foreach p, $(PERIPHERALS), $(eval DEFINE+=$(defmacro)$p=$($p)))
 N_SLAVES_W = $(shell echo "import math; print(math.ceil(math.log($(N_SLAVES),2)))"|python3 )
 DEFINE+=$(defmacro)N_SLAVES_W=$(N_SLAVES_W)
 
+ifneq ($(HARDWARE_TEST),)
+DEFINE+=$(defmacro)HARDWARE_TEST=$(HARDWARE_TEST)
+endif
 
-#default baud and system clock freq
-BAUD ?=5000000 #simulation default
-FREQ ?=100000000
+#BOARD and FREQ
+#default baud and system clock frequency
+SIM_BAUD = 2500000
+SIM_FREQ =50000000
+#default baud and frequency if not given
+BAUD ?=$(SIM_BAUD)
+FREQ ?=$(SIM_FREQ)
+#default board running locally or remotely
+BOARD_DIR =$(shell find hardware -name $(BOARD))
+#default baud and system clock freq for boards
+BOARD_BAUD = 115200
+#default board frequency
+BOARD_FREQ ?=100000000
+ifeq ($(BOARD), CYCLONEV-GT-DK)
+BOARD_FREQ =50000000
+endif
 
-SHELL = /bin/bash
+
 
 #RULES
+
+#kill "console", the background running program seriving simulators,
+#emulators and boards
+CNSL_PID:=ps aux | grep $(USER) | grep console | grep python3 | grep -v grep
+kill-cnsl:
+	@if [ "`$(CNSL_PID)`" ]; then \
+	kill -9 $$($(CNSL_PID) | awk '{print $$2}'); fi
+
 gen-clean:
 	@rm -f *# *~
 
-.PHONY: gen-clean
+.PHONY: gen-clean kill-cnsl

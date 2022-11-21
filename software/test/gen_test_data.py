@@ -7,6 +7,7 @@ import parse
 def write_hex_str_to_file(f, hex_str):
     """Write hex string to file
     Write hex string as binary data to file
+    Pad bytes to next multiple of 4
 
     # Parameters:
     #   f: output file
@@ -14,13 +15,19 @@ def write_hex_str_to_file(f, hex_str):
     # Returns:
     #   no return arguments
     """
-    f.write(bytes.fromhex(hex_str))
+    byte_msg = bytes.fromhex(hex_str)
+    padding = (4-(len(byte_msg)%4))%4
+    padded_msg = byte_msg.ljust(len(byte_msg)+padding, b'\0')
+
+    f.write(padded_msg)
 
 def write_d_in_file(f, lengths, msgs):
     """Write Data in binary file
     Data is written in binary format with the following structure:
     #Messages | length msg0 (bytes) | msg0 (bytes) | length msg1 | msg1 | ...
     ... | length msgN-1 | msgN-1
+    
+    Note: add padding so all messages start aligned with 4 byte words
 
     # Parameters:
     #   f: output file

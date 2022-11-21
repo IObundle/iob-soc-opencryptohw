@@ -1,170 +1,226 @@
+#include <cstdio>
+
+#include "versat.hpp"
+#include "utils.hpp"
+
 extern "C"{
-#include <stdio.h>
 #include "system.h"
 #include "periphs.h"
 #include "iob-uart.h"
-#include "printf.h"
+#include "string.h"
 
 #include "iob-timer.h"
-#include "iob-eth.h"
 
+#include "crypto/sha2.h"
+#include "crypto/aes.h"
+
+
+int printf_(const char* format, ...);
 }
 
-#include "versat_sha.hpp"
+#include "fullSHATests.hpp"
 
-#define HASH_SIZE (256/8)
+// Automatically times a block in number of counts
+struct TimeIt{
+   int line;
+   char fileId;
 
-// Pointer to DDR_MEM
-#ifdef PC
-    char ddr_mem[100000] = {0};
-#else
-#ifndef RUN_EXTMEM
-    char *ddr_mem = (char*) (EXTRA_BASE);
-#else
-    char *ddr_mem = (char*) ((1<<(FIRM_ADDR_W)));
+   TimeIt(int line,char fileId){this->line = line;this->fileId = fileId;timer_reset();};
+   ~TimeIt(){unsigned long long end = timer_get_count();printf("%c:%d %llu\n",fileId,line,end);}
+};
+#define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
+
+#ifndef PC
+#define printf printf_
 #endif
-#endif
 
-/* read integer value
- * return number of bytes read */
-int get_int(char* ptr, unsigned int *i_val){
-    /* check for valid ptr */
-    if(ptr == NULL){
-        printf("get_int: invalid pointer\n");
-        return -1;
-    }
-    /* read 1 byte at a time
-     * write to int */
-    *i_val = (unsigned char) ptr[3];
-    *i_val <<= 8;
-    *i_val += (unsigned char) ptr[2];
-    *i_val <<= 8;
-    *i_val += (unsigned char) ptr[1];
-    *i_val <<= 8;
-    *i_val += (unsigned char) ptr[0];
-    return sizeof(int);
-}
+#define MEMSET(base, location, value) (*((volatile int*) (base + (sizeof(int)) * location)) = value)
+#define MEMGET(base, location)        (*((volatile int*) (base + (sizeof(int)) * location)))
 
-/* get pointer to message and increment pointer */
-/* get pointer to message
- * return size of message */
-int get_msg(char *ptr, uint8_t **msg_ptr, int size){
-    /* check for valid ptr */
-    if(ptr == NULL){
-        printf("get_msg: invalid pointer\n");
-        return -1;
-    }
-    /* update message pointer */
-    *msg_ptr = (uint8_t*) ptr;
-    return sizeof(uint8_t)*size;
-}
+void AutomaticTests(Versat* versat);
 
-/* copy memory from pointer to another */
-void mem_copy(uint8_t *src_buf, char *dst_buf, int size){
-    if(src_buf == NULL || dst_buf == NULL){
-        printf("mem_copy: invalid pointer\n");
-        return;
-    }
-    int i = 0;
-    while(i<size){
-        dst_buf[i] = src_buf[i];
-        i++;
-    }
-    return;
-}
-
-/* copy mesage to pointer, update pointer to after message
- * returns number of chars written
- */
-int save_msg(char *ptr, uint8_t* msg, int size){
-    if(ptr == NULL || msg == NULL || size < 0 ){
-        printf("save_msg: invalid inputs\n");
-        return -1;
-    }
-
-    // copy message to pointer
-    mem_copy(msg, ptr, size); 
-    return sizeof(uint8_t)*size;
-}
-
-
-int main(int argc, const char* argv[])
+int main(int argc,const char* argv[])
 {
-  int INPUT_FILE_SIZE = 4096;
-  uint8_t digest[256] = {0};
-  unsigned int num_msgs = 0;
-  unsigned int msg_len = 0;
-  int i = 0;
+   //init uart
+   uart_init(UART_BASE,FREQ/BAUD);
+   timer_init(TIMER_BASE);
 
-  int din_size = 0, din_ptr = 0;
-  // input file points after versat sha space
-  char *din_fp = (char*) (ddr_mem + VERSAT_SHA_W_PTR_NBYTES);
+   printf("Init base modules\n");
 
-  int dout_size = 0, dout_ptr = 0;
-  char *dout_fp = NULL;
+   Versat* versat = InitVersat(VERSAT_BASE,1);
 
-  //init uart
-  uart_init(UART_BASE,FREQ/BAUD);   
+   SetDebug(versat,VersatDebugFlags::OUTPUT_ACCELERATORS_CODE,1);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VERSAT_CODE,1);
+   SetDebug(versat,VersatDebugFlags::USE_FIXED_BUFFERS,0);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_GRAPH_DOT,0);
+   SetDebug(versat,VersatDebugFlags::OUTPUT_VCD,0);
 
-  //init timer
-  timer_init(TIMER_BASE);
+   ParseCommandLineOptions(versat,argc,argv);
 
-  //init ethernet
-  eth_init(ETHERNET_BASE);
+   ParseVersatSpecification(versat,"testVersatSpecification.txt");
 
-  //instantiate versat 
-  Versat versatInst = {};
-  Versat* versat = &versatInst;
-  InitVersat(versat,VERSAT_BASE,1); 
+   AutomaticTests(versat);
 
-  // Sha specific units
-  // Need to RegisterFU, can ignore return value 
-#ifdef PC
-  ParseVersatSpecification(versat,"testVersatSpecification.txt");
+#ifndef GENERATE_ONLY
+   Full_SHA_Test(versat);
 #endif
 
-  InstantiateSHA(versat);
-  printf("After Instantiation SHA\n");
+   uart_finish();
 
-#ifdef SIM
-  //Receive input data from uart
-  char input_file_name[] = "sim_in.bin";
-  din_size = uart_recvfile(input_file_name, &din_fp);
-#else
-  //Receive input data from ethernet
-  din_size = eth_rcv_variable_file(din_fp);
-#endif
-  printf("ETHERNET: Received file with %d bytes\n", din_size);
-
-  // Calculate output size and allocate output memory
-  din_ptr += get_int(din_fp + din_ptr, &num_msgs);
-  dout_size = num_msgs*HASH_SIZE;
-  // output file starts after input file
-  dout_fp = din_fp + din_size;
-
-  uint8_t *msg = NULL;
-
-  //Message test loop
-  for(i=0; i< num_msgs; i++){
-    // Parse message and length
-    din_ptr += get_int(din_fp + din_ptr, &msg_len);
-    din_ptr += get_msg(&(din_fp[din_ptr]), &msg, ((msg_len) ? msg_len : 1) );
-
-    versat_sha256(digest,msg,msg_len);
-
-    //save to memory
-    dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
-  }
-
-#ifdef SIM
-  // send message digests via uart
-  char output_file_name[] = "soc-out.bin";
-  uart_sendfile(output_file_name, dout_size, dout_fp); 
-#else
-  // send message digests via ethernet
-  eth_send_variable_file(dout_fp, dout_size);
-#endif
-  printf("ETHERNET: Sent file with %d bytes\n", dout_size);
-
-  uart_finish();
+   return 0;
 }
+
+/*
+
+Immediate plan:
+
+Current plan:
+
+Change the calculated inputs and outputs on the FUInstances to be full vector likes for the size
+   If there isn't a connection, simply store a nullptr
+      [Objective] Implement a way so that the memory units that have unconnected inputs can have a zero input
+
+*/
+
+/*
+
+Implementation to do:
+
+Software:
+
+   Change hierarchical name from a char[] to a char* (Otherwise will bleed embedded memory dry)
+      Software for now will simply malloc and forget, but eventually I should probably implement some form of string interning
+      NOTE: After adding perfect hashing, name information is no longer required. Might not need to change afterall, for now hold on.
+
+   Add true hierarchical naming for Flatten units
+      - Simply get the full hierarchical representation and store it as the name of the unit, with parent set to null
+      - Might need to change hierarchical name from array to char*
+      - Need to take care about where strings end up. Do not want to fill embedded with useless data if possible
+
+   Support the output of a module not starting at zero. (Maybe weird thing to do for now)
+      More complex, but take a pass at anything that depends on order of instancing/declarating (a lot of assumptions are being made right now)
+   [Type] Change ouput memory map and functions alike to use type system and simple output structs directly (Simpler and less error prone)
+   [CalculateVersatData] naked memory allocation, add it to the accelerator locking mechanism
+
+Embedded:
+
+   Implement a perfect hashing scheme to accelerate simulation. GetInstanceByName
+
+Hardware:
+
+   Maybe think about changing the databus interface (go from native to a axi like interface)
+      And possible add a length signal to indicate length to the dma unit
+
+   Come up with another name to differentiate delays from the delay units
+
+   Implement shadow registers
+   Delay units with same inputs and delay values should be shared.
+      In fact, a delay tree should be created. No need to have a delay of X and a delay of X+1, when we can have X and a Register.
+         For now, delays are "fixed". Even thought programmable, the whole module unit only works for a specific delay value and therefore
+
+   Introduce the concept of combinatorial units only
+      These units can be "shared"
+
+Delay:
+
+   Add a special "Constant" edge, that doesn't have or add any delay regardless of anything (Time agnostic)
+   To improve latency calculations, should have a indication of which outputs delay depend on which input ports delay (Think how dual port ram has two independent ports)
+      Each output should keep track of exactly which input port it depends upon, and use that information in delay calculation
+   Since delay is simply "how many cycles until seeing valid data", I barely understand what is the use of DELAY_TYPE_SOURCE_DELAY and DELAY_TYPE_SINK_DELAY. Is it really just because of Reg?
+      I think I only need a single value to indicate the difference between a Reg and a Muladd (one produces that, and therefore should act as a source, while the other is a compute unit)
+   Delay calculation not working if there is a separatation of flow
+      Think adding a new unit to the start that doesn't connect to anywhere.
+      The new unit will have pretty much the full latency as the delay, when it should be only the latency of the previous unit
+         The algorithm doesn't take into account different flows, it works by assuming that everything ends up in a final unit which might not be true
+
+Template Engine:
+
+   Really need to simplify error if identifier not found.
+   Add local variables, instead of everything global
+   Take another pass at whitespace handling (Some whitespace is being consumed in blocks of text, care, might join together two things that are supposed to be seperated and do error)
+   Need to return values from calls
+
+Flatten:
+
+   Give every declaration a "level" . simple = 0, composite = max(level of subunits) + 1, special = 0.
+   Flatten is currently broken (might have been fixed, check it later?), only creating shallow instances. Useful for outputting graph, but not possible to simulate
+      The fix is to create a function that copies and changes shallow instances and, in the end, it fixes memory allocation and instance pointers and initialization
+
+Merge:
+
+   Do merge of units in same "level". Iterate down while repeating
+
+*/
+
+/*
+
+Known bugs:
+
+The Pool class shouldn't store all that info, and it makes it a error to copy the class
+   All the info needed is stored in the linked list on the pages, the Pool should pretty much work like a shell and therefore be copied around without a problem
+
+*/
+
+
+/*
+
+Merge objectives:
+
+Easy to use interface
+Easily extandable - merging 3 should be as easy and as eficient as merging 2.
+
+Current standard procedure:
+
+   Merge creates a new declaration.
+      FUDeclaration* merged = MergeTypes("MERGED",typeAccel1,typeAccel2);
+
+   Can be used just like any other declaration
+
+      FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MERGED"));
+
+   Same interface to instantiate a merge as any other unit
+
+      Accelerator* accel = CreateAccelerator(versat);
+      FUInstance* top = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   Problem, what to do if two units share the same name in the merge but are different types?
+
+      FUInstance* inst = GetInstanceByName(accel,"Test","sigma");
+
+   UseType(accelerator,typeAccel1); // or UseType(accelerator,0) or UseType(accelerator,1);
+
+   Three solutions:
+
+      [Probably the best] Add a explicit state to the accelerator that tells the current accelerator what type is being used.
+         + GetInstance returns type based on accelerator state.
+         + Embedded can just store N arrays of data, potently less to save space.
+         - Potentially some confusion and errors, but a lot more simple than the 3rd way.
+
+      Create a Union like abstraction, where a type acts as different types (the amount of everything memwise is simple the maximum for each unit in the union)
+         + User doesn't have to worry about a thing.
+         - How to handle a merge if the unit gets merged with another unit? Cannot have a union like structure because both types would need to fully exist in one implementation, which is then not possible
+
+      Find a way of storing the parent declarations in each unit and make so that GetInstance needs to provide that data.
+         Something like FUInstance* inst = GetInstanceByName(accel,"ACCEL1:","Test","sigma"); // There exists a ACCEL1:Test.sigma and a ACCEL2:Test.sigma (different units but same name) (The ACCEL1: qualifier can appear anywhere, as long as it is before a unit that needs disambiguation
+         + Easier to implement in pc emulation
+         - Potentially error prone for the user.
+         - No idea how to implement it for the embedded case
+
+   CalculateDelay(accel->versat,accel);
+
+      Need to calculate delay based on current accelerator?
+      Or is this something that is done in the MergeTypes function and then stored?
+
+   SetDelayRecursive(accel);
+
+      Probably is for the best to calculate delays in the MergeTypes function and then simple retrieve them here.
+      Currently the information is stored in inst->baseDelay, which means that we cannot merge and keep delay information
+
+   AcceleratorRun(accel);
+
+      If everything is done correctly, this part shouldn't require any change
+
+   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+
+      Same for this part
+*/
