@@ -4,11 +4,10 @@
 
 #select top module and FPGA decive
 set TOP top_system
-set DEVICE [lindex $argv 3]
-
 set INCLUDE [lindex $argv 0]
 set DEFINE [lindex $argv 1]
 set VSRC [lindex $argv 2]
+set DEVICE [lindex $argv 3]
 
 set USE_DDR [string last "USE_DDR" $DEFINE]
 
@@ -20,12 +19,11 @@ foreach file [split $VSRC \ ] {
 }
 
 set_property part $DEVICE [current_project]
+read_xdc ./top_system.xdc
 
 if { $USE_DDR < 0 } {
     read_verilog verilog/clock_wizard.v
 } else {
-
-    read_xdc ./ddr.xdc
 
 
     if { ![file isdirectory "./ip"]} {
@@ -37,7 +35,6 @@ if { $USE_DDR < 0 } {
         read_ip ./ip/axi_interconnect_0/axi_interconnect_0.xci
         report_property [get_files ./ip/axi_interconnect_0/axi_interconnect_0.xci]
     } else {
-
         create_ip -name axi_interconnect -vendor xilinx.com -library ip -version 1.7 -module_name axi_interconnect_0 -dir ./ip -force
 
         set_property -dict \
@@ -66,7 +63,7 @@ if { $USE_DDR < 0 } {
     }
     
     if { [file isdirectory "./ip/ddr4_0"] } {
-	read_ip ./ip/ddr4_0/ddr4_0.xci
+    read_ip ./ip/ddr4_0/ddr4_0.xci
         report_property [get_files ./ip/ddr4_0/ddr4_0.xci]
     } else {
 
@@ -86,7 +83,7 @@ if { $USE_DDR < 0 } {
              CONFIG.C0.DDR4_AxiAddressWidth {30} \
              CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
              CONFIG.C0.BANK_GROUP_WIDTH {1}] [get_ips ddr4_0]
-	
+    
         generate_target all [get_files ./ip/ddr4_0/ddr4_0.xci]
 
         report_property [get_ips ddr4_0]
@@ -95,25 +92,29 @@ if { $USE_DDR < 0 } {
         synth_ip [get_files ./ip/ddr4_0/ddr4_0.xci]
     }
 
+    read_xdc ./ddr.xdc
+
 }
 
-read_xdc ./top_system.xdc
+file mkdir reports
+file mkdir checkpoints
 
-synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $TOP
+synth_design -include_dirs $INCLUDE -verilog_define $DEFINE -part $DEVICE -top $TOP -debug_log -verbose
+report_utilization -hierarchical -file reports/synth_utilization.txt
+write_checkpoint -force checkpoints/post_synth
 
-opt_design
+#start_gui
+
+opt_design -debug_log -verbose
+report_timing_summary -file reports/opt_timing.txt -max_paths 3000
 
 place_design
+write_checkpoint -force checkpoints/post_place
 
 route_design
+write_checkpoint -force checkpoints/post_route
 
-report_utilization
-
-report_timing
-
-file mkdir reports
-
-report_timing -file reports/timing.txt -max_paths 30
+report_timing -file reports/timing.txt -max_paths 3000
 report_clocks -file reports/clocks.txt
 report_clock_interaction -file reports/clock_interaction.txt
 report_cdc -details -file reports/cdc.txt
