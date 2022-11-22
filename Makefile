@@ -1,7 +1,18 @@
 ROOT_DIR=.
 include $(ROOT_DIR)/config.mk
 
-SHELL = /bin/bash
+#
+# VIRTUAL ENVIRONMENT SETUP
+#
+VENV=.venv
+PYTHON_VENV=$(VENV)/bin/python3
+FUSESOC=$(VENV)/bin/fusesoc
+$(PYTHON_VENV): requirements.txt
+	python3 -m venv $(VENV)
+	$(PYTHON_VENV) -m pip install --upgrade pip
+
+fusesoc-setup: $(PYTHON_VENV) requirements.txt
+	$(PYTHON_VENV) -m pip install -r requirements.txt
 
 #
 # BUILD EMBEDDED SOFTWARE
@@ -173,7 +184,8 @@ clean: pc-emul-clean sim-clean fpga-clean doc-clean
 
 clean-all: test-clean
 
-.PHONY: fw-build fw-clean fw-debug \
+.PHONY: fusesoc-setup \
+	fw-build fw-clean fw-debug \
 	gen-spinal-sources \
 	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-gen-versat \
 	sim-build sim-run sim-clean sim-test sim-versat-fus sim-debug \

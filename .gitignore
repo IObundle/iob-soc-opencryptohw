@@ -1,6 +1,7 @@
 #TOP
 #nothing to ignore
 
+.venv
 #SOFTWARE
 software/periphs.h
 
