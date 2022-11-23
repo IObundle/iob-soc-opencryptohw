@@ -20,6 +20,9 @@ class CustomGenerator(Generator):
 
         files      = self.config['output'].get('files', [])
         parameters = self.config['output'].get('parameters', {})
+        
+        fileset    = self.config['output'].get('fileset', "rtl")
+        file_type  = self.config['output'].get('file_type', "")
 
         rc = subprocess.call(self.config['command'].split(), cwd=cwd)
         if rc:
@@ -40,7 +43,7 @@ class CustomGenerator(Generator):
                     os.makedirs(d)
                 shutil.copy2(os.path.join(cwd, f),f)
 
-        self.add_files(files)
+        self.add_files(files, fileset=fileset, file_type=file_type)
 
         for k,v in parameters.items():
             self.add_parameter(k, v)

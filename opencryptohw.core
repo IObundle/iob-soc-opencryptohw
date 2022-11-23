@@ -317,6 +317,8 @@ generate:
           - T2.v
           - T_Stage.v
           - VReadToVWrite.v
+        fileset: versat
+        file_type: verilogSource
 
   firmware_sim_gen:
     generator: custom
@@ -328,6 +330,8 @@ generate:
         files:
           - boot.hex
           - firmware.bin
+        fileset: tb
+        file_type: user
 
   cache_if_gen:
     generator: custom
@@ -343,6 +347,8 @@ generate:
           - m_axi_write_portmap.vh: {is_include_file: true}
           - m_axi_m_read_port.vh: {is_include_file: true}
           - m_axi_read_portmap.vh: {is_include_file: true}
+        fileset: cache
+        file_type: verilogSource
 
   versat_if_gen:
     generator: custom
@@ -357,6 +363,8 @@ generate:
           - m_versat_axi_m_read_port.vh: {is_include_file: true}
           - m_versat_axi_write_portmap.vh: {is_include_file: true}
           - m_versat_axi_read_portmap.vh: {is_include_file: true}
+        fileset: versat
+        file_type: verilogSource
 
   uart_mkregs_gen_hw:
     generator: custom
@@ -368,6 +376,8 @@ generate:
         files:
           - iob_uart_swreg_def.vh: {is_include_file: true}
           - iob_uart_swreg_gen.vh: {is_include_file: true}
+        fileset: uart
+        file_type: verilogSource
 
   timer_mkregs_gen_hw:
     generator: custom
@@ -379,6 +389,8 @@ generate:
         files:
           - iob_timer_swreg_def.vh: {is_include_file: true}
           - iob_timer_swreg_gen.vh: {is_include_file: true}
+        fileset: timer
+        file_type: verilogSource
 
   ethernet_mkregs_gen_hw:
     generator: custom
@@ -390,6 +402,8 @@ generate:
         files:
           - iob_eth_swreg_def.vh: {is_include_file: true}
           - iob_eth_swreg_gen.vh: {is_include_file: true}
+        fileset: ethernet
+        file_type: verilogSource
 
   system_gen_hw:
     generator: custom
@@ -401,6 +415,8 @@ generate:
         files:
           - m_axi_wire.vh: {is_include_file: true}
           - system.v
+        fileset: hw
+        file_type: verilogSource
 
   tb_gen_hw:
     generator: custom
@@ -413,6 +429,8 @@ generate:
           - s_axi_portmap.vh: {is_include_file: true}
           - system_top.v
           - system_tb.v
+        fileset: tb
+        file_type: verilogSource
 
   input_gen:
     generator: custom
@@ -423,6 +441,8 @@ generate:
       output:
         files:
           - soc-in.bin
+        fileset: console
+        file_type: user
 
 generators:
 # example generator from https://github.com/fusesoc/fusesoc-generators
@@ -451,6 +471,8 @@ generators:
           parameters (dict): A map of parameters, specified in the same format 
                             as CAPI2 parameters, which are used by the generated 
                             files
+          fileset (str): Fileset for generated files
+          file_type (str): File type of generated files
 
 parameters:
   RUN_EXTMEM:
