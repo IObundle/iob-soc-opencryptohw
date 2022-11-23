@@ -172,6 +172,7 @@ filesets:
       - submodules/AXI/submodules/V_AXI/rtl/axi_interconnect.v
       - submodules/AXI/submodules/V_AXI/rtl/arbiter.v
       - submodules/AXI/submodules/V_AXI/rtl/priority_encoder.v
+      - hardware/include/cpu_tasks.v: {is_include_file: true}
     file_type: verilogSource
 
 targets:
