@@ -63,7 +63,6 @@ filesets:
 
   timer:
     files:
-      - submodules/LIB/hardware/iob_reg/iob_reg.v
       - submodules/TIMER/hardware/include/inst.vh: {is_include_file: true}
       - submodules/TIMER/hardware/include/iob_timer.vh: {is_include_file: true}
       - submodules/TIMER/hardware/src/iob_timer.v
@@ -85,18 +84,18 @@ filesets:
       - submodules/ETHERNET/hardware/src/iob_eth_tx.v
       - submodules/ETHERNET/hardware/src/iob_eth.v
       - submodules/ETHERNET/hardware/src/mem_burst.v
-      - submodules/LIB/hardware/iob_reg/iob_reg.v
       - submodules/MEM/hardware/ram/iob_ram_tdp/iob_ram_tdp.v
       - submodules/MEM/hardware/ram/iob_ram_tdp_be/iob_ram_tdp_be.v
     file_type: verilogSource
 
   versat:
     files:
-      - submodules/MEM/hardware/ram/tdp_ram/iob_tdp_ram.v
-      - submodules/MEM/hardware/ram/2p_ram/iob_2p_ram.v
-      - submodules/MEM/hardware/ram/dp_ram/iob_dp_ram.v
-      - submodules/MEM/hardware/fifo/sfifo/iob_sync_fifo.v
-      - submodules/MEM/hardware/fifo/bin_counter.v
+      - submodules/VERSAT/submodules/MEM/hardware/ram/tdp_ram/iob_tdp_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/ram/2p_ram/iob_2p_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/ram/dp_ram/iob_dp_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/fifo/sfifo/iob_sync_fifo.v
+      - submodules/VERSAT/submodules/MEM/hardware/fifo/bin_counter.v
+      - submodules/AXI/hardware/include/axi.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/axil_tasks.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_intercon.vh: {is_include_file: true}
@@ -140,13 +139,6 @@ filesets:
       - submodules/VERSAT/hardware/src/xaddrgen.v
       - submodules/VERSAT/hardware/src/xalulite.v
       - submodules/VERSAT/hardware/src/xmux4.v
-    file_type: verilogSource
-  
-  axi:
-    files:
-      - submodules/AXI/submodules/V_AXI/rtl/axi_interconnect.v
-      - submodules/AXI/submodules/V_AXI/rtl/arbiter.v
-      - submodules/AXI/submodules/V_AXI/rtl/priority_encoder.v
     file_type: verilogSource
   
   hw:
@@ -193,7 +185,6 @@ targets:
       - timer
       - ethernet
       - versat
-      - axi
       - hw
     generate:
       - versat_gen
