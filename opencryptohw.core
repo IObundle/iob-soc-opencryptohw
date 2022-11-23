@@ -232,16 +232,44 @@ targets:
           - --error-limit 1000 # Exit if number of errors passes 1000
           - -MAKEFLAGS "CXXFLAGS=\"$(DEFINE)\"" # Pass defines to the verilator cpp testbench compilation
           - --unroll-count 4096 # Allow for loop unrolling up to 4096
-    hooks:
-      pre_run: [console_hook]
-      post_run: [validate_hook]
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=2
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=24
+      - AXI_ADDR_W
+      - BAUD
+      - FREQ
+      - FW_SIZE
+    # hooks:
+    #   pre_run: [console_hook]
+    #   post_run: [validate_hook]
 
-scripts:
-  #TODO create scripts
-  console_hook:
-    cmd: [scripts/console_hook.py, sim]
-  validate_hook:
-    cmd: [scripts/validate_hook.py]
+# scripts:
+#   #TODO create scripts
+#   console_hook:
+#     cmd: [scripts/console_hook.py, sim]
+#   validate_hook:
+#     cmd: [scripts/validate_hook.py]
 
 generate:
   versat_gen:
@@ -432,3 +460,166 @@ generators:
           parameters (dict): A map of parameters, specified in the same format 
                             as CAPI2 parameters, which are used by the generated 
                             files
+
+parameters:
+  RUN_EXTMEM:
+    datatype: bool
+    default: true
+    description: Run firmware from external memory
+    paramtype: vlogdefine
+
+  USE_DDR:
+    datatype: bool
+    default: true
+    description: Use system with external memory
+    paramtype: vlogdefine
+
+  INIT_MEM:
+    datatype: bool
+    default: true
+    description: Pre initialize memory with program
+    paramtype: vlogdefine
+
+  DATA_W:
+    datatype: int
+    default: 32
+    description: System data width
+    paramtype: vlogdefine
+
+  ADDR_W:
+    datatype: int
+    default: 32
+    description: System address width
+    paramtype: vlogdefine
+
+  BOOTROM_ADDR_W:
+    datatype: int
+    default: 12
+    description: Boot ROM address width
+    paramtype: vlogdefine
+
+  SRAM_ADDR_W:
+    datatype: int
+    default: 17
+    description: Static RAM address width
+    paramtype: vlogdefine
+
+  FIRM_ADDR_W:
+    datatype: int
+    default: 17
+    description: Firmware address width
+    paramtype: vlogdefine
+
+  DCACHE_ADDR_W:
+    datatype: int
+    default: 24
+    description: Data cache address width
+    paramtype: vlogdefine
+
+  N_SLAVES:
+    datatype: int
+    default: 4
+    description: Number of peripherals
+    paramtype: vlogdefine
+
+  E:
+    datatype: int
+    default: 31
+    description: Extra memory bit
+    paramtype: vlogdefine
+
+  P:
+    datatype: int
+    default: 30
+    description: Peripheral memory bit
+    paramtype: vlogdefine
+
+  B:
+    datatype: int
+    default: 29
+    description: Boot controller memory bit
+    paramtype: vlogdefine
+
+  UART:
+    datatype: int
+    default: 0
+    description: UART peripheral number
+    paramtype: vlogdefine
+
+  TIMER:
+    datatype: int
+    default: 1
+    description: TIMER peripheral number
+    paramtype: vlogdefine
+
+  VERSAT:
+    datatype: int
+    default: 2
+    description: VERSAT peripheral number
+    paramtype: vlogdefine
+
+  ETHERNET:
+    datatype: int
+    default: 3
+    description: ETHERNET peripheral number
+    paramtype: vlogdefine
+
+  N_SLAVES_W:
+    datatype: int
+    default: 2
+    description: log2(N_SLAVES)
+    paramtype: vlogdefine
+
+  HARDWARE_TEST:
+    datatype: str
+    default: ''
+    description: Hardware Test
+    paramtype: vlogdefine
+
+  USE_MUL_DIV:
+    datatype: int
+    default: 1
+    description: Use CPU multiplier and divisor
+    paramtype: vlogdefine
+
+  USE_COMPRESSED:
+    datatype: int
+    default: 1
+    description: Use compressed instructions
+    paramtype: vlogdefine
+
+  DDR_DATA_W:
+    datatype: str
+    default: ''
+    description: DDR data width
+    paramtype: vlogdefine
+
+  DDR_ADDR_W:
+    datatype: str
+    default: ''
+    description: DDR address width
+    paramtype: vlogdefine
+
+  AXI_ADDR_W:
+    datatype: int
+    default: 32
+    description: AXI address width
+    paramtype: vlogdefine
+
+  BAUD:
+    datatype: int
+    default: 2500000
+    description: UART baud rate
+    paramtype: vlogdefine
+
+  FREQ:
+    datatype: int
+    default: 50000000
+    description: System clock frequency
+    paramtype: vlogdefine
+
+  FW_SIZE:
+    datatype: int
+    default: 32768
+    description: Firmware size
+    paramtype: vlogdefine
