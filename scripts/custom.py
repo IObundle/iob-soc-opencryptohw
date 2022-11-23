@@ -11,7 +11,7 @@ class CustomGenerator(Generator):
 
         copy_core = self.config.get('copy_core', False)
         if copy_core:
-            tmp_dir = os.path.join(tempfile.mkdtemp(), 'core')
+            tmp_dir = os.path.join(tempfile.mkdtemp(prefix='iob_opencryptohw_'), 'core')
             shutil.copytree(self.files_root, tmp_dir)
 
         cwd = None
