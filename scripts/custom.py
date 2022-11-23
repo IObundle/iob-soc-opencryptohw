@@ -27,8 +27,12 @@ class CustomGenerator(Generator):
         if cwd:
             filenames = []
             for f in files:
-                for k in f:
-                    filenames.append(k)
+                if isinstance(f, str):
+                    filenames.append(f)
+                else:
+                    for k in f:
+                        filenames.append(k)
+
 
             for f in filenames:
                 d = os.path.dirname(f)

@@ -76,7 +76,6 @@ filesets:
       - submodules/ETHERNET/hardware/include/inst.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/iob_eth.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/pio.vh: {is_include_file: true}
-        # TODO generate swregs
       - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
@@ -181,7 +180,6 @@ filesets:
       - submodules/AXI/submodules/V_AXI/rtl/axi_interconnect.v
       - submodules/AXI/submodules/V_AXI/rtl/arbiter.v
       - submodules/AXI/submodules/V_AXI/rtl/priority_encoder.v
-      # TODO generate soc-in.bin
     file_type: verilogSource
 
 targets:
@@ -202,43 +200,48 @@ targets:
       - cache_if_gen
       - uart_mkregs_gen_hw
       - timer_mkregs_gen_hw
-      - #TODO ethernet mkregs generator
+      - ethernet_mkregs_gen_hw
       - versat_if_gen
       - system_gen_hw
     toplevel: system
 
   sim:
     <<: *default
+    description: Simulate the System
+    default_tool: verilator
     filesets_append:
       - console
+      - validate
+      - tb
     generate_append: 
       - firmware_sim_gen
       - tb_gen_hw
       - input_gen
-    top_level:
-      - #TODO
+    toplevel:
+      - system_top
     tools:
       verilator:
-        #TODO
+        mode: cc
+        verilator_options:
+          - -cc --exe --build # Generate C++ in executable form and compile it after
+          - -Wall # Enable all style warnings; may not want this on less solid designs
+          - -Wno-lint # Disable all lint warnings
+          - -Wno-fatal # Disable fatal exit on warnings
+          - --trace # Make waveforms
+          - +1800-2005ext+v # Use SystemVerilog 2005 with file extension .v
+          - --error-limit 1000 # Exit if number of errors passes 1000
+          - -MAKEFLAGS "CXXFLAGS=\"$(DEFINE)\"" # Pass defines to the verilator cpp testbench compilation
+          - --unroll-count 4096 # Allow for loop unrolling up to 4096
     hooks:
       pre_run: [console_hook]
-
-  # sim:
-  #   <<: *default
-  #   description: Simulate the design
-  #   default_tool: icarus
-  #   filesets_append:
-  #     - tb
-  #   generate: [mkregs_gen_hw]
-  #   toplevel: timer_tb
-  #   tools:
-  #     icarus:
-  #       iverilog_options:
-  #         - -W all -g2005-sv
+      post_run: [validate_hook]
 
 scripts:
+  #TODO create scripts
   console_hook:
     cmd: [scripts/console_hook.py, sim]
+  validate_hook:
+    cmd: [scripts/validate_hook.py]
 
 generate:
   versat_gen:
@@ -315,7 +318,7 @@ generate:
       run_from_core: true
       output:
         files:
-          - m_axi_port.vh: {is_include_file: true}
+          - m_axi_m_port.vh: {is_include_file: true}
           - m_axi_portmap.vh: {is_include_file: true}
           - m_axi_m_write_port.vh: {is_include_file: true}
           - m_axi_write_portmap.vh: {is_include_file: true}
@@ -339,7 +342,7 @@ generate:
   uart_mkregs_gen_hw:
     generator: custom
     parameters:
-      command: ./submodules/LIB/build/sw/python/mkregs.py iob_uart submodules/UART HW
+      command: ./submodules/LIB/software/python/mkregs.py iob_uart submodules/UART HW
       copy_core: true
       run_from_core: true
       output:
@@ -350,13 +353,24 @@ generate:
   timer_mkregs_gen_hw:
     generator: custom
     parameters:
-      command: ./submodules/LIB/build/sw/python/mkregs.py iob_timer submodules/TIMER HW
+      command: ./submodules/LIB/software/python/mkregs.py iob_timer submodules/TIMER HW
       copy_core: true
       run_from_core: true
       output:
         files:
           - iob_timer_swreg_def.vh: {is_include_file: true}
           - iob_timer_swreg_gen.vh: {is_include_file: true}
+
+  ethernet_mkregs_gen_hw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_eth submodules/ETHERNET HW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_eth_swreg_def.vh: {is_include_file: true}
+          - iob_eth_swreg_gen.vh: {is_include_file: true}
 
   system_gen_hw:
     generator: custom
