@@ -20,10 +20,14 @@ case "$1" in
     "fpga")
     fusesoc run --target=fpga $CORE
     ;;
+    "clean")
+    rm -rf build
+    ;;
     *)
     echo "Supported arguments: "
     echo "          sim-setup sim-build sim"
     echo "          fpga-setup fpga-build fpga"
+    echo "          clean"
     exit 1
     ;;
 esac

@@ -175,6 +175,11 @@ filesets:
       - hardware/include/cpu_tasks.v: {is_include_file: true}
     file_type: verilogSource
 
+  verilator:
+    files:
+      - hardware/simulation/verilator/system_tb.cpp: {copyto: system_tb.cpp}
+    file_type: CPP
+
 targets:
   default: &default
     filesets:
@@ -205,10 +210,12 @@ targets:
       - console
       - validate
       - tb
+      - verilator
     generate_append: 
       - firmware_sim_gen
       - tb_gen_hw
       - input_gen
+      - uart_mkregs_gen_sw
     toplevel:
       - system_top
     tools:
@@ -222,8 +229,9 @@ targets:
           - --trace # Make waveforms
           - +1800-2005ext+v # Use SystemVerilog 2005 with file extension .v
           - --error-limit 1000 # Exit if number of errors passes 1000
-          - -MAKEFLAGS "CXXFLAGS=\"$(DEFINE)\"" # Pass defines to the verilator cpp testbench compilation
+          - -MAKEFLAGS "CXXFLAGS=\"-DFREQ=50000000 -DBAUD=2500000\"" # Pass defines to the verilator cpp testbench compilation
           - --unroll-count 4096 # Allow for loop unrolling up to 4096
+          - system_tb.cpp
     parameters:
       - RUN_EXTMEM
       - USE_DDR
@@ -379,6 +387,19 @@ generate:
           - iob_uart_swreg_gen.vh: {is_include_file: true}
         fileset: uart
         file_type: verilogSource
+
+  uart_mkregs_gen_sw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_uart submodules/UART SW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_uart_swreg_emb.c: {is_include_file: true}
+          - iob_uart_swreg.h: {is_include_file: true}
+        fileset: uart
+        file_type: CPP
 
   timer_mkregs_gen_hw:
     generator: custom
