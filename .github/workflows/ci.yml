@@ -61,3 +61,22 @@ jobs:
         run: make test-fpga
       - name: fpga clean
         run: make test-fpga-clean
+
+  fusesoc-sim:
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: FuseSoc Setup
+        run: |
+          make fusesoc-setup
+          source .venv/bin/activate
+      - name: FuseSoc Simulation
+        run: ./fusesoc.sh sim
+      - name: FuseSoc Clean
+        run: ./fusesoc.sh clean
+      - name: Deactivate Virtual Environment
+        run: deactivate

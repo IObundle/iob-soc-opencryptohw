@@ -160,7 +160,7 @@ filesets:
 
   validate:
     files:
-      - scripts/validate.sh: {copyto: validate.sh}
+      - scripts/validate_hook.sh: {copyto: validate_hook.sh}
       - software/test/validate_test.py: {copyto: validate_test.py}
     file_type: user
 
@@ -272,63 +272,63 @@ scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
   validate_hook:
-    cmd: [bash, validate.sh]
+    cmd: [bash, validate_hook.sh]
 
 generate:
   versat_gen:
     generator: custom
     parameters:
-      command: ./scripts/versat_gen.sh
+      command: make pc-emul-gen-versat
       copy_core: true
       run_from_core: true
       output:
         files:
-          - versat_instance.v
-          - versat_defs.vh: {is_include_file: true}
-          - AddRoundKey.v
-          - AES.v
-          - CH.v
-          - Comb_F_Stage.v
-          - ComplexAdder.v
-          - ComplexMultiplier.v
-          - ComplexShareConfig.v
-          - Constants.v
-          - ConvolutionStage.v
-          - Convolution.v
-          - DoRow.v
-          - FirstLineKey.v
-          - F_Stage.v
-          - F.v
-          - KeySchedule.v
-          - MainRound.v
-          - Maj.v
-          - MatrixMultiplication.v
-          - MatrixMultiplicationVread.v
-          - MixColumns.v
-          - MixProduct.v
-          - M_Stage.v
-          - M.v
-          - OnlyInputToOutput.v
-          - ReadWriteAES.v
-          - SBox.v
-          - SemiComplexAdder.v
-          - ShaSingleState.v
-          - ShaState.v
-          - SHA.v
-          - ShiftRows.v
-          - sigma_stage.v
-          - sigma.v
-          - Sigma.v
-          - SimpleAdder.v
-          - SimpleShareConfig.v
-          - StaticConst.v
-          - StaticMuladd.v
-          - StaticMux.v
-          - StringHasher.v
-          - T1.v
-          - T2.v
-          - T_Stage.v
-          - VReadToVWrite.v
+          - software/pc-emul/versat_instance.v
+          - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES.v
+          - software/pc-emul/src/CH.v
+          - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/ComplexAdder.v
+          - software/pc-emul/src/ComplexMultiplier.v
+          - software/pc-emul/src/ComplexShareConfig.v
+          - software/pc-emul/src/Constants.v
+          - software/pc-emul/src/ConvolutionStage.v
+          - software/pc-emul/src/Convolution.v
+          - software/pc-emul/src/DoRow.v
+          - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/F_Stage.v
+          - software/pc-emul/src/F.v
+          - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRound.v
+          - software/pc-emul/src/Maj.v
+          - software/pc-emul/src/MatrixMultiplication.v
+          - software/pc-emul/src/MatrixMultiplicationVread.v
+          - software/pc-emul/src/MixColumns.v
+          - software/pc-emul/src/MixProduct.v
+          - software/pc-emul/src/M_Stage.v
+          - software/pc-emul/src/M.v
+          - software/pc-emul/src/OnlyInputToOutput.v
+          - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/SBox.v
+          - software/pc-emul/src/SemiComplexAdder.v
+          - software/pc-emul/src/ShaSingleState.v
+          - software/pc-emul/src/ShaState.v
+          - software/pc-emul/src/SHA.v
+          - software/pc-emul/src/ShiftRows.v
+          - software/pc-emul/src/sigma_stage.v
+          - software/pc-emul/src/sigma.v
+          - software/pc-emul/src/Sigma.v
+          - software/pc-emul/src/SimpleAdder.v
+          - software/pc-emul/src/SimpleShareConfig.v
+          - software/pc-emul/src/StaticConst.v
+          - software/pc-emul/src/StaticMuladd.v
+          - software/pc-emul/src/StaticMux.v
+          - software/pc-emul/src/StringHasher.v
+          - software/pc-emul/src/T1.v
+          - software/pc-emul/src/T2.v
+          - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VReadToVWrite.v
         fileset: versat
         file_type: verilogSource
 
@@ -461,13 +461,13 @@ generate:
   input_gen:
     generator: custom
     parameters:
-      command: ./scripts/input_gen.sh
+      command: make -C software/test gen_test_data
       copy_core: true
       run_from_core: true
       output:
         files:
-          - soc-in.bin: {copyto: soc-in.bin}
-          - SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
+          - software/test/SHA256ShortMsg_d_in.bin: {copyto: soc-in.bin}
+          - software/test/SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
         fileset: console
         file_type: user
 
