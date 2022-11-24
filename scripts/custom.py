@@ -7,11 +7,14 @@ import subprocess
 import tempfile
 
 class CustomGenerator(Generator):
+    tmp_dir = ""
+
     def run(self):
 
         copy_core = self.config.get('copy_core', False)
         if copy_core:
-            tmp_dir = os.path.join(tempfile.mkdtemp(prefix='iob_opencryptohw_'), 'core')
+            self.tmp_dir = tempfile.mkdtemp(prefix='iob_opencryptohw_')
+            tmp_dir = os.path.join(self.tmp_dir, 'core')
             shutil.copytree(self.files_root, tmp_dir)
 
         cwd = None
@@ -48,6 +51,11 @@ class CustomGenerator(Generator):
         for k,v in parameters.items():
             self.add_parameter(k, v)
 
+    def delete_tmp_dir(self):
+        if self.tmp_dir:
+            shutil.rmtree(self.tmp_dir)
+
 g = CustomGenerator()
 g.run()
 g.write()
+g.delete_tmp_dir()
