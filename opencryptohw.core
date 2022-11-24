@@ -155,15 +155,13 @@ filesets:
 
   console:
     files:
-      - software/console/eth_console
-      - submodules/LIB/software/python/console
+      - submodules/LIB/software/python/console: {copyto: submodules/LIB/software/python/console}
     file_type: user
 
   validate:
     files:
-      - software/test/Makefile
-      - software/test/validate_test.py
-      - software/test/SHA256ShortMsg.rsp
+      - scripts/validate.sh: {copyto: validate.sh}
+      - software/test/validate_test.py: {copyto: validate_test.py}
     file_type: user
 
   tb:
@@ -179,6 +177,11 @@ filesets:
     files:
       - hardware/simulation/verilator/system_tb.cpp: {copyto: system_tb.cpp}
     file_type: CPP
+
+  console_sim:
+    files:
+      - scripts/console_sim_hook.sh: {copyto: console_sim_hook.sh}
+    file_type: user
 
 targets:
   default: &default
@@ -211,6 +214,7 @@ targets:
       - validate
       - tb
       - verilator
+      - console_sim
     generate_append: 
       - firmware_sim_gen
       - tb_gen_hw
@@ -260,16 +264,15 @@ targets:
       - BAUD
       - FREQ
       - FW_SIZE
-    # hooks:
-    #   pre_run: [console_hook]
-    #   post_run: [validate_hook]
+    hooks:
+      pre_run: [console_sim_hook]
+      post_run: [validate_hook]
 
-# scripts:
-#   #TODO create scripts
-#   console_hook:
-#     cmd: [scripts/console_hook.py, sim]
-#   validate_hook:
-#     cmd: [scripts/validate_hook.py]
+scripts:
+  console_sim_hook:
+    cmd: [bash, console_sim_hook.sh]
+  validate_hook:
+    cmd: [bash, validate.sh]
 
 generate:
   versat_gen:
@@ -337,8 +340,9 @@ generate:
       run_from_core: true
       output:
         files:
-          - boot.hex
-          - firmware.bin
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
         fileset: tb
         file_type: user
 
@@ -462,7 +466,8 @@ generate:
       run_from_core: true
       output:
         files:
-          - soc-in.bin
+          - soc-in.bin: {copyto: soc-in.bin}
+          - SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
         fileset: console
         file_type: user
 
