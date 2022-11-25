@@ -15,9 +15,11 @@ case "$1" in
     fusesoc run --target=fpga --setup $CORE
     ;;
     "fpga-build")
+    source /opt/Xilinx/Vivado/2020.2/settings64.sh
     fusesoc run --target=fpga --setup --build $CORE
     ;;
     "fpga")
+    source /opt/Xilinx/Vivado/2020.2/settings64.sh
     fusesoc run --target=fpga $CORE
     ;;
     "clean")

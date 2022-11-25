@@ -158,6 +158,11 @@ filesets:
       - submodules/LIB/software/python/console: {copyto: submodules/LIB/software/python/console}
     file_type: user
 
+  eth_console:
+    files:
+      - software/console/eth_console: {copyto: software/console/eth_console}
+    file_type: user
+
   validate:
     files:
       - scripts/validate_hook.sh: {copyto: validate_hook.sh}
@@ -173,6 +178,14 @@ filesets:
       - hardware/include/cpu_tasks.v: {is_include_file: true}
     file_type: verilogSource
 
+  ku040:
+    files:
+      - hardware/fpga/vivado/AES-KU040-DB-G/verilog/top_system.v: {file_type: verilogSource}
+      - submodules/LIB/hardware/iob_reset_sync/iob_reset_sync.v: {file_type: verilogSource}
+      - hardware/fpga/vivado/ddr_ip.tcl: {file_type: tclSource}
+      - hardware/fpga/vivado/AES-KU040-DB-G/ddr.xdc: {file_type: xdc, copyto: ddr.xdc}
+      - hardware/fpga/vivado/AES-KU040-DB-G/top_system.xdc: {file_type: xdc}
+
   verilator:
     files:
       - hardware/simulation/verilator/system_tb.cpp: {copyto: system_tb.cpp}
@@ -181,6 +194,11 @@ filesets:
   console_sim:
     files:
       - scripts/console_sim_hook.sh: {copyto: console_sim_hook.sh}
+    file_type: user
+
+  console_fpga:
+    files:
+      - scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
     file_type: user
 
 targets:
@@ -268,9 +286,64 @@ targets:
       pre_run: [console_sim_hook]
       post_run: [validate_hook]
 
+  fpga:
+    <<: *default
+    description: System FPGA Synthesis and Execution
+    default_tool: vivado
+    filesets_append:
+      - console
+      - eth_console
+      - validate
+      - ku040
+      # xdc and tcl files
+        # top system xdc
+        # tcl script to generate ddr IP
+    generate_append: 
+      - firmware_fpga_gen
+      - input_gen
+    toplevel:
+      - top_system
+    tools:
+      vivado:
+        part: xcku040-fbva676-1-c
+        synth: vivado
+        pnr: vivado
+        # hw_target: ['*/xilinx_tcf/Digilent/210251A99906']
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=2
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=30
+      - AXI_ADDR_W
+    hooks:
+      pre_run: [console_fpga_hook] #TODO queue hooks?
+      post_run: [validate_hook]
+
 scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
+  # TODO
+  console_fpga_hook:
+    cmd: [bash, console_fpga_hook.sh]
   validate_hook:
     cmd: [bash, validate_hook.sh]
 
@@ -344,6 +417,20 @@ generate:
           - firmware.bin: {copyto: firmware.bin}
           - firmware.hex: {copyto: firmware.hex}
         fileset: tb
+        file_type: user
+
+  firmware_fpga_gen:
+    generator: custom
+    parameters:
+      command: ./scripts/firmware_fpga_gen.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
+        fileset: ku040
         file_type: user
 
   cache_if_gen:
