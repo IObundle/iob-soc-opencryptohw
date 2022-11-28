@@ -2,7 +2,7 @@
 # Variables
 VALIDATION_OUT_BIN=SHA256ShortMsg_d_out.bin
 SOC_OUT_BIN=soc-out.bin
-if python validate_test.py $VALIDATION_OUT_BIN $SOC_OUT_BIN
+if python3 validate_test.py $VALIDATION_OUT_BIN $SOC_OUT_BIN
 then 
     printf "\n\nShortMessage Test PASSED\n\n"; 
 else 

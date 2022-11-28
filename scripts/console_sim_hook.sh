@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python ./submodules/LIB/software/python/console -L &
+python3 ./submodules/LIB/software/python/console -L &
