@@ -24,7 +24,7 @@ read_xdc ./top_system.xdc
 if { $USE_DDR < 0 } {
     read_verilog verilog/clock_wizard.v
 } else {
-    source ddr_ip.tcl
+    source ../ddr_ip.tcl
 }
 
 file mkdir reports
