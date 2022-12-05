@@ -2,17 +2,33 @@ ROOT_DIR=.
 include $(ROOT_DIR)/config.mk
 
 #
-# VIRTUAL ENVIRONMENT SETUP
+# FUSESOC TARGETS
 #
-VENV=.venv
-PYTHON_VENV=$(VENV)/bin/python3
-FUSESOC=$(VENV)/bin/fusesoc
-$(PYTHON_VENV): requirements.txt
-	python3 -m venv $(VENV)
-	$(PYTHON_VENV) -m pip install --upgrade pip
+FUSESOC_DIR=fusesoc
+fusesoc-setup:
+	make -C $(FUSESOC_DIR) setup
 
-fusesoc-setup: $(PYTHON_VENV) requirements.txt
-	$(PYTHON_VENV) -m pip install -r requirements.txt
+fusesoc-sim-setup:
+	make -C $(FUSESOC_DIR) sim-setup
+
+fusesoc-sim-build:
+	make -C $(FUSESOC_DIR) sim-build
+		
+fusesoc-sim:
+	make -C $(FUSESOC_DIR) sim
+
+fusesoc-fpga-setup:
+	make -C $(FUSESOC_DIR) fpga-setup
+
+fusesoc-fpga-build:
+	make -C $(FUSESOC_DIR) fpga-build
+		
+fusesoc-fpga:
+	make -C $(FUSESOC_DIR) fpga
+
+fusesoc-clean:
+	make -C $(FUSESOC_DIR) clean
+	
 
 #
 # BUILD EMBEDDED SOFTWARE
@@ -185,6 +201,8 @@ clean: pc-emul-clean sim-clean fpga-clean doc-clean
 clean-all: test-clean
 
 .PHONY: fusesoc-setup \
+	fusesoc-sim-setup fusesoc-sim-build fusesoc-sim \
+	fusesoc-fpga-setup fusesoc-fpga-build fusesoc-fpga \
 	fw-build fw-clean fw-debug \
 	gen-spinal-sources \
 	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-gen-versat \

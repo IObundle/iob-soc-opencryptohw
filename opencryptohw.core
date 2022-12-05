@@ -165,7 +165,7 @@ filesets:
 
   validate:
     files:
-      - scripts/validate_hook.sh: {copyto: validate_hook.sh}
+      - fusesoc/scripts/validate_hook.sh: {copyto: validate_hook.sh}
       - software/test/validate_test.py: {copyto: validate_test.py}
     file_type: user
 
@@ -193,12 +193,12 @@ filesets:
 
   console_sim:
     files:
-      - scripts/console_sim_hook.sh: {copyto: console_sim_hook.sh}
+      - fusesoc/scripts/console_sim_hook.sh: {copyto: console_sim_hook.sh}
     file_type: user
 
   console_fpga:
     files:
-      - scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
+      - fusesoc/scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
     file_type: user
 
 targets:
@@ -408,7 +408,7 @@ generate:
   firmware_sim_gen:
     generator: custom
     parameters:
-      command: ./scripts/firmware_sim_gen.sh
+      command: ./fusesoc/scripts/firmware_sim_gen.sh
       copy_core: true
       run_from_core: true
       output:
@@ -422,7 +422,7 @@ generate:
   firmware_fpga_gen:
     generator: custom
     parameters:
-      command: ./scripts/firmware_fpga_gen.sh
+      command: ./fusesoc/scripts/firmware_fpga_gen.sh
       copy_core: true
       run_from_core: true
       output:
@@ -436,7 +436,7 @@ generate:
   cache_if_gen:
     generator: custom
     parameters:
-      command: ./scripts/cache_if_gen.sh
+      command: ./fusesoc/scripts/cache_if_gen.sh
       copy_core: true
       run_from_core: true
       output:
@@ -453,7 +453,7 @@ generate:
   versat_if_gen:
     generator: custom
     parameters:
-      command: ./scripts/versat_if_gen.sh
+      command: ./fusesoc/scripts/versat_if_gen.sh
       copy_core: true
       run_from_core: true
       output:
@@ -521,7 +521,7 @@ generate:
   system_gen_hw:
     generator: custom
     parameters:
-      command: ./scripts/system_gen_hw.sh
+      command: ./fusesoc/scripts/system_gen_hw.sh
       copy_core: true
       run_from_core: true
       output:
@@ -534,7 +534,7 @@ generate:
   tb_gen_hw:
     generator: custom
     parameters:
-      command: ./scripts/tb_gen_hw.sh
+      command: ./fusesoc/scripts/tb_gen_hw.sh
       copy_core: true
       run_from_core: true
       output:
@@ -562,7 +562,7 @@ generators:
 # example generator from https://github.com/fusesoc/fusesoc-generators
   custom:
     interpreter: python3
-    command: scripts/custom.py
+    command: fusesoc/scripts/custom.py
     description: Run custom command
     usage: |
       The custom generator allows the user to specify a custom command to run.
