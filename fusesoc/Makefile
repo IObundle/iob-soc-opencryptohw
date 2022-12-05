@@ -49,9 +49,9 @@ ifeq ($(FPGA_SERVER),)
 	./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
 else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
-	rsync -avz --delete --force --exclude .git $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fusesoc-build'
-	rsync -avz --exclude .git $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR) $(ROOT_DIR) 
+	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
+	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-build'
+	rsync -avz --exclude .git --exclude .venv $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build build
 endif
 
 fpga-run: $(VENV)
