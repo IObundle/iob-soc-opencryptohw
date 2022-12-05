@@ -1,4 +1,4 @@
-export SHELL = /bin/bash
+export SHELL = /usr/bin/env bash
 
 ROOT_DIR:=.
 include ./config.mk
@@ -92,7 +92,7 @@ endif
 
 fpga-build:
 	make fw-build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ)
-	make -C $(BOARD_DIR) build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ) SHELL=$(SHELL)
+	make -C $(BOARD_DIR) build BAUD=$(BOARD_BAUD) FREQ=$(BOARD_FREQ) SHELL="$(SHELL)"
 
 fpga-run: fpga-build
 	make -C $(BOARD_DIR) run TEST_LOG="$(TEST_LOG)"

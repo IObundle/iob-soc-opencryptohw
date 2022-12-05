@@ -127,7 +127,7 @@ jobs:
       - name: tester-sim-test
         run: make tester-sim-test SIMULATOR=verilator
 
-  tester-fpga:
+  tester-aes-ku040:
     runs-on: self-hosted
     timeout-minutes: 90
     # always run, except when previous job was cancelled
@@ -139,6 +139,22 @@ jobs:
         with:
           submodules: 'recursive'
       - name: clean
-        run: make clean
+        run: make clean BOARD=AES-KU040-DB-G
       - name: tester-fpga-test
-        run: make tester-fpga-test
+        run: make tester-fpga-test BOARD=AES-KU040-DB-G
+
+  tester-cyclonev:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    # always run, except when previous job was cancelled
+    if: ${{ !cancelled() }}
+    needs: fpga
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: clean
+        run: make clean BOARD=CYCLONEV-GT-DK
+      - name: tester-fpga-test
+        run: make tester-fpga-test BOARD=CYCLONEV-GT-DK
