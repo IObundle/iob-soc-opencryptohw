@@ -14,8 +14,8 @@ fusesoc-sim-setup:
 fusesoc-sim-build:
 	make -C $(FUSESOC_DIR) sim-build
 		
-fusesoc-sim:
-	make -C $(FUSESOC_DIR) sim
+fusesoc-sim-run:
+	make -C $(FUSESOC_DIR) sim-run
 
 fusesoc-fpga-setup:
 	make -C $(FUSESOC_DIR) fpga-setup
@@ -23,8 +23,8 @@ fusesoc-fpga-setup:
 fusesoc-fpga-build:
 	make -C $(FUSESOC_DIR) fpga-build
 		
-fusesoc-fpga:
-	make -C $(FUSESOC_DIR) fpga
+fusesoc-fpga-run:
+	make -C $(FUSESOC_DIR) fpga-run
 
 fusesoc-clean:
 	make -C $(FUSESOC_DIR) clean
@@ -201,8 +201,8 @@ clean: pc-emul-clean sim-clean fpga-clean doc-clean
 clean-all: test-clean
 
 .PHONY: fusesoc-setup \
-	fusesoc-sim-setup fusesoc-sim-build fusesoc-sim \
-	fusesoc-fpga-setup fusesoc-fpga-build fusesoc-fpga \
+	fusesoc-sim-setup fusesoc-sim-build fusesoc-sim-run \
+	fusesoc-fpga-setup fusesoc-fpga-build fusesoc-fpga-run \
 	fw-build fw-clean fw-debug \
 	gen-spinal-sources \
 	pc-emul-build pc-emul-run pc-emul-clean pc-emul-test pc-emul-gen-versat \
