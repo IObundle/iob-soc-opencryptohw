@@ -63,7 +63,7 @@ def run_console():
     # change the script name to LIB/console, use same remaining arguments
     console_path = f'{get_root_dir()}/submodules/LIB/software/python'
     console_args[0] = f'{console_path}/console'
-    console_cmd = ' '.join(console_args)
+    console_cmd = f"python3 {' '.join(console_args)}"
 
     subprocess.run(console_cmd, shell=True)
 

@@ -161,6 +161,14 @@ filesets:
   eth_console:
     files:
       - software/console/eth_console: {copyto: software/console/eth_console}
+      - software/python/Makefile: {copyto: software/python/Makefile}
+      - config.mk: {copyto: config.mk}
+      - software/python/sha256_test.py: {copyto: software/python/sha256_test.py}
+      - submodules/ETHERNET/software/python/ethBase.py: {copyto: submodules/ETHERNET/software/python/ethBase.py}
+      - submodules/ETHERNET/software/python/ethRcvData.py: {copyto: submodules/ETHERNET/software/python/ethRcvData.py}
+      - submodules/ETHERNET/software/python/ethRcvVariableData.py: {copyto: submodules/ETHERNET/software/python/ethRcvVariableData.py}
+      - submodules/ETHERNET/software/python/ethSendData.py: {copyto: submodules/ETHERNET/software/python/ethSendData.py}
+      - submodules/ETHERNET/software/python/ethSendVariableData.py: {copyto: submodules/ETHERNET/software/python/ethSendVariableData.py}
     file_type: user
 
   validate:
@@ -295,9 +303,7 @@ targets:
       - eth_console
       - validate
       - ku040
-      # xdc and tcl files
-        # top system xdc
-        # tcl script to generate ddr IP
+      - console_fpga
     generate_append: 
       - firmware_fpga_gen
       - input_gen
@@ -335,8 +341,9 @@ targets:
       - DDR_ADDR_W=30
       - AXI_ADDR_W
     hooks:
-      pre_run: [console_fpga_hook] #TODO queue hooks?
-      post_run: [validate_hook]
+      # TODO queue hooks
+      # pre_run: [queue_in_hook] #TODO queue hooks?
+      post_run: [console_fpga_hook, validate_hook]
 
 scripts:
   console_sim_hook:
