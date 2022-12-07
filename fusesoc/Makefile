@@ -28,7 +28,7 @@ setup $(VENV): requirements.txt
 sim-setup: $(VENV)
 	. $(VENV_ACTIVATE); fusesoc run --target=sim --setup $(CORE)
 
-sim-build: 
+sim-build: $(VENV)
 	# Note: fusesoc --build always runs --setup
 	. $(VENV_ACTIVATE); fusesoc run --target=sim --build $(CORE)
 
