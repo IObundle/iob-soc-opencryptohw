@@ -207,6 +207,7 @@ filesets:
   console_fpga:
     files:
       - fusesoc/scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
+      - fusesoc/scripts/pre_run_queue_hook.sh: {copyto: pre_run_queue_hook.sh}
     file_type: user
 
 targets:
@@ -314,7 +315,6 @@ targets:
         part: xcku040-fbva676-1-c
         synth: vivado
         pnr: vivado
-        # hw_target: ['*/xilinx_tcf/Digilent/210251A99906']
     parameters:
       - RUN_EXTMEM
       - USE_DDR
@@ -341,14 +341,14 @@ targets:
       - DDR_ADDR_W=30
       - AXI_ADDR_W
     hooks:
-      # TODO queue hooks
-      # pre_run: [queue_in_hook] #TODO queue hooks?
+      pre_run: [queue_in_hook]
       post_run: [console_fpga_hook, validate_hook]
 
 scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
-  # TODO
+  queue_in_hook:
+    cmd: [bash, pre_run_queue_hook.sh]
   console_fpga_hook:
     cmd: [bash, console_fpga_hook.sh]
   validate_hook:

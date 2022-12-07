@@ -10,9 +10,6 @@ BOARD_USER=$(KU40_USER)
 
 REMOTE_ROOT_DIR=sandbox/iob-soc-opencryptohw
 
-FUSESOC_BUILD_DIR=build/iobundle_opencryptohw_0.0.1
-FPGA_BUILD_DIR=$(FUSESOC_BUILD_DIR)/fpga-vivado
-
 #
 # VIRTUAL ENVIRONMENT SETUP
 #
@@ -44,7 +41,7 @@ sim-run: sim-build
 fpga-setup: $(VENV)
 	fusesoc run --target=fpga --setup $(CORE)
 
-fpga-build $(FPGA_BUILD_DIR): $(VENV)
+fpga-build: $(VENV)
 ifeq ($(FPGA_SERVER),)
 	# Note: fusesoc --build always runs --setup
 	./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
@@ -55,24 +52,34 @@ else
 	rsync -avz --exclude .git --exclude .venv $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 
-fpga-run: $(VENV) $(FPGA_BUILD_DIR)
+fpga-run: $(VENV)
 ifeq ($(BOARD_SERVER),)
 	# Note: fusesoc --build always runs --setup
-	./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
+	. $(VENV)/bin/activate; ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-run'
-	# rsync -avz --exclude .git --exclude .venv $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build build
+	rsync -avz --exclude .git --exclude .venv $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 
 #
 # CLEAN
 #
+clean-all: clean clean-remote
+
 clean:
 	rm -rf build
+
+clean-remote:
+ifneq ($(BOARD_SERVER),)
+	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ -d $(REMOTE_ROOT_DIR)/fusesoc/build ]; then make -C $(REMOTE_ROOT_DIR) fusesoc-clean; fi"
+endif
+ifneq ($(FPGA_SERVER),)
+	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ -d $(REMOTE_ROOT_DIR)/fusesoc/build ]; then make -C $(REMOTE_ROOT_DIR) fusesoc-clean; fi"
+endif
 
 .PHONY: setup \
 	sim-setup sim-build sim-run \
 	fpga-setup fpga-build fpga-run \
-	clean
+	clean clean-all clean-remote
