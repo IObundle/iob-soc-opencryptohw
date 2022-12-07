@@ -23,7 +23,7 @@ fusesoc-fpga-setup:
 fusesoc-fpga-build:
 	make -C $(FUSESOC_DIR) fpga-build
 		
-fusesoc-fpga-run:
+fusesoc-fpga-run: fusesoc-fpga-build
 	make -C $(FUSESOC_DIR) fpga-run
 
 fusesoc-clean:

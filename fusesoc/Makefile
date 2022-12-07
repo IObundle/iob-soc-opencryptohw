@@ -15,7 +15,7 @@ REMOTE_ROOT_DIR=sandbox/iob-soc-opencryptohw
 #
 VENV=$(ROOT_DIR)/.venv
 PYTHON_VENV=$(VENV)/bin/python3
-FUSESOC=$(VENV)/bin/fusesoc
+VENV_ACTIVATE=$(VENV)/bin/activate
 
 setup $(VENV): requirements.txt
 	python3 -m venv $(VENV)
@@ -26,25 +26,25 @@ setup $(VENV): requirements.txt
 # SIMULATION
 #
 sim-setup: $(VENV)
-	fusesoc run --target=sim --setup $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim --setup $(CORE)
 
 sim-build: 
 	# Note: fusesoc --build always runs --setup
-	fusesoc run --target=sim --build $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim --build $(CORE)
 
 sim-run: sim-build
-	fusesoc run --target=sim --run $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim --run $(CORE)
 
 #
 # FPGA
 #
 fpga-setup: $(VENV)
-	fusesoc run --target=fpga --setup $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=fpga --setup $(CORE)
 
 fpga-build: $(VENV)
 ifeq ($(FPGA_SERVER),)
 	# Note: fusesoc --build always runs --setup
-	./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
+	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
 else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -55,7 +55,7 @@ endif
 fpga-run: $(VENV)
 ifeq ($(BOARD_SERVER),)
 	# Note: fusesoc --build always runs --setup
-	. $(VENV)/bin/activate; ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
+	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
