@@ -1,6 +1,8 @@
 #TOP
 #nothing to ignore
 
+.venv
+fusesoc/build/**
 #SOFTWARE
 software/periphs.h
 
