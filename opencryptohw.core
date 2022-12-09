@@ -1,0 +1,759 @@
+CAPI=2:
+name: iobundle:opencryptohw:0.0.1
+description: OpenCryptoHW, reconfigurable cryptographic hardware. 
+
+filesets:
+  lib:
+    files:
+      - submodules/LIB/hardware/iob_merge/iob_merge.v
+      - submodules/LIB/hardware/iob_split/iob_split.v
+      - submodules/LIB/hardware/iob_pulse_gen/iob_pulse_gen.v
+      - submodules/LIB/hardware/iob_edge_detect/iob_edge_detect.v
+    file_type: verilogSource
+
+  mem:
+    files:
+      - submodules/MEM/hardware/rom/iob_rom_sp/iob_rom_sp.v
+      - submodules/MEM/hardware/ram/iob_ram_dp/iob_ram_dp.v
+      - submodules/MEM/hardware/ram/iob_ram_dp_be/iob_ram_dp_be.v
+    file_type: verilogSource
+
+  picorv:
+    files:
+      - submodules/PICORV32/hardware/src/picorv32.v
+      - submodules/PICORV32/hardware/src/iob_picorv32.v
+    file_type: verilogSource
+
+  cache:
+    files:
+      - submodules/MEM/hardware/regfile/iob_regfile_sp/iob_regfile_sp.v
+      - submodules/MEM/hardware/ram/iob_ram_2p_asym/iob_ram_2p_asym.v
+      - submodules/MEM/hardware/fifo/iob_fifo_sync/iob_fifo_sync.v
+      - submodules/MEM/hardware/ram/iob_ram_2p/iob_ram_2p.v
+      - submodules/MEM/hardware/ram/iob_ram_sp/iob_ram_sp.v
+      - submodules/CACHE/hardware/include/iob_cache_swreg.vh: {is_include_file: true}
+      - submodules/CACHE/hardware/include/iob-cache.vh: {is_include_file: true}
+      - submodules/CACHE/hardware/src/back-end-axi.v
+      - submodules/CACHE/hardware/src/back-end-native.v
+      - submodules/CACHE/hardware/src/cache-control.v
+      - submodules/CACHE/hardware/src/cache-memory.v
+      - submodules/CACHE/hardware/src/front-end.v
+      - submodules/CACHE/hardware/src/iob-cache-axi.v
+      - submodules/CACHE/hardware/src/iob_cache.v
+      - submodules/CACHE/hardware/src/onehot-to-bin-encoder.v
+      - submodules/CACHE/hardware/src/read-channel-axi.v
+      - submodules/CACHE/hardware/src/read-channel-native.v
+      - submodules/CACHE/hardware/src/replacement-policy.v
+      - submodules/CACHE/hardware/src/write-channel-axi.v
+      - submodules/CACHE/hardware/src/write-channel-native.v
+    file_type: verilogSource
+
+  uart:
+    files:
+      - submodules/LIB/hardware/iob_reg/iob_reg.v
+      - submodules/UART/hardware/include/inst_tb.vh: {is_include_file: true}
+      - submodules/UART/hardware/include/inst.vh: {is_include_file: true}
+      - submodules/UART/hardware/include/pio.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
+      - submodules/UART/hardware/src/uart_core.v
+      - submodules/UART/hardware/src/iob_uart.v
+    file_type: verilogSource
+
+  timer:
+    files:
+      - submodules/TIMER/hardware/include/inst.vh: {is_include_file: true}
+      - submodules/TIMER/hardware/include/iob_timer.vh: {is_include_file: true}
+      - submodules/TIMER/hardware/src/iob_timer.v
+      - submodules/TIMER/hardware/src/timer.v
+    file_type: verilogSource
+
+  ethernet:
+    files:
+      - submodules/ETHERNET/hardware/include/inst_tb.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/inst.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/pio.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/src/iob_eth_crc.v
+      - submodules/ETHERNET/hardware/src/iob_eth_rx.v
+      - submodules/ETHERNET/hardware/src/iob_eth_tb_gen.v
+      - submodules/ETHERNET/hardware/src/iob_eth_tx.v
+      - submodules/ETHERNET/hardware/src/iob_eth.v
+      - submodules/ETHERNET/hardware/src/mem_burst.v
+      - submodules/MEM/hardware/ram/iob_ram_tdp/iob_ram_tdp.v
+      - submodules/MEM/hardware/ram/iob_ram_tdp_be/iob_ram_tdp_be.v
+    file_type: verilogSource
+
+  versat:
+    files:
+      - submodules/VERSAT/submodules/MEM/hardware/ram/tdp_ram/iob_tdp_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/ram/2p_ram/iob_2p_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/ram/dp_ram/iob_dp_ram.v
+      - submodules/VERSAT/submodules/MEM/hardware/fifo/sfifo/iob_sync_fifo.v
+      - submodules/VERSAT/submodules/MEM/hardware/fifo/bin_counter.v
+      - submodules/AXI/hardware/include/axi.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/axil_tasks.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_intercon.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_m_if.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/inst.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/iob_versat.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/versat-io.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xaludefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xalulitedefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xbsdefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xconfdefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xdefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xmemdefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xmuladddefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xmuldefs.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/include/xversat.vh: {is_include_file: true}
+      - submodules/VERSAT/hardware/src/AXIBoundary.v
+      - submodules/VERSAT/hardware/src/AxiDelay.v
+      - submodules/VERSAT/hardware/src/Buffer.v
+      - submodules/VERSAT/hardware/src/Const.v
+      - submodules/VERSAT/hardware/src/ext_addrgen.v
+      - submodules/VERSAT/hardware/src/FixedBuffer.v
+      - submodules/VERSAT/hardware/src/iob_versat.v
+      - submodules/VERSAT/hardware/src/LookupTable.v
+      - submodules/VERSAT/hardware/src/MemoryReader.v
+      - submodules/VERSAT/hardware/src/MemoryWriter.v
+      - submodules/VERSAT/hardware/src/Mem.v
+      - submodules/VERSAT/hardware/src/Merge.v
+      - submodules/VERSAT/hardware/src/Muladd.v
+      - submodules/VERSAT/hardware/src/Mul.v
+      - submodules/VERSAT/hardware/src/Mux2.v
+      - submodules/VERSAT/hardware/src/MyAddressGen.v
+      - submodules/VERSAT/hardware/src/PipelineRegister.v
+      - submodules/VERSAT/hardware/src/Reg.v
+      - submodules/VERSAT/hardware/src/SwapEndian.v
+      - submodules/VERSAT/hardware/src/VRead.v
+      - submodules/VERSAT/hardware/src/VWrite.v
+      - submodules/VERSAT/hardware/src/xaddrgen2.v
+      - submodules/VERSAT/hardware/src/xaddrgen.v
+      - submodules/VERSAT/hardware/src/xalulite.v
+      - submodules/VERSAT/hardware/src/xmux4.v
+    file_type: verilogSource
+  
+  hw:
+    files:
+      - hardware/include/system.vh: {is_include_file: true}
+      - submodules/LIB/hardware/include/iob_intercon.vh: {is_include_file: true}
+      - hardware/src/ext_mem.v
+      - hardware/src/boot_ctr.v
+      - hardware/src/int_mem.v
+      - hardware/src/sram.v
+      - hardware/src/units/xunitF.v
+      - hardware/src/units/xunitM.v
+    file_type: verilogSource
+
+  console:
+    files:
+      - submodules/LIB/software/python/console: {copyto: submodules/LIB/software/python/console}
+    file_type: user
+
+  eth_console:
+    files:
+      - software/console/eth_console: {copyto: software/console/eth_console}
+      - software/python/Makefile: {copyto: software/python/Makefile}
+      - config.mk: {copyto: config.mk}
+      - software/python/sha256_test.py: {copyto: software/python/sha256_test.py}
+      - submodules/ETHERNET/software/python/ethBase.py: {copyto: submodules/ETHERNET/software/python/ethBase.py}
+      - submodules/ETHERNET/software/python/ethRcvData.py: {copyto: submodules/ETHERNET/software/python/ethRcvData.py}
+      - submodules/ETHERNET/software/python/ethRcvVariableData.py: {copyto: submodules/ETHERNET/software/python/ethRcvVariableData.py}
+      - submodules/ETHERNET/software/python/ethSendData.py: {copyto: submodules/ETHERNET/software/python/ethSendData.py}
+      - submodules/ETHERNET/software/python/ethSendVariableData.py: {copyto: submodules/ETHERNET/software/python/ethSendVariableData.py}
+    file_type: user
+
+  validate:
+    files:
+      - fusesoc/scripts/validate_hook.sh: {copyto: validate_hook.sh}
+      - software/test/validate_test.py: {copyto: validate_test.py}
+    file_type: user
+
+  tb:
+    files:
+      - submodules/AXI/submodules/V_AXI/rtl/axi_ram.v
+      - submodules/AXI/submodules/V_AXI/rtl/axi_interconnect.v
+      - submodules/AXI/submodules/V_AXI/rtl/arbiter.v
+      - submodules/AXI/submodules/V_AXI/rtl/priority_encoder.v
+      - hardware/include/cpu_tasks.v: {is_include_file: true}
+    file_type: verilogSource
+
+  ku040:
+    files:
+      - hardware/fpga/vivado/AES-KU040-DB-G/verilog/top_system.v: {file_type: verilogSource}
+      - submodules/LIB/hardware/iob_reset_sync/iob_reset_sync.v: {file_type: verilogSource}
+      - hardware/fpga/vivado/ddr_ip.tcl: {file_type: tclSource}
+      - hardware/fpga/vivado/AES-KU040-DB-G/ddr.xdc: {file_type: xdc, copyto: ddr.xdc}
+      - hardware/fpga/vivado/AES-KU040-DB-G/top_system.xdc: {file_type: xdc}
+
+  verilator:
+    files:
+      - hardware/simulation/verilator/system_tb.cpp: {copyto: system_tb.cpp}
+    file_type: CPP
+
+  console_sim:
+    files:
+      - fusesoc/scripts/console_sim_hook.sh: {copyto: console_sim_hook.sh}
+    file_type: user
+
+  console_fpga:
+    files:
+      - fusesoc/scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
+      - fusesoc/scripts/pre_run_queue_hook.sh: {copyto: pre_run_queue_hook.sh}
+    file_type: user
+
+targets:
+  default: &default
+    filesets:
+      - lib
+      - mem
+      - picorv
+      - cache
+      - uart
+      - timer
+      - ethernet
+      - versat
+      - hw
+    generate:
+      - versat_gen
+      - cache_if_gen
+      - uart_mkregs_gen_hw
+      - timer_mkregs_gen_hw
+      - ethernet_mkregs_gen_hw
+      - versat_if_gen
+      - system_gen_hw
+    toplevel: system
+
+  sim:
+    <<: *default
+    description: Simulate the System
+    default_tool: verilator
+    filesets_append:
+      - console
+      - validate
+      - tb
+      - verilator
+      - console_sim
+    generate_append: 
+      - firmware_sim_gen
+      - tb_gen_hw
+      - input_gen
+      - uart_mkregs_gen_sw
+    toplevel:
+      - system_top
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          - -cc --exe --build # Generate C++ in executable form and compile it after
+          - -Wall # Enable all style warnings; may not want this on less solid designs
+          - -Wno-lint # Disable all lint warnings
+          - -Wno-fatal # Disable fatal exit on warnings
+          - --trace # Make waveforms
+          - +1800-2005ext+v # Use SystemVerilog 2005 with file extension .v
+          - --error-limit 1000 # Exit if number of errors passes 1000
+          - -MAKEFLAGS "CXXFLAGS=\"-DFREQ=50000000 -DBAUD=2500000\"" # Pass defines to the verilator cpp testbench compilation
+          - --unroll-count 4096 # Allow for loop unrolling up to 4096
+          - system_tb.cpp
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=2
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=24
+      - AXI_ADDR_W
+      - BAUD
+      - FREQ
+      - FW_SIZE
+    hooks:
+      pre_run: [console_sim_hook]
+      post_run: [validate_hook]
+
+  fpga:
+    <<: *default
+    description: System FPGA Synthesis and Execution
+    default_tool: vivado
+    filesets_append:
+      - console
+      - eth_console
+      - validate
+      - ku040
+      - console_fpga
+    generate_append: 
+      - firmware_fpga_gen
+      - input_gen
+    toplevel:
+      - top_system
+    tools:
+      vivado:
+        part: xcku040-fbva676-1-c
+        synth: vivado
+        pnr: vivado
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=2
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=30
+      - AXI_ADDR_W
+    hooks:
+      pre_run: [queue_in_hook]
+      post_run: [console_fpga_hook, validate_hook]
+
+scripts:
+  console_sim_hook:
+    cmd: [bash, console_sim_hook.sh]
+  queue_in_hook:
+    cmd: [bash, pre_run_queue_hook.sh]
+  console_fpga_hook:
+    cmd: [bash, console_fpga_hook.sh]
+  validate_hook:
+    cmd: [bash, validate_hook.sh]
+
+generate:
+  versat_gen:
+    generator: custom
+    parameters:
+      command: make pc-emul-gen-versat
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - software/pc-emul/versat_instance.v
+          - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES.v
+          - software/pc-emul/src/CH.v
+          - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/ComplexAdder.v
+          - software/pc-emul/src/ComplexMultiplier.v
+          - software/pc-emul/src/ComplexShareConfig.v
+          - software/pc-emul/src/Constants.v
+          - software/pc-emul/src/ConvolutionStage.v
+          - software/pc-emul/src/Convolution.v
+          - software/pc-emul/src/DoRow.v
+          - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/F_Stage.v
+          - software/pc-emul/src/F.v
+          - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRound.v
+          - software/pc-emul/src/Maj.v
+          - software/pc-emul/src/MatrixMultiplication.v
+          - software/pc-emul/src/MatrixMultiplicationVread.v
+          - software/pc-emul/src/MixColumns.v
+          - software/pc-emul/src/MixProduct.v
+          - software/pc-emul/src/M_Stage.v
+          - software/pc-emul/src/M.v
+          - software/pc-emul/src/OnlyInputToOutput.v
+          - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/SBox.v
+          - software/pc-emul/src/SemiComplexAdder.v
+          - software/pc-emul/src/ShaSingleState.v
+          - software/pc-emul/src/ShaState.v
+          - software/pc-emul/src/SHA.v
+          - software/pc-emul/src/ShiftRows.v
+          - software/pc-emul/src/sigma_stage.v
+          - software/pc-emul/src/sigma.v
+          - software/pc-emul/src/Sigma.v
+          - software/pc-emul/src/SimpleAdder.v
+          - software/pc-emul/src/SimpleShareConfig.v
+          - software/pc-emul/src/StaticConst.v
+          - software/pc-emul/src/StaticMuladd.v
+          - software/pc-emul/src/StaticMux.v
+          - software/pc-emul/src/StringHasher.v
+          - software/pc-emul/src/T1.v
+          - software/pc-emul/src/T2.v
+          - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VReadToVWrite.v
+        fileset: versat
+        file_type: verilogSource
+
+  firmware_sim_gen:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/firmware_sim_gen.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
+        fileset: tb
+        file_type: user
+
+  firmware_fpga_gen:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/firmware_fpga_gen.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
+        fileset: ku040
+        file_type: user
+
+  cache_if_gen:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/cache_if_gen.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - m_axi_m_port.vh: {is_include_file: true}
+          - m_axi_portmap.vh: {is_include_file: true}
+          - m_axi_m_write_port.vh: {is_include_file: true}
+          - m_axi_write_portmap.vh: {is_include_file: true}
+          - m_axi_m_read_port.vh: {is_include_file: true}
+          - m_axi_read_portmap.vh: {is_include_file: true}
+        fileset: cache
+        file_type: verilogSource
+
+  versat_if_gen:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/versat_if_gen.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - m_versat_axi_m_port.vh: {is_include_file: true}
+          - m_versat_axi_m_write_port.vh: {is_include_file: true}
+          - m_versat_axi_m_read_port.vh: {is_include_file: true}
+          - m_versat_axi_write_portmap.vh: {is_include_file: true}
+          - m_versat_axi_read_portmap.vh: {is_include_file: true}
+        fileset: versat
+        file_type: verilogSource
+
+  uart_mkregs_gen_hw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_uart submodules/UART HW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_uart_swreg_def.vh: {is_include_file: true}
+          - iob_uart_swreg_gen.vh: {is_include_file: true}
+        fileset: uart
+        file_type: verilogSource
+
+  uart_mkregs_gen_sw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_uart submodules/UART SW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_uart_swreg_emb.c: {is_include_file: true}
+          - iob_uart_swreg.h: {is_include_file: true}
+        fileset: uart
+        file_type: CPP
+
+  timer_mkregs_gen_hw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_timer submodules/TIMER HW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_timer_swreg_def.vh: {is_include_file: true}
+          - iob_timer_swreg_gen.vh: {is_include_file: true}
+        fileset: timer
+        file_type: verilogSource
+
+  ethernet_mkregs_gen_hw:
+    generator: custom
+    parameters:
+      command: ./submodules/LIB/software/python/mkregs.py iob_eth submodules/ETHERNET HW
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - iob_eth_swreg_def.vh: {is_include_file: true}
+          - iob_eth_swreg_gen.vh: {is_include_file: true}
+        fileset: ethernet
+        file_type: verilogSource
+
+  system_gen_hw:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/system_gen_hw.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - m_axi_wire.vh: {is_include_file: true}
+          - system.v
+        fileset: hw
+        file_type: verilogSource
+
+  tb_gen_hw:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/tb_gen_hw.sh
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - s_axi_portmap.vh: {is_include_file: true}
+          - system_top.v
+          - system_tb.v
+        fileset: tb
+        file_type: verilogSource
+
+  input_gen:
+    generator: custom
+    parameters:
+      command: make -C software/test gen_test_data
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - software/test/SHA256ShortMsg_d_in.bin: {copyto: soc-in.bin}
+          - software/test/SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
+        fileset: console
+        file_type: user
+
+generators:
+# example generator from https://github.com/fusesoc/fusesoc-generators
+  custom:
+    interpreter: python3
+    command: fusesoc/scripts/custom.py
+    description: Run custom command
+    usage: |
+      The custom generator allows the user to specify a custom command to run.
+      As the custom generator doesn't know by itself what is produced by the
+      command, the user is requrested to specify any created files and associated
+      plusargs, defines etc in the output configuration parameter.
+
+      Parameters:
+        command (str): The command to run. Working directory for the command is
+                       determined by the copy_core and run_from_core parameters
+        copy_core (bool): Copy the working directory to a temporary location and 
+                          run the command from there
+        run_from_core (bool): Runs command from the directory specified as 
+                              files_root in the configuration file
+        output (dict): A dictionary describing the expected output from the 
+                        command. These are written to the generated .core file
+          files (list): A list of files, specified in the same format as CAPI2 
+                        fileset files, which are expected to be generated by the 
+                        command
+          parameters (dict): A map of parameters, specified in the same format 
+                            as CAPI2 parameters, which are used by the generated 
+                            files
+          fileset (str): Fileset for generated files
+          file_type (str): File type of generated files
+
+parameters:
+  RUN_EXTMEM:
+    datatype: bool
+    default: true
+    description: Run firmware from external memory
+    paramtype: vlogdefine
+
+  USE_DDR:
+    datatype: bool
+    default: true
+    description: Use system with external memory
+    paramtype: vlogdefine
+
+  INIT_MEM:
+    datatype: bool
+    default: true
+    description: Pre initialize memory with program
+    paramtype: vlogdefine
+
+  DATA_W:
+    datatype: int
+    default: 32
+    description: System data width
+    paramtype: vlogdefine
+
+  ADDR_W:
+    datatype: int
+    default: 32
+    description: System address width
+    paramtype: vlogdefine
+
+  BOOTROM_ADDR_W:
+    datatype: int
+    default: 12
+    description: Boot ROM address width
+    paramtype: vlogdefine
+
+  SRAM_ADDR_W:
+    datatype: int
+    default: 17
+    description: Static RAM address width
+    paramtype: vlogdefine
+
+  FIRM_ADDR_W:
+    datatype: int
+    default: 17
+    description: Firmware address width
+    paramtype: vlogdefine
+
+  DCACHE_ADDR_W:
+    datatype: int
+    default: 24
+    description: Data cache address width
+    paramtype: vlogdefine
+
+  N_SLAVES:
+    datatype: int
+    default: 4
+    description: Number of peripherals
+    paramtype: vlogdefine
+
+  E:
+    datatype: int
+    default: 31
+    description: Extra memory bit
+    paramtype: vlogdefine
+
+  P:
+    datatype: int
+    default: 30
+    description: Peripheral memory bit
+    paramtype: vlogdefine
+
+  B:
+    datatype: int
+    default: 29
+    description: Boot controller memory bit
+    paramtype: vlogdefine
+
+  UART:
+    datatype: int
+    default: 0
+    description: UART peripheral number
+    paramtype: vlogdefine
+
+  TIMER:
+    datatype: int
+    default: 1
+    description: TIMER peripheral number
+    paramtype: vlogdefine
+
+  VERSAT:
+    datatype: int
+    default: 2
+    description: VERSAT peripheral number
+    paramtype: vlogdefine
+
+  ETHERNET:
+    datatype: int
+    default: 3
+    description: ETHERNET peripheral number
+    paramtype: vlogdefine
+
+  N_SLAVES_W:
+    datatype: int
+    default: 2
+    description: log2(N_SLAVES)
+    paramtype: vlogdefine
+
+  HARDWARE_TEST:
+    datatype: str
+    default: ''
+    description: Hardware Test
+    paramtype: vlogdefine
+
+  USE_MUL_DIV:
+    datatype: int
+    default: 1
+    description: Use CPU multiplier and divisor
+    paramtype: vlogdefine
+
+  USE_COMPRESSED:
+    datatype: int
+    default: 1
+    description: Use compressed instructions
+    paramtype: vlogdefine
+
+  DDR_DATA_W:
+    datatype: str
+    default: ''
+    description: DDR data width
+    paramtype: vlogdefine
+
+  DDR_ADDR_W:
+    datatype: str
+    default: ''
+    description: DDR address width
+    paramtype: vlogdefine
+
+  AXI_ADDR_W:
+    datatype: int
+    default: 32
+    description: AXI address width
+    paramtype: vlogdefine
+
+  BAUD:
+    datatype: int
+    default: 2500000
+    description: UART baud rate
+    paramtype: vlogdefine
+
+  FREQ:
+    datatype: int
+    default: 50000000
+    description: System clock frequency
+    paramtype: vlogdefine
+
+  FW_SIZE:
+    datatype: int
+    default: 32768
+    description: Firmware size
+    paramtype: vlogdefine

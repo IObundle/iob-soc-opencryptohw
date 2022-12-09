@@ -14,11 +14,11 @@ module boot_ctr
    input [1:0]                cpu_wdata,
    input [`DATA_W/8-1:0]      cpu_wstrb,
    output [`DATA_W-1:0]       cpu_rdata,
-   output reg                 cpu_ready,
+   output                     cpu_ready,
 
 
    //sram master write interface
-   output reg                 sram_valid,
+   output                     sram_valid,
    output [`ADDR_W-1:0]       sram_addr,
    output [`DATA_W-1:0]       sram_wdata,
    output reg [`DATA_W/8-1:0] sram_wstrb
@@ -31,7 +31,7 @@ module boot_ctr
        
    //boot register: (1) load bootloader to sram and run it: (0) run program
    wire                       boot_wr = cpu_valid & |cpu_wstrb; 
-   reg                        boot_nxt;  
+   wire                       boot_nxt;  
    iob_reg #(1,1) bootnxt (clk, rst, 1'b0, boot_wr, cpu_wdata[0], boot_nxt);
    iob_reg #(1,1) bootreg (clk, rst, 1'b0, 1'b1, boot_nxt, boot);
 

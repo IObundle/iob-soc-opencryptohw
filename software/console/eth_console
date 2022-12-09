@@ -7,14 +7,24 @@ import sys
 import subprocess
 import copy
 
+
 # get ROOT_DIR variable from current dir
 # searches ROOT_DIR in Makefile in current dir
+# ROOT_DIR=. if not matches found
 def get_root_dir():
     result = subprocess.run("grep -m 1 ^ROOT_DIR Makefile", shell=True, stdout=subprocess.PIPE)
-    # convert from bytes to string
-    # get text after "="
-    # remove newline
-    return result.stdout.decode("utf-8").split("=")[-1].replace("\n", "")
+
+    # use current directory by default
+    root_dir = "."
+    
+    # change root dir if grep found any instance
+    if result.returncode == 0:
+        # convert from bytes to string
+        # get text after "="
+        # remove newline
+        root_dir = result.stdout.decode("utf-8").split("=")[-1].replace("\n", "")
+
+    return root_dir
 
 
 # get path to python scripts from current directory
@@ -53,7 +63,7 @@ def run_console():
     # change the script name to LIB/console, use same remaining arguments
     console_path = f'{get_root_dir()}/submodules/LIB/software/python'
     console_args[0] = f'{console_path}/console'
-    console_cmd = ' '.join(console_args)
+    console_cmd = f"python3 {' '.join(console_args)}"
 
     subprocess.run(console_cmd, shell=True)
 

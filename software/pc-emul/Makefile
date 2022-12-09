@@ -56,7 +56,11 @@ OBJ+=./build/firmware.o
 FW_EMUL=fw_emul
 
 #CONSOLE
+ifneq ($(GENERATE_ONLY),)
+CONSOLE_CMD=$(LIB_DIR)/software/python/console -L
+else
 CONSOLE_CMD=$(ROOT_DIR)/software/console/eth_console -L
+endif
 
 #PC EMUL OUTPUTS
 VERSAT_GEN=versat_instance.v
