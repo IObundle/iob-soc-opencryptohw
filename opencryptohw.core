@@ -634,7 +634,7 @@ parameters:
 
   SRAM_ADDR_W:
     datatype: int
-    default: 17
+    default: 12
     description: Static RAM address width
     paramtype: vlogdefine
 
