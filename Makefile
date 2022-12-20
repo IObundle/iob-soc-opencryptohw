@@ -35,9 +35,8 @@ fusesoc-clean:
 OPENLANE_FLOW_DIR=$(HW_DIR)/asic/openlane
 openlane-setup:
 	make -C $(OPENLANE_FLOW_DIR) setup
-# TODO
-# openlane-run:
-# 	make -C $(OPENLANE_FLOW_DIR) run
+openlane-run:
+	make -C $(OPENLANE_FLOW_DIR) run
 openlane-clean:
 	make -C $(OPENLANE_FLOW_DIR) clean
 

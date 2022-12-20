@@ -1,0 +1,7 @@
+{
+    "DESIGN_NAME": "system",
+    "VERILOG_FILES": "dir::src/*.v",
+    "CLOCK_PORT": "clk",
+    "CLOCK_PERIOD": 10.0,
+    "DESIGN_IS_CORE": true
+}
