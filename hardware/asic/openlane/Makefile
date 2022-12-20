@@ -13,6 +13,10 @@ DDR_DATA_W=32
 
 include $(ROOT_DIR)/hardware/hardware.mk
 
+# Missing verilog headers
+# in other flows (sim/fpga) these pointed to with -Include PATH flags
+VHDR+=$(AXI_DIR)/hardware/include/axi.vh
+
 # Add global defines
 VHDR+=global_defines.vh
 
@@ -24,10 +28,12 @@ UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
 all: run
 
-setup: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) gen-versat $(VSRC) $(VHDR)
+setup: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) gen-versat $(VSRC) $(VHDR) boot.hex
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
+	cp boot.hex $(OPENLANE_SRC_DIR)
 	./scripts/include_header.py -d $(OPENLANE_SRC_DIR) -f global_defines.vh
+	make verilog-fixes
 
 $(OPENLANE_SRC_DIR):
 	mkdir -p $(OPENLANE_SRC_DIR)
@@ -48,6 +54,12 @@ $(OPENLANE_TOOL_DIR):
 
 global_defines.vh: 
 	./scripts/gen_defines.py -o $@ $(DEFINE)
+
+verilog-fixes:
+	sed -i '/$$display/d' $(OPENLANE_SRC_DIR)/axi_interconnect.v
+
+$(BOOT_DIR)/boot.bin:
+	make -C $(ROOT_DIR) fw-build
 
 clean:
 	rm -rf $(OPENLANE_SRC_DIR)
