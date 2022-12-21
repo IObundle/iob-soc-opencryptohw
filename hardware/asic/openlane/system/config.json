@@ -3,5 +3,7 @@
     "VERILOG_FILES": "dir::src/*.v",
     "CLOCK_PORT": "clk",
     "CLOCK_PERIOD": 10.0,
-    "DESIGN_IS_CORE": true
+    "DESIGN_IS_CORE": true,
+
+    "VERILOG_FILES_BLACKBOX": "dir::blackbox/*.v"
 }

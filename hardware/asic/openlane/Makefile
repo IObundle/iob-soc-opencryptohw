@@ -20,10 +20,16 @@ VHDR+=$(AXI_DIR)/hardware/include/axi.vh
 # Add global defines
 VHDR+=global_defines.vh
 
-VHDR_FILTER = $(filter-out %/inst_tb.vh %/pio.vh %/inst.vh, $(VHDR))
-uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+# Remove BlackBox modules
+BLACKBOX_VSRC = $(addprefix %/,$(subst .bb.v,.v, $(notdir $(wildcard $(OPENLANE_DESIGN)/blackbox/*.bb.v))))
+VSRC_FILTER = $(filter-out $(BLACKBOX_VSRC), $(VSRC))
 
-UNIQ_VSRC = $(call uniq, $(VSRC))
+# Remove unnecessary headers that cause conflict
+VHDR_FILTER = $(filter-out %/inst_tb.vh %/pio.vh %/inst.vh, $(VHDR))
+
+# Remove duplicated items from lists
+uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
+UNIQ_VSRC = $(call uniq, $(VSRC_FILTER))
 UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
 all: run
@@ -64,5 +70,6 @@ $(BOOT_DIR)/boot.bin:
 clean:
 	rm -rf $(OPENLANE_SRC_DIR)
 	make -C $(PC_DIR) clean
-	rm -rf *.v *.vh
-	make -C $(OPENLANE_TOOL_DIR) clean_runs
+	make -C $(ROOT_DIR) fw-clean
+	rm -rf *.v *.vh *.hex
+	# make -C $(OPENLANE_TOOL_DIR) clean_runs
