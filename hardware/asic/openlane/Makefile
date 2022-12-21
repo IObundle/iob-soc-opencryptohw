@@ -34,7 +34,10 @@ UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
 all: run
 
-setup: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) gen-versat $(VSRC) $(VHDR) boot.hex
+setup: gen-versat
+	make setup-design
+
+setup-design: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR) boot.hex
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
 	cp boot.hex $(OPENLANE_SRC_DIR)
@@ -51,6 +54,7 @@ run: setup copy-to-openlane
 	make -C $(OPENLANE_TOOL_DIR) quick_run QUICK_RUN_DESIGN=$(OPENLANE_DESIGN)
 
 copy-to-openlane: 
+	rm -rf $(OPENLANE_TOOL_DIR)/designs/*
 	cp -r $(OPENLANE_DESIGN) $(OPENLANE_TOOL_DIR)/designs
 
 $(OPENLANE_TOOL_DIR):
