@@ -20,9 +20,9 @@ VHDR+=$(AXI_DIR)/hardware/include/axi.vh
 # Add global defines
 VHDR+=global_defines.vh
 
-# Remove BlackBox modules
-BLACKBOX_VSRC = $(addprefix %/,$(subst .bb.v,.v, $(notdir $(wildcard $(OPENLANE_DESIGN)/blackbox/*.bb.v))))
-VSRC_FILTER = $(filter-out $(BLACKBOX_VSRC), $(VSRC))
+# Remove Memory Wrapper modules
+MEM_WRAPPER_VSRC = $(addprefix %/,$(notdir $(wildcard $(OPENLANE_DESIGN)/mem_wrappers/*.v)))
+VSRC_FILTER = $(filter-out $(MEM_WRAPPER_VSRC), $(VSRC))
 
 # Remove unnecessary headers that cause conflict
 VHDR_FILTER = $(filter-out %/inst_tb.vh %/pio.vh %/inst.vh, $(VHDR))
@@ -40,6 +40,7 @@ setup: gen-versat
 setup-design: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR) boot.hex
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
+	cp mem_wrappers/*.v $(OPENLANE_SRC_DIR)
 	cp boot.hex $(OPENLANE_SRC_DIR)
 	./scripts/include_header.py -d $(OPENLANE_SRC_DIR) -f global_defines.vh
 	make verilog-fixes
