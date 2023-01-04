@@ -20,6 +20,9 @@ VHDR+=$(AXI_DIR)/hardware/include/axi.vh
 # Add global defines
 VHDR+=global_defines.vh
 
+# Add boot rom verilog header
+VHDR+=boot_case.vh
+
 # Remove Memory Wrapper modules
 MEM_WRAPPER_VSRC = $(addprefix %/,$(notdir $(wildcard $(OPENLANE_DESIGN)/mem_wrappers/*.v)))
 VSRC_FILTER = $(filter-out $(MEM_WRAPPER_VSRC), $(VSRC))
@@ -68,6 +71,9 @@ global_defines.vh:
 
 verilog-fixes:
 	sed -i '/$$display/d' $(OPENLANE_SRC_DIR)/axi_interconnect.v
+
+boot_case.vh: boot.hex
+	./scripts/generate_rom.py $< $@
 
 $(BOOT_DIR)/boot.bin:
 	make -C $(ROOT_DIR) fw-build
