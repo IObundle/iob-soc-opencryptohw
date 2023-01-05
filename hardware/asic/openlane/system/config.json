@@ -5,6 +5,7 @@
     "CLOCK_PERIOD": 10.0,
     "DESIGN_IS_CORE": true,
 
+    "FP_SIZING": "absolute",
     "DIE_AREA": "0 0 4000 4000",
 
     "MACRO_PLACEMENT_CFG": "dir::macro_placement.cfg",

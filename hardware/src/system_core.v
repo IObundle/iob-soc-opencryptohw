@@ -22,6 +22,9 @@ module system
    output trap,
           
           
+   //Yosys Debug
+   output [`N_SLAVES*`RESP_W-1:0] slaves_resp_o,
+
 `ifdef USE_DDR 
    //address write
    output [2*1-1:0]           m_axi_awid, 
@@ -228,6 +231,8 @@ module system
    //slaves bus
    wire [`N_SLAVES*`REQ_W-1:0] slaves_req;
    wire [`N_SLAVES*`RESP_W-1:0] slaves_resp;
+
+   assign slaves_resp_o = slaves_resp;
 
    iob_split
      #(
