@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "system.vh"
+`include "iob_eth_swreg_def.vh"
 
 
 //PHEADER

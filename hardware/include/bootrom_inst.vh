@@ -1,5 +1,5 @@
    wire bootrom_r_en;
-   wire [`ADDR_W-1:0] bootrom_addr;
+   wire [`BOOTROM_ADDR_W-2-1:0] bootrom_addr;
    wire [`DATA_W-1:0] bootrom_r_data;
 
    //

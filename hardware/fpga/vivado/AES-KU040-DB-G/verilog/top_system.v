@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 `include "system.vh"
+`include "iob_eth_swreg_def.vh"
 
 module top_system
   (
@@ -84,6 +85,10 @@ module top_system
     assign locked = 1'b1; 
 
     // Ethernet Buffer External Memories
+    wire RX_CLK;
+    wire TX_CLK;
+    assign RX_CLK = ETH_CLK;
+    assign TX_CLK = ETH_CLK;
     `include "iob_eth_buffer_inst.vh"
 
 `ifdef USE_DDR
