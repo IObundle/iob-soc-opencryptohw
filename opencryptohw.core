@@ -75,6 +75,9 @@ filesets:
       - submodules/ETHERNET/hardware/include/inst.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/iob_eth.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/pio.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_inst.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_port.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_portmap.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}

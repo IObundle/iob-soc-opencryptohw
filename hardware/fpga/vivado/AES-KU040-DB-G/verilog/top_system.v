@@ -83,6 +83,9 @@ module top_system
 
     assign locked = 1'b1; 
 
+    // Ethernet Buffer External Memories
+    `include "iob_eth_buffer_inst.vh"
+
 `ifdef USE_DDR
   //
    // AXI INTERCONNECT
@@ -253,6 +256,7 @@ module top_system
 `endif
 
       //ETHERNET
+      `include "iob_eth_buffer_portmap.vh"
       //PHY
       .ETH_PHY_RESETN(ENET_RESETN),
 

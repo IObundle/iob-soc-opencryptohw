@@ -241,6 +241,7 @@ module system_top (
 
     `include "sram_inst.vh"
     `include "bootrom_inst.vh"
+    `include "iob_eth_buffer_inst.vh"
 
    //
    // UNIT UNDER TEST
