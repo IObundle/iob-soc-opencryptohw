@@ -235,11 +235,20 @@ module system_top (
             .m_axi_rready(ddr_rready)
             );
 
+    //
+    // System Memory Macros
+    //
+
+    `include "sram_inst.vh"
+    `include "bootrom_inst.vh"
+
    //
    // UNIT UNDER TEST
    //
    system uut (
                //PORTS
+         `include "sram_portmap.vh"
+         `include "bootrom_portmap.vh"
 `ifdef USE_DDR
          //address write
          .m_axi_awid    (sys_awid),

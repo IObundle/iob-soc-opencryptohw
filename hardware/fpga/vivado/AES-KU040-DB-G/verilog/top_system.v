@@ -177,6 +177,13 @@ module top_system
    wire       ddr_rready;
 `endif
 
+    //
+    // System Memory Macros
+    //
+
+    `include "sram_inst.vh"
+    `include "bootrom_inst.vh"
+
    //
    // SYSTEM
    //
@@ -192,6 +199,9 @@ module top_system
       .clk (clk),
       .rst (rst),
       .trap (trap),
+
+      `include "sram_portmap.vh"
+      `include "bootrom_portmap.vh"
 
 `ifdef USE_DDR
       //address write

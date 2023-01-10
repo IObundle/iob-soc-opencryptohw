@@ -145,6 +145,12 @@ filesets:
     files:
       - hardware/include/system.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_intercon.vh: {is_include_file: true}
+      - hardware/include/bootrom_inst.vh: {is_include_file: true}
+      - hardware/include/bootrom_port.vh: {is_include_file: true}
+      - hardware/include/bootrom_portmap.vh: {is_include_file: true}
+      - hardware/include/sram_inst.vh: {is_include_file: true}
+      - hardware/include/sram_port.vh: {is_include_file: true}
+      - hardware/include/sram_portmap.vh: {is_include_file: true}
       - hardware/src/ext_mem.v
       - hardware/src/boot_ctr.v
       - hardware/src/int_mem.v

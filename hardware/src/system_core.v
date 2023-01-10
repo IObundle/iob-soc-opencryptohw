@@ -21,10 +21,10 @@ module system
    //CPU TRAP
    output trap,
           
+   //Memory macros
+   `include "sram_port.vh"
+   `include "bootrom_port.vh"
           
-   //Yosys Debug
-   output [`N_SLAVES*`RESP_W-1:0] slaves_resp_o,
-
 `ifdef USE_DDR 
    //address write
    output [2*1-1:0]           m_axi_awid, 
@@ -263,6 +263,9 @@ module system
       .rst (rst),
       .boot (boot),
       .cpu_reset (cpu_reset),
+
+      `include "sram_portmap.vh"
+      `include "bootrom_portmap.vh"
 
       // instruction bus
       .i_req (int_mem_i_req),
