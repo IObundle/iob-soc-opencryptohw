@@ -6,14 +6,7 @@
     "DESIGN_IS_CORE": true,
 
     "FP_SIZING": "absolute",
-    "DIE_AREA": "0 0 4000 4000",
-
-    "MACRO_PLACEMENT_CFG": "dir::macro_placement.cfg",
-
-    "EXTRA_LEFS":      "/openlane/pdks/sky130B/libs.ref/sky130_sram_macros/lef/sky130_sram_2kbyte_1rw1r_32x512_8.lef /openlane/designs/system/macros/sky130_sram_4kbyte_1rw1r_32x1024_8.lef",
-    "EXTRA_GDS_FILES": "/openlane/pdks/sky130B/libs.ref/sky130_sram_macros/gds/sky130_sram_2kbyte_1rw1r_32x512_8.gds /openlane/designs/system/macros/sky130_sram_4kbyte_1rw1r_32x1024_8.gds",
-    "EXTRA_LIBS":      "/openlane/pdks/sky130B/libs.ref/sky130_sram_macros/lib/sky130_sram_2kbyte_1rw1r_32x512_8_TT_1p8V_25C.lib /openlane/designs/system/macros/sky130_sram_4kbyte_1rw1r_32x1024_8_TT_1p8V_25C.lib",
-    "VERILOG_FILES_BLACKBOX": "dir::blackbox/*.v",
+    "DIE_AREA": "0 0 3000 3000",
 
     "MAGIC_DRC_USE_GDS": false,
     "QUIT_ON_MAGIC_DRC": false,

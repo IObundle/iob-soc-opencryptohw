@@ -20,19 +20,12 @@ VHDR+=$(AXI_DIR)/hardware/include/axi.vh
 # Add global defines
 VHDR+=global_defines.vh
 
-# Add boot rom verilog header
-VHDR+=boot_case.vh
-
-# Remove Memory Wrapper modules
-MEM_WRAPPER_VSRC = $(addprefix %/,$(notdir $(wildcard $(OPENLANE_DESIGN)/mem_wrappers/*.v)))
-VSRC_FILTER = $(filter-out $(MEM_WRAPPER_VSRC), $(VSRC))
-
 # Remove unnecessary headers that cause conflict
 VHDR_FILTER = $(filter-out %/inst_tb.vh %/pio.vh %/inst.vh, $(VHDR))
 
 # Remove duplicated items from lists
 uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
-UNIQ_VSRC = $(call uniq, $(VSRC_FILTER))
+UNIQ_VSRC = $(call uniq, $(VSRC))
 UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
 all: run
@@ -40,11 +33,9 @@ all: run
 setup: gen-versat
 	make setup-design
 
-setup-design: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR) boot.hex
+setup-design: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR)
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
-	cp mem_wrappers/*.v $(OPENLANE_SRC_DIR)
-	cp boot.hex $(OPENLANE_SRC_DIR)
 	./scripts/include_header.py -d $(OPENLANE_SRC_DIR) -f global_defines.vh
 	make verilog-fixes
 
@@ -71,12 +62,6 @@ global_defines.vh:
 
 verilog-fixes:
 	sed -i '/$$display/d' $(OPENLANE_SRC_DIR)/axi_interconnect.v
-
-boot_case.vh: boot.hex
-	./scripts/generate_rom.py $< $@
-
-$(BOOT_DIR)/boot.bin:
-	make -C $(ROOT_DIR) fw-build
 
 clean:
 	rm -rf $(OPENLANE_SRC_DIR)
