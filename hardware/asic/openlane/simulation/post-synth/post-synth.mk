@@ -13,6 +13,11 @@ FREQ=$(SIM_FREQ)
 DEFINE+=$(defmacro)BAUD=$(BAUD)
 DEFINE+=$(defmacro)FREQ=$(FREQ)
 
+# PDK defines
+DEFINE+=$(defmacro)UNIT_DELAY=#1
+DEFINE+=$(defmacro)FUNCTIONAL
+
+
 #ddr controller address width
 DDR_ADDR_W=$(DCACHE_ADDR_W)
 
