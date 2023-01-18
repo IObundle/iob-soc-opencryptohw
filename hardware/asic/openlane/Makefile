@@ -5,7 +5,7 @@ OPENLANE_SRC_DIR=$(OPENLANE_DESIGN)/src
 
 OPENLANE_TOOL_DIR ?= $(ROOT_DIR)/../OpenLane
 OPENLANE_GIT_REPO = https://github.com/The-OpenROAD-Project/OpenLane.git
-OPENLANE_GIT_TAG = 2022.12.16
+OPENLANE_GIT_TAG = 2023.01.12
 
 #DDR controller address and data widths
 DDR_ADDR_W=30
