@@ -83,6 +83,9 @@ module system
 
    wire   boot;
    wire   cpu_reset;
+   wire   reset;
+
+   assign reset = rst;
    
    //
    //  CPU
@@ -231,8 +234,6 @@ module system
    //slaves bus
    wire [`N_SLAVES*`REQ_W-1:0] slaves_req;
    wire [`N_SLAVES*`RESP_W-1:0] slaves_resp;
-
-   assign slaves_resp_o = slaves_resp;
 
    iob_split
      #(
