@@ -5,20 +5,15 @@ ROOT_DIR:=../../../../..
 defmacro:=-D
 incdir:=-I
 
-SIMULATOR=verilator
-SIM_SERVER=$(VSIM_SERVER)
-SIM_USER=$(VSIM_USER)
-SIM_PROC=Vsystem_top
-
-HDR=iob_uart_swreg.h
+SIMULATOR=icarus
+SIM_SERVER=$(IVSIM_SERVER)
+SIM_USER=$(IVSIM_USER)
+SIM_PROC=a.out
 
 include post-synth.mk
 
-# remove space between -I and directory for verilator
-INCLUDE_VERI=$(subst -I ,-I,$(INCLUDE))
-
 #simulator flags
-VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE) -s system_top
+VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE) -s system_tb
 
 comp: $(SIM_PROC)
 
