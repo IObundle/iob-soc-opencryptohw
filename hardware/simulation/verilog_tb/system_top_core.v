@@ -247,7 +247,9 @@ module system_top (
    //
    // UNIT UNDER TEST
    //
-   system uut (
+   system #(
+       .AXI_ID_W(1)
+   ) uut (
                //PORTS
          `include "sram_portmap.vh"
          `include "bootrom_portmap.vh"
