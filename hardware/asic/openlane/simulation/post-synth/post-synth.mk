@@ -14,7 +14,7 @@ DEFINE+=$(defmacro)BAUD=$(BAUD)
 DEFINE+=$(defmacro)FREQ=$(FREQ)
 
 # PDK defines
-DEFINE+=$(defmacro)UNIT_DELAY=#1
+DEFINE+=$(defmacro)UNIT_DELAY=\#1
 DEFINE+=$(defmacro)FUNCTIONAL
 
 
