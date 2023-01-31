@@ -65,7 +65,8 @@ VHDR+=$(INC_DIR)/bootrom_port.vh $(INC_DIR)/bootrom_portmap.vh
 VHDR+=versat_defs.vh
 
 #OpenLane PDK Sources
-VSRC+=$(wildcard $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/*.v)
+VSRC+=pdk/primitives.v
+VSRC+=pdk/sky130_fd_sc_hd.v
 
 #axi wires to connect cache to external memory in system top
 VHDR+=m_axi_wire.vh
@@ -113,5 +114,12 @@ versat_instance.v versat_defs.vh: $(PC_DIR)/$(@F)
 
 $(PC_DIR)/versat_instance.v $(PC_DIR)/versat_defs.vh:
 	make -C $(ROOT_DIR) pc-emul-output-versat
+
+pdk/%.v: $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v
+	mkdir -p pdk
+	cp $< $@
+
+$(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v:
+	make -C $(ROOT_DIR) openlane-setup
 
 .PHONY: hw-clean

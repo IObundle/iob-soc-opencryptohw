@@ -8,7 +8,7 @@ OPENLANE_GIT_REPO = https://github.com/The-OpenROAD-Project/OpenLane.git
 OPENLANE_GIT_TAG = 2023.01.12
 
 #DDR controller address and data widths
-DDR_ADDR_W=30
+DDR_ADDR_W=24
 DDR_DATA_W=32
 
 include $(ROOT_DIR)/hardware/hardware.mk
