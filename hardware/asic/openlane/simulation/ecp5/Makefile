@@ -8,8 +8,6 @@ SIM_SERVER=$(IVSIM_SERVER)
 SIM_USER=$(IVSIM_USER)
 SIM_PROC=a.out
 
-# include ../simulation.mk
-INCLUDE+=$(incdic)src
 VSRC+=$(wildcard src/*v)
 
 DEFINE+=$(defmacro)YOSYS_SIM=1
