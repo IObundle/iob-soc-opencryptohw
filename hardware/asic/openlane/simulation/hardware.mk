@@ -104,7 +104,7 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 	$(PYTHON_DIR)/hex_split.py firmware .
 
 $(BOOT_DIR)/boot.bin $(FIRM_DIR)/firmware.bin:
-	make -C $(ROOT_DIR) fw-build SIM=1 DEFINE=-DGENERATE_ONLY
+	make -C $(ROOT_DIR) fw-build SIM=1 GENERATE_ONLY=1
 
 #clean general hardware files
 hw-clean: gen-clean

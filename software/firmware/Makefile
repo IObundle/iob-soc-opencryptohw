@@ -50,6 +50,9 @@ endif
 ifeq ($(SIM),1)
 DEFINE+=$(defmacro)SIM
 endif
+ifneq ($(GENERATE_ONLY),)
+DEFINE+=$(defmacro)GENERATE_ONLY
+endif
 
 #RULES
 
