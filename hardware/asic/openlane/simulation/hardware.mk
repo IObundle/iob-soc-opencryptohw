@@ -75,7 +75,14 @@ m_axi_wire.vh:
 
 #SOURCES
 
-VSRC+=$(OPENLANE_SIM_TYPE)/system.v
+# post synth/layout files
+POST_SYNTH_ID=
+POST_LAYOUT_ID=
+ifeq ($(OPENLANE_SIM_TYPE),post-synth)
+VSRC+=post-synth/system.v
+else
+VSRC+=post-layout/system.pnl.v
+endif
 
 HEXPROGS=boot.hex firmware.hex
 
@@ -121,5 +128,11 @@ pdk/%.v: $(ROOT_DIR)/submodules/OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/v
 
 $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v:
 	make -C $(ROOT_DIR) openlane-setup
+
+post-synth/system.v:
+	../scripts/download_file.sh $(POST_SYNTH_ID) $@
+
+post-layout/system.pnl.v:
+	../scripts/download_file.sh $(POST_LAYOUT_ID) $@
 
 .PHONY: hw-clean
