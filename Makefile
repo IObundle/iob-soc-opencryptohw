@@ -39,6 +39,12 @@ openlane-run:
 	make -C $(OPENLANE_FLOW_DIR) run
 openlane-clean:
 	make -C $(OPENLANE_FLOW_DIR) clean
+openlane-post-synth-sim:
+	make -C $(OPENLANE_FLOW_DIR)/simulation test OPENLANE_SIM_TYPE=post-synth
+openlane-post-layout-sim:
+	make -C $(OPENLANE_FLOW_DIR)/simulation test OPENLANE_SIM_TYPE=post-layout
+openlane-sim-clean:
+	make -C $(OPENLANE_FLOW_DIR)/simulation clean
 
 #
 # BUILD EMBEDDED SOFTWARE
