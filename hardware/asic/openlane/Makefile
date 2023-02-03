@@ -3,9 +3,7 @@ ROOT_DIR=../../..
 OPENLANE_DESIGN=system
 OPENLANE_SRC_DIR=$(OPENLANE_DESIGN)/src
 
-OPENLANE_TOOL_DIR ?= $(ROOT_DIR)/../OpenLane
-OPENLANE_GIT_REPO = https://github.com/The-OpenROAD-Project/OpenLane.git
-OPENLANE_GIT_TAG = 2023.01.12
+OPENLANE_TOOL_DIR ?= $(ROOT_DIR)/submodules/OpenLane
 
 #DDR controller address and data widths
 DDR_ADDR_W=24
@@ -33,7 +31,7 @@ all: run
 setup: gen-versat
 	make setup-design
 
-setup-design: $(OPENLANE_TOOL_DIR) $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR)
+setup-design: setup-openlane $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR)
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
 	./scripts/include_header.py -d $(OPENLANE_SRC_DIR) -f global_defines.vh
@@ -52,9 +50,8 @@ copy-to-openlane:
 	rm -rf $(OPENLANE_TOOL_DIR)/designs/*
 	cp -r $(OPENLANE_DESIGN) $(OPENLANE_TOOL_DIR)/designs
 
-$(OPENLANE_TOOL_DIR):
+setup-openlane:
 	@echo "Please setup OpenLane tool in $(OPENLANE_TOOL_DIR)"
-	cd $(ROOT_DIR)/..; git clone --depth 1 $(OPENLANE_GIT_REPO) --branch $(OPENLANE_GIT_TAG)
 	cd $(OPENLANE_TOOL_DIR); make
 
 global_defines.vh: 

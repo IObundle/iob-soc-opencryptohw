@@ -115,7 +115,7 @@ versat_instance.v versat_defs.vh: $(PC_DIR)/$(@F)
 $(PC_DIR)/versat_instance.v $(PC_DIR)/versat_defs.vh:
 	make -C $(ROOT_DIR) pc-emul-output-versat
 
-pdk/%.v: $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v
+pdk/%.v: $(ROOT_DIR)/submodules/OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v
 	mkdir -p pdk
 	cp $< $@
 
