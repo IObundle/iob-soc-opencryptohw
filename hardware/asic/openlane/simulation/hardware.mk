@@ -75,7 +75,7 @@ m_axi_wire.vh:
 
 #SOURCES
 
-VSRC+=src/system.v
+VSRC+=$(OPENLANE_SIM_TYPE)/system.v
 
 HEXPROGS=boot.hex firmware.hex
 

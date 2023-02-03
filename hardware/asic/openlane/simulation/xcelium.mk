@@ -6,7 +6,7 @@ SIM_SERVER=$(CADENCE_SERVER)
 SIM_USER=$(CADENCE_USER)
 SIM_PROC=xmsim
 
-include post-synth.mk
+include simulation.mk
 
 INIT_SCRIPT = set -e; source /opt/ic_tools/init/init-xcelium1903-hf013
 

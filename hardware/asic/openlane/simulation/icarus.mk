@@ -6,7 +6,7 @@ SIM_SERVER=$(IVSIM_SERVER)
 SIM_USER=$(IVSIM_USER)
 SIM_PROC=a.out
 
-include post-synth.mk
+include simulation.mk
 
 #simulator flags
 VLOG = iverilog -W all -g2005-sv $(INCLUDE) $(DEFINE) -s system_tb
