@@ -76,8 +76,8 @@ m_axi_wire.vh:
 #SOURCES
 
 # post synth/layout files
-POST_SYNTH_ID=
-POST_LAYOUT_ID=
+POST_SYNTH_ID=1HJunHlhvfVKqYXRVDhw1SoyaVhRqSJYA
+POST_LAYOUT_ID=1wGVDLvASmeDuFLxv1YMGAArZQkko66tP
 ifeq ($(OPENLANE_SIM_TYPE),post-synth)
 VSRC+=post-synth/system.v
 else
@@ -129,10 +129,16 @@ pdk/%.v: $(ROOT_DIR)/submodules/OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/v
 $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v:
 	make -C $(ROOT_DIR) openlane-setup
 
-post-synth/system.v:
+post-synth/system.v: post-synth/system.v.xz
+	unxz -f $<
+
+post-synth/system.v.xz:
 	../scripts/download_file.sh $(POST_SYNTH_ID) $@
 
-post-layout/system.nl.v:
+post-layout/system.nl.v: post-layout/system.nl.v.xz
+	unxz -f $<
+
+post-layout/system.nl.v.xz:
 	../scripts/download_file.sh $(POST_LAYOUT_ID) $@
 
 .PHONY: hw-clean
