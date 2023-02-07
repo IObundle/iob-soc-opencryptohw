@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "system.vh"
+`include "iob_eth_swreg_def.vh"
 
 
 //PHEADER
@@ -235,11 +236,21 @@ module system_top (
             .m_axi_rready(ddr_rready)
             );
 
+    //
+    // System Memory Macros
+    //
+
+    `include "sram_inst.vh"
+    `include "bootrom_inst.vh"
+    `include "iob_eth_buffer_inst.vh"
+
    //
    // UNIT UNDER TEST
    //
    system uut (
                //PORTS
+         `include "sram_portmap.vh"
+         `include "bootrom_portmap.vh"
 `ifdef USE_DDR
          //address write
          .m_axi_awid    (sys_awid),

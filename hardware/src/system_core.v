@@ -10,7 +10,7 @@ module system
   #(
     parameter ADDR_W=`ADDR_W,
     parameter DATA_W=`DATA_W,
-    parameter AXI_ID_W=0,
+    parameter AXI_ID_W=1,
     parameter AXI_ADDR_W=`ADDR_W,
     parameter AXI_DATA_W=`DATA_W
     )
@@ -21,6 +21,9 @@ module system
    //CPU TRAP
    output trap,
           
+   //Memory macros
+   `include "sram_port.vh"
+   `include "bootrom_port.vh"
           
 `ifdef USE_DDR 
    //address write
@@ -80,6 +83,9 @@ module system
 
    wire   boot;
    wire   cpu_reset;
+   wire   reset;
+
+   assign reset = rst;
    
    //
    //  CPU
@@ -259,6 +265,9 @@ module system
       .boot (boot),
       .cpu_reset (cpu_reset),
 
+      `include "sram_portmap.vh"
+      `include "bootrom_portmap.vh"
+
       // instruction bus
       .i_req (int_mem_i_req),
       .i_resp (int_mem_i_resp),
@@ -291,7 +300,7 @@ module system
 
       //AXI INTERFACE 
       //address write
-      .m_axi_awid(), 
+      .m_axi_awid(m_axi_awid[0*1+:1]), 
       .m_axi_awaddr(m_axi_awaddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]), 
       .m_axi_awlen(m_axi_awlen[0*8+:8]), 
       .m_axi_awsize(m_axi_awsize[0*3+:3]), 
@@ -309,12 +318,12 @@ module system
       .m_axi_wvalid(m_axi_wvalid[0*1+:1]), 
       .m_axi_wready(m_axi_wready[0*1+:1]), 
       //write response
-      .m_axi_bid(),
+      .m_axi_bid(m_axi_bid[0*1+:1]),
       .m_axi_bresp(m_axi_bresp[0*2+:2]), 
       .m_axi_bvalid(m_axi_bvalid[0*1+:1]), 
       .m_axi_bready(m_axi_bready[0*1+:1]), 
       //address read
-      .m_axi_arid(), 
+      .m_axi_arid(m_axi_arid[0*1+:1]), 
       .m_axi_araddr(m_axi_araddr[0*`DDR_ADDR_W+:`DDR_ADDR_W]), 
       .m_axi_arlen(m_axi_arlen[0*8+:8]), 
       .m_axi_arsize(m_axi_arsize[0*3+:3]), 
@@ -326,7 +335,7 @@ module system
       .m_axi_arvalid(m_axi_arvalid[0*1+:1]), 
       .m_axi_arready(m_axi_arready[0*1+:1]), 
       //read 
-      .m_axi_rid(),
+      .m_axi_rid(m_axi_rid[0*1+:1]),
       .m_axi_rdata(m_axi_rdata[0*`DATA_W+:`DATA_W]), 
       .m_axi_rresp(m_axi_rresp[0*2+:2]), 
       .m_axi_rlast(m_axi_rlast[0*1+:1]), 

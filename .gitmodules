@@ -25,3 +25,6 @@
 [submodule "submodules/ETHERNET"]
 	path = submodules/ETHERNET
 	url = git@github.com:IObundle/iob-eth.git
+[submodule "submodules/OpenLane"]
+	path = submodules/OpenLane
+	url = https://github.com/The-OpenROAD-Project/OpenLane.git

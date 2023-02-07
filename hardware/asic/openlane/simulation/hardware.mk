@@ -64,6 +64,10 @@ VHDR+=$(INC_DIR)/sram_port.vh $(INC_DIR)/sram_portmap.vh
 VHDR+=$(INC_DIR)/bootrom_port.vh $(INC_DIR)/bootrom_portmap.vh
 VHDR+=versat_defs.vh
 
+#OpenLane PDK Sources
+VSRC+=pdk/primitives.v
+VSRC+=pdk/sky130_fd_sc_hd.v
+
 #axi wires to connect cache to external memory in system top
 VHDR+=m_axi_wire.vh
 m_axi_wire.vh:
@@ -71,20 +75,14 @@ m_axi_wire.vh:
 
 #SOURCES
 
-#external memory interface
-ifeq ($(USE_DDR),1)
-VSRC+=$(SRC_DIR)/ext_mem.v
+# post synth/layout files
+POST_SYNTH_ID=1HJunHlhvfVKqYXRVDhw1SoyaVhRqSJYA
+POST_LAYOUT_ID=1wGVDLvASmeDuFLxv1YMGAArZQkko66tP
+ifeq ($(OPENLANE_SIM_TYPE),post-synth)
+VSRC+=post-synth/system.v
+else
+VSRC+=post-layout/system.nl.v
 endif
-
-#system
-VSRC+=$(SRC_DIR)/boot_ctr.v $(SRC_DIR)/int_mem.v $(SRC_DIR)/sram.v
-VSRC+=system.v
-
-#versat accelerator
-VSRC+=$(wildcard $(SRC_DIR)/GeneratedUnits/*.v)
-VSRC+=$(SRC_DIR)/versat_instance.v
-VSRC+=$(SRC_DIR)/units/xunitF.v
-VSRC+=$(SRC_DIR)/units/xunitM.v
 
 HEXPROGS=boot.hex firmware.hex
 
@@ -105,6 +103,9 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 	$(PYTHON_DIR)/makehex.py $< $(FIRM_ADDR_W) > $@
 	$(PYTHON_DIR)/hex_split.py firmware .
 
+$(BOOT_DIR)/boot.bin $(FIRM_DIR)/firmware.bin:
+	make -C $(ROOT_DIR) fw-build SIM=1 GENERATE_ONLY=1
+
 #clean general hardware files
 hw-clean: gen-clean
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v *.inc	$(SRC_DIR)/GeneratedUnits/*.v $(SRC_DIR)/versat_instance.v $(INC_DIR)/versat_defs.vh
@@ -120,5 +121,24 @@ versat_instance.v versat_defs.vh: $(PC_DIR)/$(@F)
 
 $(PC_DIR)/versat_instance.v $(PC_DIR)/versat_defs.vh:
 	make -C $(ROOT_DIR) pc-emul-output-versat
+
+pdk/%.v: $(ROOT_DIR)/submodules/OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v
+	mkdir -p pdk
+	cp $< $@
+
+$(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v:
+	make -C $(ROOT_DIR) openlane-setup
+
+post-synth/system.v: post-synth/system.v.xz
+	unxz -f $<
+
+post-synth/system.v.xz:
+	../scripts/download_file.sh $(POST_SYNTH_ID) $@
+
+post-layout/system.nl.v: post-layout/system.nl.v.xz
+	unxz -f $<
+
+post-layout/system.nl.v.xz:
+	../scripts/download_file.sh $(POST_LAYOUT_ID) $@
 
 .PHONY: hw-clean
