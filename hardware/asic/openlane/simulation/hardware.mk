@@ -81,7 +81,7 @@ POST_LAYOUT_ID=
 ifeq ($(OPENLANE_SIM_TYPE),post-synth)
 VSRC+=post-synth/system.v
 else
-VSRC+=post-layout/system.pnl.v
+VSRC+=post-layout/system.nl.v
 endif
 
 HEXPROGS=boot.hex firmware.hex
@@ -132,7 +132,7 @@ $(ROOT_DIR)/../OpenLane/pdks/sky130B/libs.ref/sky130_fd_sc_hd/verilog/%.v:
 post-synth/system.v:
 	../scripts/download_file.sh $(POST_SYNTH_ID) $@
 
-post-layout/system.pnl.v:
+post-layout/system.nl.v:
 	../scripts/download_file.sh $(POST_LAYOUT_ID) $@
 
 .PHONY: hw-clean

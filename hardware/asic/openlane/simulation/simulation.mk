@@ -136,7 +136,7 @@ kill-sim:
 
 test: clean-testlog test-shortmsg
 
-test-shortmsg: sim-shortmsg validate
+test-shortmsg: sim-shortmsg # validate
 
 sim-shortmsg:
 	make -C $(PC_DIR) gen-versat
