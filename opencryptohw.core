@@ -75,6 +75,9 @@ filesets:
       - submodules/ETHERNET/hardware/include/inst.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/iob_eth.vh: {is_include_file: true}
       - submodules/ETHERNET/hardware/include/pio.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_inst.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_port.vh: {is_include_file: true}
+      - submodules/ETHERNET/hardware/include/iob_eth_buffer_portmap.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_lib.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_s_if.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_gen_if.vh: {is_include_file: true}
@@ -145,6 +148,12 @@ filesets:
     files:
       - hardware/include/system.vh: {is_include_file: true}
       - submodules/LIB/hardware/include/iob_intercon.vh: {is_include_file: true}
+      - hardware/include/bootrom_inst.vh: {is_include_file: true}
+      - hardware/include/bootrom_port.vh: {is_include_file: true}
+      - hardware/include/bootrom_portmap.vh: {is_include_file: true}
+      - hardware/include/sram_inst.vh: {is_include_file: true}
+      - hardware/include/sram_port.vh: {is_include_file: true}
+      - hardware/include/sram_portmap.vh: {is_include_file: true}
       - hardware/src/ext_mem.v
       - hardware/src/boot_ctr.v
       - hardware/src/int_mem.v
@@ -634,7 +643,7 @@ parameters:
 
   SRAM_ADDR_W:
     datatype: int
-    default: 17
+    default: 12
     description: Static RAM address width
     paramtype: vlogdefine
 

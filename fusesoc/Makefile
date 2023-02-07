@@ -47,9 +47,9 @@ ifeq ($(FPGA_SERVER),)
 	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
 else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
-	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
+	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-build'
-	rsync -avz --exclude .git --exclude .venv $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
+	rsync -avz --exclude-from=$(ROOT_DIR)/.rsync_exclude $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 
 fpga-run: $(VENV)
@@ -58,9 +58,9 @@ ifeq ($(BOARD_SERVER),)
 	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
-	rsync -avz --delete --force --exclude .git --exclude .venv $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
+	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-run'
-	rsync -avz --exclude .git --exclude .venv $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
+	rsync -avz --exclude-from=$(ROOT_DIR)/.rsync_exclude $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 
 #

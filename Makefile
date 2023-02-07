@@ -28,7 +28,23 @@ fusesoc-fpga-run: fusesoc-fpga-build
 
 fusesoc-clean:
 	make -C $(FUSESOC_DIR) clean
-	
+
+#
+# OPENLANE TARGETS
+#
+OPENLANE_FLOW_DIR=$(HW_DIR)/asic/openlane
+openlane-setup:
+	make -C $(OPENLANE_FLOW_DIR) setup
+openlane-run:
+	make -C $(OPENLANE_FLOW_DIR) run
+openlane-clean:
+	make -C $(OPENLANE_FLOW_DIR) clean
+openlane-post-synth-sim:
+	make -C $(OPENLANE_FLOW_DIR)/simulation test OPENLANE_SIM_TYPE=post-synth
+openlane-post-layout-sim:
+	make -C $(OPENLANE_FLOW_DIR)/simulation test OPENLANE_SIM_TYPE=post-layout
+openlane-sim-clean:
+	make -C $(OPENLANE_FLOW_DIR)/simulation clean
 
 #
 # BUILD EMBEDDED SOFTWARE

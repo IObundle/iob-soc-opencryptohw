@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 `include "system.vh"
+`include "iob_eth_swreg_def.vh"
 
 module top_system
   (
@@ -82,6 +83,13 @@ module top_system
              );
 
     assign locked = 1'b1; 
+
+    // Ethernet Buffer External Memories
+    wire RX_CLK;
+    wire TX_CLK;
+    assign RX_CLK = ETH_CLK;
+    assign TX_CLK = ETH_CLK;
+    `include "iob_eth_buffer_inst.vh"
 
 `ifdef USE_DDR
   //
@@ -177,6 +185,13 @@ module top_system
    wire       ddr_rready;
 `endif
 
+    //
+    // System Memory Macros
+    //
+
+    `include "sram_inst.vh"
+    `include "bootrom_inst.vh"
+
    //
    // SYSTEM
    //
@@ -192,6 +207,9 @@ module top_system
       .clk (clk),
       .rst (rst),
       .trap (trap),
+
+      `include "sram_portmap.vh"
+      `include "bootrom_portmap.vh"
 
 `ifdef USE_DDR
       //address write
@@ -243,6 +261,7 @@ module top_system
 `endif
 
       //ETHERNET
+      `include "iob_eth_buffer_portmap.vh"
       //PHY
       .ETH_PHY_RESETN(ENET_RESETN),
 

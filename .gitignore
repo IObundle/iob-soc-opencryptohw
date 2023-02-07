@@ -65,6 +65,16 @@ hardware/fpga/*/*/*
 
 !hardware/fpga/quartus/*/qsys
 
+#asic/OpenLane
+hardware/asic/openlane/*.vh
+hardware/asic/openlane/*.v
+hardware/asic/openlane/system/src/*
+hardware/asic/openlane/simulation/*.v
+hardware/asic/openlane/simulation/*.vh
+hardware/asic/openlane/simulation/post-synth/system.v
+hardware/asic/openlane/simulation/post-layout/system.nl.v
+hardware/asic/openlane/simulation/pdk/*
+
 #DOCUMENT
 document/*/*
 !document/*/Makefile
