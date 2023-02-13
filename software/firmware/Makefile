@@ -32,12 +32,16 @@ HDR+=verilogWrapper.inc
 INCLUDE+=$(incdir)$(FIRM_DIR)/units
 
 #SOURCES
-SRC+= firmware.S firmware.cpp $(UART_DIR)/software/printf.c
+SRC+= firmware.S $(ALGORITHM)/firmware.cpp $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
-SRC+= $(FIRM_DIR)/versatSHA.cpp
-SRC+= $(FIRM_DIR)/fullSHATests.cpp
+
+ifeq ($(ALGORITHM),SHA256)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/versatSHA.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
+endif
 
 #PROFILE
 ifeq ($(PROFILE),1)

@@ -26,8 +26,12 @@ SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
-SRC+= $(FIRM_DIR)/versatSHA.cpp
-SRC+= $(FIRM_DIR)/fullSHATests.cpp
+
+ifeq ($(ALGORITHM),SHA256)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/versatSHA.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
+endif
 
 INCLUDE+=$(incdir)./build
 
@@ -43,8 +47,8 @@ ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h
 SRC+= $(FIRM_DIR)/profile.c
 DEFINE+=$(defmacro)PROFILE
-INCLUDE+=$(incdir)$(FIRM_DIR)
 endif
+INCLUDE+=$(incdir)$(FIRM_DIR)
 
 #UNITS TO VERILATE
 VERILATE_UNIT := xunitF xunitM
@@ -102,6 +106,7 @@ clean: clean-eth-socket
 	@rm -f -r *.dot
 
 test: clean
+	# make run # HARDWARE_TEST=2
 	make run HARDWARE_TEST=2
 	make validate
 
@@ -132,6 +137,9 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 
 ./build/%.o: $(FIRM_DIR)/%.cpp $(UNIT_OBJ)
 	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
+
+./build/%.o: $(FIRM_DIR)/$(ALGORITHM)/%.cpp $(UNIT_OBJ)
+	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$(ALGORITHM)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
 ./build/V%.h: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
