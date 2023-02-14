@@ -30,6 +30,8 @@ software/*/*
 !software/console/console
 !software/console/eth_console
 
+!software/test/SHA256/
+
 !software/pc-emul/testVersatSpecification.txt
 
 #HARDWARE
