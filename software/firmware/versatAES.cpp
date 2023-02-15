@@ -149,10 +149,6 @@ void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cyp
    byte_to_int(cypher, cypher_int, AES_BLK_SIZE);
    byte_to_int(key, key_int, AES_KEY_SIZE);
 
-   // type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
-   // accel = CreateAccelerator(versat);
-   // aesInstance = CreateFUInstance(accel,type,MakeSizedString("Test"));
-
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),AES_BLK_SIZE,cypher_int);
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),AES_KEY_SIZE,key_int);
    ConfigureSimpleVWrite(GetInstanceByName(accel,"Test","results"),AES_BLK_SIZE,result_int);
