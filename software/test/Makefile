@@ -34,7 +34,7 @@ gen_xunitF_bin: $(XUNITF_SRC)
 	./$@
 
 clean:
-	@rm -rf *.bin
+	@rm -rf *.bin $(ALGORITHM)/*.bin
 	@rm -rf read_bin read_bin.log
 	@rm -rf gen_xunitM_bin xunitM_*.bin 
 	@rm -rf gen_xunitF_bin xunitF_*.bin 

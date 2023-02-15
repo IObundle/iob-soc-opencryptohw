@@ -26,11 +26,19 @@ SRC+= $(UART_DIR)/software/printf.c
 SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
+SRC+= $(FIRM_DIR)/versatSHA.cpp
+SRC+= $(FIRM_DIR)/versatAES.cpp
 
 ifeq ($(ALGORITHM),SHA256)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
-SRC+= $(FIRM_DIR)/$(ALGORITHM)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
+HARDWARE_TEST = 2
+endif
+
+ifeq ($(ALGORITHM),AES256)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
+HARDWARE_TEST = 10
 endif
 
 INCLUDE+=$(incdir)./build
@@ -106,8 +114,7 @@ clean: clean-eth-socket
 	@rm -f -r *.dot
 
 test: clean
-	# make run # HARDWARE_TEST=2
-	make run HARDWARE_TEST=2
+	make run HARDWARE_TEST=$(HARDWARE_TEST)
 	make validate
 
 validate:
