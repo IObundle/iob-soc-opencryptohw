@@ -4,6 +4,18 @@
 #include "unitConfiguration.hpp"
 #include "verilogWrapper.inc"
 
+extern "C" {
+#ifndef PC
+#include "iob-cache.h"
+#endif
+int printf_(const char* format, ...);
+}
+
+#ifndef PC
+#define printf printf_
+#endif
+
+
 // GLOBALS
 static Accelerator* accel;
 static FUInstance* aesInstance;
@@ -135,19 +147,38 @@ void byte_to_int(uint8_t *in, int *out, int size) {
 void int_to_byte(int *in, uint8_t *out, int size) {
     int i = 0;
     for(i=0; i<size; i++) {
-        out[i] = (uint8_t) (in[i] & 0xFF);
+        out[i] = (uint8_t) (in[i] & 0x0FF);
     }
     return;
 }
 
+void print_hex(int* in, int size) {
+    int i = 0;
+    for(i = 0; i < size; i++) {
+        printf("%x", in[i]);
+    }
+    printf("\n");
+}
 
-void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cypher, uint8_t *key) {
+void print_byte(uint8_t* in, int size) {
+    int i = 0;
+    for(i=0; i<size; i++) {
+        printf("%x", in[i]);
+    }
+    printf("\n");
+}
+
+void VersatAES(Versat* versat, uint8_t *result, uint8_t *cypher, uint8_t *key) {
    int cypher_int[AES_BLK_SIZE] = {0};
    int key_int[AES_KEY_SIZE] = {0};
    int result_int[AES_BLK_SIZE] = {0};
 
    byte_to_int(cypher, cypher_int, AES_BLK_SIZE);
    byte_to_int(key, key_int, AES_KEY_SIZE);
+        
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),AES_BLK_SIZE,cypher_int);
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),AES_KEY_SIZE,key_int);
@@ -160,6 +191,10 @@ void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cyp
    AcceleratorRun(accel);
 
    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+
+#ifndef PC
+   cache_invalidate();
+#endif
 
    int_to_byte(result_int, result, AES_BLK_SIZE);
 

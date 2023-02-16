@@ -100,7 +100,7 @@ void Full_AES_Test(Versat* versat) {
 #ifdef SIM
     // Receive input data from uart 
     char input_file_name[] = "soc-in.bin";
-    din_size = uart_recvfile(input_file_name, din_fp);    
+    din_size = uart_recvfile(input_file_name, (char *) din_fp);    
 #else
     // Receive input data from ethernet
     din_size = eth_rcv_variable_file((char *) din_fp);
@@ -121,7 +121,7 @@ void Full_AES_Test(Versat* versat) {
         din_ptr += get_ptext_key_pair(&(din_fp[din_ptr]), &plaintext, &key);
         printf("\ttest vector #%d/%d...", i+1, num_msgs);
 
-        VersatAES(versat, accel, ciphertext, plaintext, key);
+        VersatAES(versat, ciphertext, plaintext, key);
         printf("done!\n");
 
         // Save to memory
@@ -131,7 +131,7 @@ void Full_AES_Test(Versat* versat) {
 #ifdef SIM
     // Send message digests via uart
     char output_file_name[] = "soc-out.bin";
-    uart_sendfile(output_file_name, dout_size, dout_fp);
+    uart_sendfile(output_file_name, dout_size, (char *) dout_fp);
 #else
     // Send message digests via ethernet
     eth_send_variable_file((char *) dout_fp, dout_size);

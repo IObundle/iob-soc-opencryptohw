@@ -11,6 +11,10 @@ extern "C"{
 
 #include "iob-timer.h"
 
+#ifndef PC
+#include "iob-cache.h"
+#endif
+
 #include "crypto/sha2.h"
 #include "crypto/aes.h"
 
@@ -44,6 +48,10 @@ int main(int argc,const char* argv[])
    //init uart
    uart_init(UART_BASE,FREQ/BAUD);
    timer_init(TIMER_BASE);
+
+#ifndef PC
+   cache_init(0, DCACHE_ADDR_W);
+#endif
 
    printf("Init base modules\n");
 
