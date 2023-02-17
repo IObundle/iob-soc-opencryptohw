@@ -168,7 +168,12 @@ void print_byte(uint8_t* in, int size) {
     printf("\n");
 }
 
-void VersatAES(Versat* versat, uint8_t *result, uint8_t *cypher, uint8_t *key) {
+void Versat_init_AES(Accelerator* accel) {
+    FillAES(GetInstanceByName(accel,"Test","aes"));
+    return;
+}
+
+void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cypher, uint8_t *key) {
    int cypher_int[AES_BLK_SIZE] = {0};
    int key_int[AES_KEY_SIZE] = {0};
    int result_int[AES_BLK_SIZE] = {0};
@@ -176,15 +181,9 @@ void VersatAES(Versat* versat, uint8_t *result, uint8_t *cypher, uint8_t *key) {
    byte_to_int(cypher, cypher_int, AES_BLK_SIZE);
    byte_to_int(key, key_int, AES_KEY_SIZE);
         
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
-   Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
-
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),AES_BLK_SIZE,cypher_int);
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),AES_KEY_SIZE,key_int);
    ConfigureSimpleVWrite(GetInstanceByName(accel,"Test","results"),AES_BLK_SIZE,result_int);
-
-   FillAES(GetInstanceByName(accel,"Test","aes"));
 
    AcceleratorRun(accel);
    AcceleratorRun(accel);

@@ -32,13 +32,11 @@ SRC+= $(FIRM_DIR)/versatAES.cpp
 ifeq ($(ALGORITHM),SHA256)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
-HARDWARE_TEST = 2
 endif
 
 ifeq ($(ALGORITHM),AES256)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
-HARDWARE_TEST = 10
 endif
 
 INCLUDE+=$(incdir)./build

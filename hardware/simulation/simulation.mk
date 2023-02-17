@@ -61,15 +61,6 @@ SOC_IN_BIN=soc-in.bin
 TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
-# Choose Hardware Test
-ifeq ($(ALGORITHM),SHA256)
-HARDWARE_TEST = 2
-endif
-
-ifeq ($(ALGORITHM),AES256)
-HARDWARE_TEST = 10
-endif
-
 #RULES
 build: $(VSRC) $(VHDR) $(HEXPROGS) $(SOC_IN_BIN)
 ifeq ($(SIM_SERVER),)

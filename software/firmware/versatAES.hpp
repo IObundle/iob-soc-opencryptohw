@@ -29,5 +29,7 @@ void FillRound(FUInstance* round);
 
 void FillAES(FUInstance* inst); 
 
-void VersatAES(Versat* versat, uint8_t *result, uint8_t *cypher, uint8_t *key) ;
+void Versat_init_AES(Accelerator* accel);
+
+void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cypher, uint8_t *key);
 #endif // INCLUDED_VERSAT_AES

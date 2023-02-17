@@ -113,6 +113,9 @@ void Full_AES_Test(Versat* versat) {
     // Output file starts after input file
     dout_fp = din_fp + din_size;
 
+    // Initialize VersatAES
+    Versat_init_AES(accel);
+
     // Message test loop
     int i=0;
     uint8_t *msg = NULL;
@@ -121,7 +124,7 @@ void Full_AES_Test(Versat* versat) {
         din_ptr += get_ptext_key_pair(&(din_fp[din_ptr]), &plaintext, &key);
         printf("\ttest vector #%d/%d...", i+1, num_msgs);
 
-        VersatAES(versat, ciphertext, plaintext, key);
+        VersatAES(versat, accel, ciphertext, plaintext, key);
         printf("done!\n");
 
         // Save to memory
