@@ -3,6 +3,7 @@
 import sys
 import parse
 
+AES_BLK_SIZE = 128
 
 def write_hex_str_to_file(f, hex_str, strlen=-1):
     """Write hex string to file
@@ -58,7 +59,7 @@ def write_d_in_file(f, ptexts, keys, keysize=128):
     f.write(num_texts.to_bytes(integer_bytes, byteorder="little"))
     for ptext, key in zip(ptexts, keys):
         # write plaintext in bytes
-        write_hex_str_to_file(f, ptext, 128 // 8)
+        write_hex_str_to_file(f, ptext, AES_BLK_SIZE // 8)
         # write key in bytes
         write_hex_str_to_file(f, key, keysize // 8)
         # print(f"COUNT = {count}")
@@ -82,7 +83,7 @@ def write_d_out_file(f, ciphertexts):
 
     for ctext in ciphertexts:
         # write ciphertext
-        write_hex_str_to_file(f, ctext, 128 // 8)
+        write_hex_str_to_file(f, ctext, AES_BLK_SIZE // 8)
 
 
 def main():
@@ -95,6 +96,9 @@ def main():
         print("data_in.bin: input data in binary")
         print("data_out.bin: output data in binary")
         exit()
+
+    # keysize (AES128 = 128, AES256 = 256)
+    keysize = 256
 
     # Strings to parse
     plaintext_line = "PLAINTEXT ="
@@ -130,7 +134,7 @@ def main():
                 key_arrays.append(key)
 
     # Generate output files
-    write_d_in_file(f_din, plaintext_arrays, key_arrays)
+    write_d_in_file(f_din, plaintext_arrays, key_arrays, keysize)
     write_d_out_file(f_dout, ciphertext_arrays)
 
     # Close output files

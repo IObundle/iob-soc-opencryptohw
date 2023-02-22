@@ -6,7 +6,7 @@
 
 // AES Sizes (bytes)
 #define AES_BLK_SIZE (16)
-#define AES_KEY_SIZE (16)
+#define AES_KEY_SIZE (32)
 
 struct Versat;
 struct Accelerator;
@@ -22,6 +22,8 @@ void FillSBox(FUInstance* inst);
 void FillSubBytes(FUInstance* inst);
 
 void FillKeySchedule(FUInstance* inst);
+
+void FillKeySchedule256(FUInstance* inst);
 
 void FillRow(FUInstance* row);
 

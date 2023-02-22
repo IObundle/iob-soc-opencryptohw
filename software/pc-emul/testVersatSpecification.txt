@@ -955,6 +955,114 @@ module FirstLineKey(x0,x1,x2,x3,w0,w1,w2,w3,rcon){
    d3 -> out:3; 
 }
 
+module FourthLineKey(x0,x1,x2,x3,w0,w1,w2,w3){
+   LookupTable b0;
+   LookupTable b1;
+#
+   x0 -> b0:0;
+   x1 -> b0:1;
+
+   x2 -> b1:0;
+   x3 -> b1:1;
+
+   d0 = b0:0 ^ w0;
+   d1 = b0:1 ^ w1;
+   d2 = b1:0 ^ w2;
+   d3 = b1:1 ^ w3;
+
+   d0 -> out:0; 
+   d1 -> out:1; 
+   d2 -> out:2; 
+   d3 -> out:3; 
+}
+
+module KeySchedule256(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,x10,x11,x12,x13,x14,x15,x16,x17,x18,x19,x1a,x1b,x1c,x1d,x1e,x1f,rcon){
+   FirstLineKey s;
+   FourthLineKey q;
+#
+   x13 -> s:0;
+   x17 -> s:1;
+   x1b -> s:2;
+   x1f -> s:3;
+   x0 -> s:4;
+   x4 -> s:5;
+   x8 -> s:6;
+   xc -> s:7;
+   rcon -> s:8;
+
+   a0 = s:0 ^ x1;
+   a1 = s:1 ^ x5;
+   a2 = s:2 ^ x9;
+   a3 = s:3 ^ xd;
+
+   b0 = a0 ^ x2;
+   b1 = a1 ^ x6;
+   b2 = a2 ^ xa;
+   b3 = a3 ^ xe;
+
+   c0 = b0 ^ x3;
+   c1 = b1 ^ x7;
+   c2 = b2 ^ xb;
+   c3 = b3 ^ xf;
+
+   c0 -> q:0;
+   c1 -> q:1;
+   c2 -> q:2;
+   c3 -> q:3;
+   x10 -> q:4;
+   x14 -> q:5;
+   x18 -> q:6;
+   x1c -> q:7;
+
+   d0 = q:0 ^ x11;
+   d1 = q:1 ^ x15;
+   d2 = q:2 ^ x19;
+   d3 = q:3 ^ x1d;
+
+   e0 = d0 ^ x12;
+   e1 = d1 ^ x16;
+   e2 = d2 ^ x1a;
+   e3 = d3 ^ x1e;
+
+   f0 = e0 ^ x13;
+   f1 = e1 ^ x17;
+   f2 = e2 ^ x1b;
+   f3 = e3 ^ x1f;
+
+   s:0 -> out:0;
+   s:1 -> out:4;
+   s:2 -> out:8;
+   s:3 -> out:12;
+   a0 -> out:1;
+   a1 -> out:5;
+   a2 -> out:9;
+   a3 -> out:13;
+   b0 -> out:2;
+   b1 -> out:6;
+   b2 -> out:10;
+   b3 -> out:14;
+   c0 -> out:3;
+   c1 -> out:7;
+   c2 -> out:11;
+   c3 -> out:15;
+   q:0 -> out:16;
+   q:1 -> out:20;
+   q:2 -> out:24;
+   q:3 -> out:28;
+   d0 -> out:17;
+   d1 -> out:21;
+   d2 -> out:25;
+   d3 -> out:29;
+   e0 -> out:18;
+   e1 -> out:22;
+   e2 -> out:26;
+   e3 -> out:30;
+   f0 -> out:19;
+   f1 -> out:23;
+   f2 -> out:27;
+   f3 -> out:31;
+}
+
 module KeySchedule(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,rcon){
    FirstLineKey s;
 #
@@ -1048,7 +1156,7 @@ module MainRound(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,
    addRoundKey:0..15 -> out:0..15;
 }
 
-module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf){
+module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,k10,k11,k12,k13,k14,k15,k16,k17,k18,k19,k1a,k1b,k1c,k1d,k1e,k1f){
    Const rcon0;
    Const rcon1;
    Const rcon2;
@@ -1056,20 +1164,14 @@ module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,
    Const rcon4;
    Const rcon5;
    Const rcon6;
-   Const rcon7;
-   Const rcon8;
-   Const rcon9;
    
-   KeySchedule key0;
-   KeySchedule key1;
-   KeySchedule key2;
-   KeySchedule key3;
-   KeySchedule key4;
-   KeySchedule key5;
-   KeySchedule key6;
-   KeySchedule key7;
-   KeySchedule key8;
-   KeySchedule key9;
+   KeySchedule256 key0;
+   KeySchedule256 key1;
+   KeySchedule256 key2;
+   KeySchedule256 key3;
+   KeySchedule256 key4;
+   KeySchedule256 key5;
+   KeySchedule256 key6;
 
    AddRoundKey firstKey;
    MainRound round0;
@@ -1081,6 +1183,10 @@ module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,
    MainRound round6;
    MainRound round7;
    MainRound round8;
+   MainRound round9;
+   MainRound round10;
+   MainRound round11;
+   MainRound round12;
    SBox subBytes;
    ShiftRows shiftRows;
    AddRoundKey lastKey;
@@ -1134,34 +1240,41 @@ module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,
    kd -> key0:7;
    ke -> key0:11;
    kf -> key0:15;
-   rcon0 -> key0:16;
+   k10 -> key0:16;
+   k11 -> key0:20;
+   k12 -> key0:24;
+   k13 -> key0:28;
+   k14 -> key0:17;
+   k15 -> key0:21;
+   k16 -> key0:25;
+   k17 -> key0:29;
+   k18 -> key0:18;
+   k19 -> key0:22;
+   k1a -> key0:26;
+   k1b -> key0:30;
+   k1c -> key0:19;
+   k1d -> key0:23;
+   k1e -> key0:27;
+   k1f -> key0:31;
+   rcon0 -> key0:32;
 
-   key0:0..15 -> key1:0..15;
-   rcon1 -> key1:16;
+   key0:0..31 -> key1:0..31;
+   rcon1 -> key1:32;
 
-   key1:0..15 -> key2:0..15;
-   rcon2 -> key2:16;
+   key1:0..31 -> key2:0..31;
+   rcon2 -> key2:32;
 
-   key2:0..15 -> key3:0..15;
-   rcon3 -> key3:16;
+   key2:0..31 -> key3:0..31;
+   rcon3 -> key3:32;
 
-   key3:0..15 -> key4:0..15;
-   rcon4 -> key4:16;
+   key3:0..31 -> key4:0..31;
+   rcon4 -> key4:32;
 
-   key4:0..15 -> key5:0..15;
-   rcon5 -> key5:16;
+   key4:0..31 -> key5:0..31;
+   rcon5 -> key5:32;
 
-   key5:0..15 -> key6:0..15;
-   rcon6 -> key6:16;
-
-   key6:0..15 -> key7:0..15;
-   rcon7 -> key7:16;
-
-   key7:0..15 -> key8:0..15;
-   rcon8 -> key8:16;
-
-   key8:0..15 -> key9:0..15;
-   rcon9 -> key9:16;
+   key5:0..31 -> key6:0..31;
+   rcon6 -> key6:32;
 
    firstKey:0..15 -> round0:0..15;
    round0:0..15 -> round1:0..15;
@@ -1172,22 +1285,57 @@ module AES(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,
    round5:0..15 -> round6:0..15;
    round6:0..15 -> round7:0..15;
    round7:0..15 -> round8:0..15;
+   round8:0..15 -> round9:0..15;
+   round9:0..15 -> round10:0..15;
+   round10:0..15 -> round11:0..15;
+   round11:0..15 -> round12:0..15;
 
-   key0:0..15 -> round0:16..31;
-   key1:0..15 -> round1:16..31;
-   key2:0..15 -> round2:16..31;
-   key3:0..15 -> round3:16..31;
-   key4:0..15 -> round4:16..31;
-   key5:0..15 -> round5:16..31;
-   key6:0..15 -> round6:16..31;
-   key7:0..15 -> round7:16..31;
-   key8:0..15 -> round8:16..31;
+   k10 -> round0:16;
+   k11 -> round0:20;
+   k12 -> round0:24;
+   k13 -> round0:28;
+   k14 -> round0:17;
+   k15 -> round0:21;
+   k16 -> round0:25;
+   k17 -> round0:29;
+   k18 -> round0:18;
+   k19 -> round0:22;
+   k1a -> round0:26;
+   k1b -> round0:30;
+   k1c -> round0:19;
+   k1d -> round0:23;
+   k1e -> round0:27;
+   k1f -> round0:31;
 
-   round8:0..15 -> subBytes:0..15;
+   key0:0..15  -> round1:16..31;
+
+   key0:16..31 -> round2:16..31;
+
+   key1:0..15  -> round3:16..31;
+
+   key1:16..31 -> round4:16..31;
+
+   key2:0..15  -> round5:16..31;
+
+   key2:16..31 -> round6:16..31;
+
+   key3:0..15  -> round7:16..31;
+
+   key3:16..31 -> round8:16..31;
+
+   key4:0..15  -> round9:16..31;
+
+   key4:16..31 -> round10:16..31;
+
+   key5:0..15  -> round11:16..31;
+
+   key5:16..31 -> round12:16..31;
+
+   round12:0..15 -> subBytes:0..15;
    subBytes:0..15 -> shiftRows:0..15;
    shiftRows:0..15 -> lastKey:0..15;
 
-   key9:0..15 -> lastKey:16..31;
+   key6:0..15  -> lastKey:16..31;
 
    lastKey:0 -> out:0;
    lastKey:1 -> out:4;
@@ -1215,7 +1363,7 @@ module ReadWriteAES(){
    AES aes;
 #
    cypher[0..15] -> aes:0..15;
-   key[0..15] -> aes:16..31;
+   key[0..31] -> aes:16..47;
 
    aes:0..15 -> merge:0..15;
 

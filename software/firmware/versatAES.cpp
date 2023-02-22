@@ -97,6 +97,16 @@ void FillKeySchedule(FUInstance* inst){
    }
 }
 
+void FillKeySchedule256(FUInstance* inst){
+   for(int i = 0; i < 2; i++){
+      FUInstance* table1 = GetInstanceByName(inst,"s","b%d",i);
+      FUInstance* table2 = GetInstanceByName(inst,"q","b%d",i);
+
+      FillSBox(table1);
+      FillSBox(table2);
+   }
+}
+
 void FillRow(FUInstance* row){
    FUInstance* mul2_0 = GetInstanceByName(row,"mul2_0");
    FUInstance* mul2_1 = GetInstanceByName(row,"mul2_1");
@@ -122,16 +132,17 @@ void FillRound(FUInstance* round){
 }
 
 void FillAES(FUInstance* inst) {
-   int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
-   for(int i = 0; i < 10; i++){
+   int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
+   for(int i = 0; i < 7; i++){
       FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
-      FillKeySchedule(GetInstanceByName(inst,"key%d",i));
+      FillKeySchedule256(GetInstanceByName(inst,"key%d",i));
    }
+
    FillSubBytes(GetInstanceByName(inst,"subBytes"));
 
-   for(int i = 0; i < 9; i++){
+   for(int i = 0; i < 13; i++){
       FillRound(GetInstanceByName(inst,"round%d",i));
    }
 }
@@ -163,7 +174,7 @@ void print_hex(int* in, int size) {
 void print_byte(uint8_t* in, int size) {
     int i = 0;
     for(i=0; i<size; i++) {
-        printf("%x", in[i]);
+        printf("%02x", in[i]);
     }
     printf("\n");
 }
@@ -180,7 +191,7 @@ void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cyp
 
    byte_to_int(cypher, cypher_int, AES_BLK_SIZE);
    byte_to_int(key, key_int, AES_KEY_SIZE);
-        
+
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),AES_BLK_SIZE,cypher_int);
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),AES_KEY_SIZE,key_int);
    ConfigureSimpleVWrite(GetInstanceByName(accel,"Test","results"),AES_BLK_SIZE,result_int);
