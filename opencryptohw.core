@@ -183,7 +183,7 @@ filesets:
   validate:
     files:
       - fusesoc/scripts/validate_hook.sh: {copyto: validate_hook.sh}
-      - software/test/validate_test.py: {copyto: validate_test.py}
+      - software/test/SHA256/validate_test.py: {copyto: validate_test.py}
     file_type: user
 
   tb:
@@ -569,8 +569,8 @@ generate:
       run_from_core: true
       output:
         files:
-          - software/test/SHA256ShortMsg_d_in.bin: {copyto: soc-in.bin}
-          - software/test/SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
+          - software/test/SHA256/SHA256ShortMsg_d_in.bin: {copyto: soc-in.bin}
+          - software/test/SHA256/SHA256ShortMsg_d_out.bin: {copyto: SHA256ShortMsg_d_out.bin}
         fileset: console
         file_type: user
 

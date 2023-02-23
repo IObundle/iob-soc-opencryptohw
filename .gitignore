@@ -24,10 +24,15 @@ software/*/*
 !software/firmware/profile.c
 !software/firmware/profile.h
 !software/firmware/crypto/
+!software/firmware/SHA256/
+!software/firmware/AES256/
 !software/firmware/units/
 
 !software/console/console
 !software/console/eth_console
+
+!software/test/SHA256/
+!software/test/AES256/
 
 !software/pc-emul/testVersatSpecification.txt
 

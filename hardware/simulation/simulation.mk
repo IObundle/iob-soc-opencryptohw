@@ -61,7 +61,6 @@ SOC_IN_BIN=soc-in.bin
 TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
-
 #RULES
 build: $(VSRC) $(VHDR) $(HEXPROGS) $(SOC_IN_BIN)
 ifeq ($(SIM_SERVER),)
@@ -135,7 +134,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: sim-shortmsg validate
 
 sim-shortmsg:
-	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=2
+	make -C $(ROOT_DIR) sim-run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=$(HARDWARE_TEST)
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
