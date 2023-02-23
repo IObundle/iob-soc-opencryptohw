@@ -232,16 +232,14 @@ targets:
       - versat
       - hw
     generate:
-      - versat_gen
       - cache_if_gen
       - uart_mkregs_gen_hw
       - timer_mkregs_gen_hw
       - ethernet_mkregs_gen_hw
       - versat_if_gen
-      - system_gen_hw
     toplevel: system
 
-  sim:
+  sim-SHA256:
     <<: *default
     description: Simulate the System
     default_tool: verilator
@@ -252,9 +250,11 @@ targets:
       - verilator
       - console_sim
     generate_append: 
-      - firmware_sim_gen
-      - tb_gen_hw
-      - input_gen
+      - versat_gen_sha256
+      - system_gen_hw_sha256
+      - firmware_sim_gen_sha256
+      - tb_gen_hw_sha256
+      - input_gen_sha256
       - uart_mkregs_gen_sw
     toplevel:
       - system_top
@@ -304,7 +304,7 @@ targets:
       pre_run: [console_sim_hook]
       post_run: [validate_hook]
 
-  fpga:
+  fpga-SHA256:
     <<: *default
     description: System FPGA Synthesis and Execution
     default_tool: vivado
@@ -315,8 +315,10 @@ targets:
       - ku040
       - console_fpga
     generate_append: 
-      - firmware_fpga_gen
-      - input_gen
+      - system_gen_hw_sha256
+      - versat_gen_sha256
+      - firmware_fpga_gen_sha256
+      - input_gen_sha256
     toplevel:
       - top_system
     tools:
@@ -364,10 +366,10 @@ scripts:
     cmd: [bash, validate_hook.sh]
 
 generate:
-  versat_gen:
+  versat_gen_sha256:
     generator: custom
     parameters:
-      command: make pc-emul-gen-versat
+      command: make pc-emul-gen-versat ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -421,10 +423,10 @@ generate:
         fileset: versat
         file_type: verilogSource
 
-  firmware_sim_gen:
+  firmware_sim_gen_sha256:
     generator: custom
     parameters:
-      command: ./fusesoc/scripts/firmware_sim_gen.sh
+      command: ./fusesoc/scripts/firmware_sim_gen.sh ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -435,10 +437,10 @@ generate:
         fileset: tb
         file_type: user
 
-  firmware_fpga_gen:
+  firmware_fpga_gen_sha256:
     generator: custom
     parameters:
-      command: ./fusesoc/scripts/firmware_fpga_gen.sh
+      command: ./fusesoc/scripts/firmware_fpga_gen.sh ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -534,10 +536,10 @@ generate:
         fileset: ethernet
         file_type: verilogSource
 
-  system_gen_hw:
+  system_gen_hw_sha256:
     generator: custom
     parameters:
-      command: ./fusesoc/scripts/system_gen_hw.sh
+      command: ./fusesoc/scripts/system_gen_hw.sh ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -547,10 +549,10 @@ generate:
         fileset: hw
         file_type: verilogSource
 
-  tb_gen_hw:
+  tb_gen_hw_sha256:
     generator: custom
     parameters:
-      command: ./fusesoc/scripts/tb_gen_hw.sh
+      command: ./fusesoc/scripts/tb_gen_hw.sh ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -561,10 +563,10 @@ generate:
         fileset: tb
         file_type: verilogSource
 
-  input_gen:
+  input_gen_sha256:
     generator: custom
     parameters:
-      command: make -C software/test gen_test_data
+      command: make -C software/test gen_test_data ALGORITHM=SHA256
       copy_core: true
       run_from_core: true
       output:
@@ -649,7 +651,7 @@ parameters:
 
   FIRM_ADDR_W:
     datatype: int
-    default: 17
+    default: 18
     description: Firmware address width
     paramtype: vlogdefine
 
@@ -763,6 +765,6 @@ parameters:
 
   FW_SIZE:
     datatype: int
-    default: 32768
+    default: 65536
     description: Firmware size
     paramtype: vlogdefine

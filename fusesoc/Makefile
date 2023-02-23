@@ -26,25 +26,25 @@ setup $(VENV): requirements.txt
 # SIMULATION
 #
 sim-setup: $(VENV)
-	. $(VENV_ACTIVATE); fusesoc run --target=sim --setup $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim-$(ALGORITHM) --setup $(CORE)
 
 sim-build: $(VENV)
 	# Note: fusesoc --build always runs --setup
-	. $(VENV_ACTIVATE); fusesoc run --target=sim --build $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim-$(ALGORITHM) --build $(CORE)
 
 sim-run: sim-build
-	. $(VENV_ACTIVATE); fusesoc run --target=sim --run $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=sim-$(ALGORITHM) --run $(CORE)
 
 #
 # FPGA
 #
 fpga-setup: $(VENV)
-	. $(VENV_ACTIVATE); fusesoc run --target=fpga --setup $(CORE)
+	. $(VENV_ACTIVATE); fusesoc run --target=fpga-$(ALGORITHM) --setup $(CORE)
 
 fpga-build: $(VENV)
 ifeq ($(FPGA_SERVER),)
 	# Note: fusesoc --build always runs --setup
-	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --build $(CORE)"
+	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga-$(ALGORITHM) --build $(CORE)"
 else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
@@ -55,7 +55,7 @@ endif
 fpga-run: $(VENV)
 ifeq ($(BOARD_SERVER),)
 	# Note: fusesoc --build always runs --setup
-	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga --run $(CORE)"
+	. $(VENV_ACTIVATE); ./scripts/source_and_run.sh /opt/Xilinx/Vivado/2020.2/settings64.sh "fusesoc run --target=fpga-$(ALGORITHM) --run $(CORE)"
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)

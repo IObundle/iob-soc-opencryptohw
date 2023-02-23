@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
+# Generate Firmware for simulation
+# Usage: ./path/to/firmware_sim_gen.sh ALGORITHM={SHA256,AES256}
+
 # Variables
 FIRM_DIR="software/firmware"
 BOOT_DIR="software/bootloader"
 PYTHON_DIR="submodules/LIB/software/python"
 BOOTROM_ADDR_W=12
-FIRM_ADDR_W=17
+FIRM_ADDR_W=18
 # Build versat verilog sources
-make pc-emul-gen-versat
+make pc-emul-gen-versat $1
 # Build simulation firmware and bootloader
-make fw-build SIM=1
+make fw-build SIM=1 $1
 # Copy firmware binary to top level
 cp -u $FIRM_DIR/firmware.bin .
 # Create firmware.hex from bin
