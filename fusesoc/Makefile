@@ -48,7 +48,7 @@ ifeq ($(FPGA_SERVER),)
 else
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-build'
+	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-build ALGORITHM=$(ALGORITHM)'
 	rsync -avz --exclude-from=$(ROOT_DIR)/.rsync_exclude $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 
@@ -59,7 +59,7 @@ ifeq ($(BOARD_SERVER),)
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-run'
+	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/fusesoc fpga-run ALGORITHM=$(ALGORITHM)'
 	rsync -avz --exclude-from=$(ROOT_DIR)/.rsync_exclude $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/fusesoc/build .
 endif
 

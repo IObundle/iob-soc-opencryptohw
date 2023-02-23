@@ -302,7 +302,7 @@ targets:
       - FW_SIZE
     hooks:
       pre_run: [console_sim_hook]
-      post_run: [validate_hook]
+      post_run: [validate_hook_sha256]
 
   sim-AES256:
     <<: *default
@@ -367,7 +367,7 @@ targets:
       - FW_SIZE
     hooks:
       pre_run: [console_sim_hook]
-      post_run: [validate_hook]
+      post_run: [validate_hook_aes256]
 
   fpga-SHA256:
     <<: *default
@@ -418,7 +418,7 @@ targets:
       - AXI_ADDR_W
     hooks:
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook]
+      post_run: [console_fpga_hook, validate_hook_sha256]
 
 scripts:
   console_sim_hook:
@@ -427,8 +427,10 @@ scripts:
     cmd: [bash, pre_run_queue_hook.sh]
   console_fpga_hook:
     cmd: [bash, console_fpga_hook.sh]
-  validate_hook:
-    cmd: [bash, validate_hook.sh]
+  validate_hook_sha256:
+    cmd: [bash, validate_hook.sh, SHA256]
+  validate_hook_aes256:
+    cmd: [bash, validate_hook.sh, AES256]
 
 generate:
   versat_gen_sha256:
