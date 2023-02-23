@@ -163,22 +163,6 @@ void int_to_byte(int *in, uint8_t *out, int size) {
     return;
 }
 
-void print_hex(int* in, int size) {
-    int i = 0;
-    for(i = 0; i < size; i++) {
-        printf("%x", in[i]);
-    }
-    printf("\n");
-}
-
-void print_byte(uint8_t* in, int size) {
-    int i = 0;
-    for(i=0; i<size; i++) {
-        printf("%02x", in[i]);
-    }
-    printf("\n");
-}
-
 void Versat_init_AES(Accelerator* accel) {
     FillAES(GetInstanceByName(accel,"Test","aes"));
     return;
