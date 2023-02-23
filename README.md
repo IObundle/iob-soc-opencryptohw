@@ -26,14 +26,14 @@ or using the url:
 git clone --recursive https://github.com/IObundle/IOb-SoC-OpenCryptoHW.git
 ```
 * * *
-# PC Emulation
-The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
-```
-make pc-emul-run
-```
-This target performs the Short Message Test for Byte-Oriented `sha256()` 
-implementations from the 
-[NIST Cryptograpphic Algorithm Validation
+# Supported Algorithms
+Currently, the IOb-SoC-OpenCryptoHW supports two algorithms: SHA256 and AES256.
+
+## Test Vectors
+### SHA256
+The test vectors for the SHA256 algorithm performs the Short Message Test for
+Byte-Oriented `sha256()` implementations from the 
+[NIST Cryptographic Algorithm Validation
 Program](https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing).
 
 The test vectors are a set of 65 messages from 0 to 64 byte length. The 
@@ -41,13 +41,31 @@ implementation program only receives the messages and outputs the corresponding
 message digests (MD). An external script compares the implementation output with
 the expected MD from the test vectors.
 
+### AES256
+The test vectors for the AES256 algorithm perform 10 encryptions adapted from
+the [NIST cryptographic Algorithm Validation
+Program](https://csrc.nist.gov/Projects/cryptographic-algorithm-validation-program/Block-Ciphers).
+
+Each test vector is adapted from the [AES Multiblock Message Test (MMT) Sample
+Vectors](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/aesmct_intermediate.zip)
+where each plaintext is the first block from each multiblock vector.
+
+# PC Emulation
+The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
+```
+# SHA256 pc-emul test
+make test-pc-emul ALGORITHM=SHA256
+# AES256 pc-emul test
+make test-pc-emul ALGORITHM=AES256
+```
+
 The implementation output can be checked manually from terminal and
 `software/pc-emul/ethernet.log`
 
 ### Clean environment
 To clean the workspace after PC emulation:
 ```
-make pc-emul-clean
+make test-pc-emul-clean ALGORITHM={SHA256,AES256}
 ```
 ### Requirements
 PC emulation program requires:
@@ -58,20 +76,20 @@ PC emulation program requires:
 
 * * *
 # RISCV Emulation
-The IOb-SoC-OpenCryptoHW system can be emulated using a verilog simulator like icarus 
-with:
+The IOb-SoC-OpenCryptoHW system can be emulated using a verilog simulator like
+icarus with:
 ```Make
 # Test with all supported simulators
 make test-sim
 # Test with a specific simulator
-make sim-test SIMULATOR=icarus
-make sim-test SIMULATOR=verilator
+make sim-test SIMULATOR=icarus ALGORITHM={SHA256,AES256}
+make sim-test SIMULATOR=verilator ALGORITHM={SHA256,AES256}
 ```
 
 ### Clean environment
 To clean the workspace after the RISCV emulation:
 ```
-make test-sim-clean
+make test-sim-clean ALGORITHM={SHA256,AES256}
 ```
 
 ### Requirements/Setup
@@ -95,10 +113,16 @@ make fpga-build
 
 The synthesis results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`. 
 
+## FPGA Test
+For a complete FPGA test (synthesis, load and execution), run:
+```
+make test-fpga ALGORITHM={SHA256,AES256}
+```
+
 ### Clean environment
 To clean the workspace after the FPGA execution:
 ```
-make test-fpga-clean
+make test-fpga-clean ALGORITHM={SHA256,AES256}
 ```
 
 ### Requirements/Setup
@@ -150,6 +174,39 @@ The log file can be reviewed in
 `hardware/fpga/vivado/AES-KU040-DB-G/versat.log`.
 The netlist file can be reviewed in
 `hardware/fpga/vivado/AES-KU040-DB-G/iob_versat.edif`.
+
+# FuseSoC (SHA256 currently)
+IOb-SoC-OpenCryptoHW supports alternative
+[FuseSoC](https://github.com/olofk/fusesoc) flows for simulation and fpga.
+Run the targets:
+```
+# FuseSoC simulation flow
+make fusesoc-sim-run
+make fusesoc-clean
+# FuseSoC fpga flow
+make fusesoc-fpga-run
+make fusesoc-fpga-clean
+```
+
+# OpenLane (SHA256 currently)
+IOb-SoC-OpenCryptoHW supports
+[OpenLane](https://github.com/The-OpenROAD-Project/OpenLane) flows.
+To generate `.gds` file for the system:
+```
+make openlane-run
+```
+**Note**: requires 128 GB RAM and takes almost 5 days to complete
+
+To perform post-synthesis or post-layout simulation in icarus:
+```
+# post-synthesis simulation
+make openlane-post-synth-sim
+make openlane-sim-clean
+# post-layout simulation
+make openlane-post-layout-sim
+make openlane-sim-clean
+```
+**Note**: requires 32GB of RAM and takes about 12 hours to complete.
 
 # Acknowledgement
 This project is funded through the NGI Assure Fund, a fund established by NLnet
