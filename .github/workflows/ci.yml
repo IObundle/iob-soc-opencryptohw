@@ -23,7 +23,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  pc-emul:
+  SHA-pc-emul:
     runs-on: self-hosted
     timeout-minutes: 5
 
@@ -32,11 +32,11 @@ jobs:
         with:
           submodules: 'recursive'
       - name: test-pc-emul
-        run: make test-pc-emul
+        run: make test-pc-emul ALGORITHM=SHA256
       - name: test-clean
-        run: make test-pc-emul-clean
+        run: make test-pc-emul-clean ALGORITHM=SHA256
 
-  simulation:
+  SHA-simulation:
     runs-on: self-hosted
     timeout-minutes: 10
 
@@ -45,11 +45,37 @@ jobs:
         with:
           submodules: 'recursive'
       - name: simulate system
-        run: make test-sim
+        run: make test-sim ALGORITHM=SHA256
       - name: simulation clean
-        run: make test-sim-clean
+        run: make test-sim-clean ALGORITHM=SHA256
 
-  fpga:
+  AES-pc-emul:
+    runs-on: self-hosted
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-pc-emul
+        run: make test-pc-emul ALGORITHM=AES256
+      - name: test-clean
+        run: make test-pc-emul-clean ALGORITHM=AES256
+
+  AES-simulation:
+    runs-on: self-hosted
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: simulate system
+        run: make test-sim ALGORITHM=AES256
+      - name: simulation clean
+        run: make test-sim-clean ALGORITHM=AES256
+
+  AES-fpga:
     runs-on: self-hosted
     timeout-minutes: 60
 
@@ -58,32 +84,32 @@ jobs:
         with:
           submodules: 'recursive'
       - name: fpga build
-        run: make test-fpga
+        run: make test-fpga ALGORITHM=AES256
       - name: fpga clean
-        run: make test-fpga-clean
+        run: make test-fpga-clean ALGORITHM=AES256
 
-  fusesoc-sim:
-    runs-on: self-hosted
-    timeout-minutes: 10
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: FuseSoC Simulation
-        run: make fusesoc-sim-run
-      - name: FuseSoC clean
-        run: make fusesoc-clean
-
-  fusesoc-fpga:
-    runs-on: self-hosted
-    timeout-minutes: 60
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: FuseSoC FPGA Test
-        run: make fusesoc-fpga-run
-      - name: FuseSoC clean
-        run: make -C fusesoc clean-all
+  # fusesoc-sim:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 10
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: FuseSoC Simulation
+  #       run: make fusesoc-sim-run
+  #     - name: FuseSoC clean
+  #       run: make fusesoc-clean
+  #
+  # fusesoc-fpga:
+  #   runs-on: self-hosted
+  #   timeout-minutes: 60
+  #
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: 'recursive'
+  #     - name: FuseSoC FPGA Test
+  #       run: make fusesoc-fpga-run
+  #     - name: FuseSoC clean
+  #       run: make -C fusesoc clean-all

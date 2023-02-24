@@ -125,7 +125,7 @@ test: clean-testlog test-shortmsg
 test-shortmsg: run-shortmsg test-validate
 
 run-shortmsg:
-	make -C $(ROOT_DIR) fpga-run HARDWARE_TEST=2
+	make -C $(ROOT_DIR) fpga-run HARDWARE_TEST=$(HARDWARE_TEST)
 
 test-validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
