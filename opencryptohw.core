@@ -356,7 +356,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=2
+      - HARDWARE_TEST=10
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -394,7 +394,7 @@ targets:
     parameters:
       - RUN_EXTMEM
       - USE_DDR
-      - INIT_MEM
+      - INIT_MEM=0
       - DATA_W
       - ADDR_W
       - BOOTROM_ADDR_W
@@ -419,6 +419,57 @@ targets:
     hooks:
       pre_run: [queue_in_hook]
       post_run: [console_fpga_hook, validate_hook_sha256]
+
+  fpga-AES256:
+    <<: *default
+    description: System FPGA Synthesis and Execution
+    default_tool: vivado
+    filesets_append:
+      - console
+      - eth_console
+      - validate
+      - ku040
+      - console_fpga
+    generate_append: 
+      - system_gen_hw_aes256
+      - versat_gen_aes256
+      - firmware_fpga_gen_aes256
+      - input_gen_aes256
+    toplevel:
+      - top_system
+    tools:
+      vivado:
+        part: xcku040-fbva676-1-c
+        synth: vivado
+        pnr: vivado
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM=0
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=10
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=30
+      - AXI_ADDR_W
+    hooks:
+      pre_run: [queue_in_hook]
+      post_run: [console_fpga_hook, validate_hook_aes256]
 
 scripts:
   console_sim_hook:

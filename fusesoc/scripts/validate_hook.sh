@@ -8,7 +8,7 @@ then
     VALIDATION_OUT_BIN=SHA256ShortMsg_d_out.bin
 elif [[ "$1" == "AES256" ]]
 then
-    VALIDATION_OUT_BIN=AESECB128_d_out.bin
+    VALIDATION_OUT_BIN=AESECB256_d_out.bin
 else
     VALIDATION_OUT_BIN=""
 fi
