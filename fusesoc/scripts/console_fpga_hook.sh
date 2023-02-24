@@ -17,6 +17,6 @@ queue_out () {
 # Load file
 echo $JOB > $LOAD_FILE
 # Run console
-echo "python3 ./software/console/eth_console -s /dev/usb-uart -f"
+python3 ./software/console/eth_console -s /dev/usb-uart -f
 # Remove from queue
 queue_out
