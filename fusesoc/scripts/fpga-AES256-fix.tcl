@@ -1,5 +1,17 @@
 # Auto-generated project tcl file
 
+# close previous project
+close_project -delete
+
+# remove previous project vivado files
+file delete -force -- .Xil
+file delete -force -- reports
+file delete -force -- iobundle_opencryptohw_0.0.1_0.cache
+file delete -force -- iobundle_opencryptohw_0.0.1_0.hw
+file delete -force -- iobundle_opencryptohw_0.0.1_0.ip_user_files
+file delete -force -- iobundle_opencryptohw_0.0.1_0.xpr
+file delete -force -- ip
+file delete -force {*}[glob -nocomplain vivado*]
 
 create_project iobundle_opencryptohw_0.0.1_0 -force
 
@@ -161,4 +173,4 @@ report_cdc -details -file reports/cdc.txt
 report_synchronizer_mtbf -file reports/synchronizer_mtbf.txt
 report_utilization -hierarchical -file reports/utilization.txt
 
-write_bitstream -force top_system.bit
+write_bitstream -force iobundle_opencryptohw_0.0.1_0.bit

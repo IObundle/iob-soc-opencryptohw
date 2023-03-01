@@ -225,11 +225,6 @@ filesets:
       - fusesoc/scripts/fpga-AES256-fix.tcl: {copyto: fpga-AES256-fix.tcl}
     file_type: user
 
-  post_build_fix:
-    files:
-      - fusesoc/scripts/post_build_fix_aes256.sh: {copyto: post_build_fix_aes256.sh}
-    file_type: user
-
 targets:
   default: &default
     filesets:
@@ -442,7 +437,6 @@ targets:
       - ku040
       - console_fpga
       - pre_build_fix
-      - post_build_fix
     generate_append: 
       - system_gen_hw_aes256
       - versat_gen_aes256
@@ -482,7 +476,6 @@ targets:
       - AXI_ADDR_W
     hooks:
       pre_build: [pre_build_fix_aes256]
-      post_build: [post_build_fix_aes256]
       pre_run: [queue_in_hook]
       post_run: [console_fpga_hook, validate_hook_aes256]
 
@@ -499,8 +492,6 @@ scripts:
     cmd: [bash, validate_hook.sh, AES256]
   pre_build_fix_aes256:
     cmd: [bash, pre_build_fix_aes256.sh]
-  post_build_fix_aes256:
-    cmd: [bash, post_build_fix_aes256.sh]
 
 generate:
   versat_gen_sha256:
