@@ -50,6 +50,11 @@ INCLUDE+=$(incdir)$(CACHE_DIR)/software/
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
 endif
 
+ifeq ($(ALGORITHM),MCELIECE)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+endif
+
+
 #PROFILE
 ifeq ($(PROFILE),1)
 HDR+=$(FIRM_DIR)/profile.h

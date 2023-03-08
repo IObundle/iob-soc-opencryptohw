@@ -39,6 +39,10 @@ INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
 endif
 
+ifeq ($(ALGORITHM),MCELIECE)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+endif
+
 INCLUDE+=$(incdir)./build
 
 SOC_IN_BIN=soc-in.bin
