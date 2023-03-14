@@ -23,18 +23,19 @@ HDR+=$(FIRM_DIR)/unitConfiguration.hpp
 
 #SOURCES
 SRC+= $(UART_DIR)/software/printf.c
-SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/versatAES.cpp
 
 ifeq ($(ALGORITHM),SHA256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
 endif
 
 ifeq ($(ALGORITHM),AES256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
 endif
@@ -42,6 +43,9 @@ endif
 ifeq ($(ALGORITHM),MCELIECE)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullMCELIECETests.cpp
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/*.c)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)/common
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/common/*.c)
 endif
 
 INCLUDE+=$(incdir)./build

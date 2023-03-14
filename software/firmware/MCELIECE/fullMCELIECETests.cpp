@@ -120,7 +120,12 @@ void Full_McEliece_Test(Versat* versat) {
         printf("\ttest vector #%d/%d...", i+1, num_seeds);
 
         // TODO
-        // VersatAES(versat, accel, ciphertext, plaintext, key);
+        // Set Seed
+        nist_kat_init(seed, NULL, 256);
+        
+        // McEliece Key Pair
+        PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair(public_key, secret_key);
+
         printf("done!\n");
 
         // Save public key to memory

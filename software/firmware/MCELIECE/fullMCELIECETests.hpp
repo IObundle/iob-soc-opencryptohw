@@ -12,9 +12,10 @@ extern "C"{
 #include <stdio.h>
 #endif
 #include "api.h"
+#include "nistkatrng.h"
 }
 #include "versat.hpp"
-#include "versatAES.hpp"
+// #include "versatAES.hpp"
 
 #define SEED_BYTES (48)
 
