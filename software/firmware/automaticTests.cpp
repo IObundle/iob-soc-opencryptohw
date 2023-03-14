@@ -866,6 +866,72 @@ TEST(ReadWriteAES){
 
 }
 
+TEST(VectorLikeOperation){
+   uint32_t mat[16/4] = {0};
+   uint32_t row[16/4] = {0};
+   uint32_t expected[16/4] = {0};
+   uint32_t result[16/4] = {0};
+   uint32_t mask = 0xFFFFFFFF;
+   int i = 0;
+   int n_cols = 4;
+   for(i=0; i<n_cols;i++){
+       mat[i] = (uint32_t) i*4;
+       row[i] = (uint32_t) 0xFF;
+       for(int j=1; j<4; j++){
+           mat[i] = (mat[i] << 8) | (i*4 + j);
+           row[i] = (row[i] << 8) | 0xFF;
+       }
+       expected[i] = ~(mat[i]);
+   }
+
+   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("VectorLikeOperation"));
+   Accelerator* accel = CreateAccelerator(versat);
+   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+
+   ConfigureSimpleVRead(GetInstanceByName(accel,"Test","row"), 16 / 4,(int*) row);
+
+   FUInstance* matInst = GetInstanceByName(accel,"Test","mat");
+   ConfigureMemoryLinear(matInst, 16 / 4);
+   for (int c = 0; c < 16 / 4; c++){
+       VersatUnitWrite(matInst,c,mat[c]);
+   }
+
+   FUInstance* maskInst = GetInstanceByName(accel,"Test","mask");
+   maskInst->config[0] = mask;
+
+   FUInstance* outputInst = GetInstanceByName(accel,"Test","output");
+   ConfigureMemoryReceive(outputInst, 16 / 4, 1);
+   
+   AcceleratorRun(accel); // Fills vread with valid data
+   AcceleratorRun(accel);
+
+   for (int c = 0; c < 16/4; c++){
+        result[c] = VersatUnitRead(outputInst,c);
+   }
+   
+   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+
+   if (memcmp(result, expected, 16/4) == 0) {
+       printf("Test Passed\n");
+       TEST_PASSED;
+   } else {
+       printf("Input:\n");
+       for(int i = 0; i < 16/4; i++){
+          printf("0x%08x ", mat[i]);
+       }
+       printf("Result:\n");
+       for(int i = 0; i < 16/4; i++){
+          printf("0x%08x ", result[i]);
+       }
+       printf("\n\nExpected:\n");
+       for(int i = 0; i < 16/4; i++){
+          printf("0x%08x ", expected[i]);
+       }
+       TEST_FAILED("Result differ from expected value");
+   }
+
+}
+
 int SimpleAdderInstance(Accelerator* accel,int a,int b){
    FUInstance* a1 = GetInstanceByName(accel,"Test","a1");
    FUInstance* a2 = GetInstanceByName(accel,"Test","a2");
@@ -1337,10 +1403,10 @@ void AutomaticTests(Versat* versat){
 
 #if 1
 #if 1
-   TEST_INST( 0 ,TestMStage);
+   TEST_INST( 0 ,TestMStage);       // HARDWARE_TEST = 0
    TEST_INST( 0 ,TestFStage);
    TEST_INST( 1 ,SHA);
-   TEST_INST( 0 ,MultipleSHATests);
+   TEST_INST( 0 ,MultipleSHATests); // HARDWARE_TEST = 3
 #endif
 #if 0
    TEST_INST( 1 ,VReadToVWrite);
@@ -1354,7 +1420,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 1 ,VersatShiftRows);
 #endif
 #if 1
-   TEST_INST( 0 ,VersatDoRows);
+   TEST_INST( 0 ,VersatDoRows);         // HARDWARE_TEST = 4
    TEST_INST( 0 ,VersatMixColumns);
    TEST_INST( 0 ,FirstLineKey);
    TEST_INST( 0 ,KeySchedule);
@@ -1362,7 +1428,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 0 ,AES);
    TEST_INST( 1 ,ReadWriteAES);
    TEST_INST( 0 ,SimpleAdder);
-   TEST_INST( 0 ,ComplexMultiplier);
+   TEST_INST( 0 ,ComplexMultiplier);    // HARDWARE_TEST = 12
 #endif
 #if 0
    TEST_INST( 1 ,SimpleShareConfig);
@@ -1381,6 +1447,7 @@ void AutomaticTests(Versat* versat){
    TEST_INST( 0 ,SimpleMergeInputOutputCommon);
    TEST_INST( 0 ,ComplexMerge);
 #endif
+   TEST_INST( 1, VectorLikeOperation); // HARDWARE_TEST = 13
 #endif
 
    //Free(versat);
