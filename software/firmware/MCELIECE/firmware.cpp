@@ -18,7 +18,7 @@ extern "C"{
 int printf_(const char* format, ...);
 }
 
-// #include "fullAESTests.hpp"
+#include "fullMCELIECETests.hpp"
 
 // Automatically times a block in number of counts
 struct TimeIt{
@@ -65,9 +65,9 @@ int main(int argc,const char* argv[])
 
    AutomaticTests(versat);
 
-// #ifndef GENERATE_ONLY
-//    Full_AES_Test(versat);
-// #endif
+#ifndef GENERATE_ONLY
+   Full_McEliece_Test(versat);
+#endif
 
    uart_finish();
 

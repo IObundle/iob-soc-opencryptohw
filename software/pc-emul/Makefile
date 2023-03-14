@@ -41,6 +41,7 @@ endif
 
 ifeq ($(ALGORITHM),MCELIECE)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullMCELIECETests.cpp
 endif
 
 INCLUDE+=$(incdir)./build
