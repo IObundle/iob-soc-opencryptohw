@@ -15,7 +15,7 @@ extern "C"{
 #include "nistkatrng.h"
 }
 #include "versat.hpp"
-// #include "versatAES.hpp"
+#include "versatMCELIECE.hpp"
 
 #define SEED_BYTES (48)
 

@@ -866,14 +866,20 @@ TEST(ReadWriteAES){
 
 }
 
+#define SYS_N (3488)
+#define VEC_SZ (SYS_N / 8) // 436
+// 16, 64 works
+// 3488 / 8 = 436 does not work
+// 128 seems to hang
+// #define VEC_SZ (132)
 TEST(VectorLikeOperation){
-   uint32_t mat[16/4] = {0};
-   uint32_t row[16/4] = {0};
-   uint32_t expected[16/4] = {0};
-   uint32_t result[16/4] = {0};
+   uint32_t mat[VEC_SZ/4] = {0};
+   uint32_t row[VEC_SZ/4] = {0};
+   uint32_t expected[VEC_SZ/4] = {0};
+   uint32_t result[VEC_SZ/4] = {0};
    uint32_t mask = 0xFFFFFFFF;
    int i = 0;
-   int n_cols = 4;
+   int n_cols = VEC_SZ / 4;
    for(i=0; i<n_cols;i++){
        mat[i] = (uint32_t) i*4;
        row[i] = (uint32_t) 0xFF;
@@ -888,43 +894,54 @@ TEST(VectorLikeOperation){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
 
-   ConfigureSimpleVRead(GetInstanceByName(accel,"Test","row"), 16 / 4,(int*) row);
+   // printf("config vread\n");
+   ConfigureSimpleVRead(GetInstanceByName(accel,"Test","row"), VEC_SZ / 4,(int*) row);
 
+   // printf("config mem mat\n");
    FUInstance* matInst = GetInstanceByName(accel,"Test","mat");
-   ConfigureMemoryLinear(matInst, 16 / 4);
-   for (int c = 0; c < 16 / 4; c++){
+   ConfigureMemoryLinear(matInst, VEC_SZ / 4);
+   for (int c = 0; c < VEC_SZ / 4; c++){
        VersatUnitWrite(matInst,c,mat[c]);
    }
 
+   // printf("config mask\n");
    FUInstance* maskInst = GetInstanceByName(accel,"Test","mask");
    maskInst->config[0] = mask;
 
+   // printf("config output\n");
    FUInstance* outputInst = GetInstanceByName(accel,"Test","output");
-   ConfigureMemoryReceive(outputInst, 16 / 4, 1);
+   // ConfigureMemoryReceive(outputInst, VEC_SZ / 4, 1);
+   // ConfigureMemoryLinearOut(outputInst, VEC_SZ / 4);
+   ConfigureMemoryLinearOut(outputInst, VEC_SZ / 4);
    
+   // printf("accel 1\n");
    AcceleratorRun(accel); // Fills vread with valid data
+   // printf("accel 2\n");
    AcceleratorRun(accel);
 
-   for (int c = 0; c < 16/4; c++){
+   // printf("read results\n");
+   for (int c = 0; c < VEC_SZ/4; c++){
         result[c] = VersatUnitRead(outputInst,c);
    }
    
+   // printf("output versat\n");
    OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
 
-   if (memcmp(result, expected, 16/4) == 0) {
+   // printf("cmp results\n");
+   if (memcmp(result, expected, VEC_SZ/4) == 0) {
        printf("Test Passed\n");
        TEST_PASSED;
    } else {
        printf("Input:\n");
-       for(int i = 0; i < 16/4; i++){
+       for(int i = 0; i < VEC_SZ/4; i++){
           printf("0x%08x ", mat[i]);
        }
-       printf("Result:\n");
-       for(int i = 0; i < 16/4; i++){
+       printf("\nResult:\n");
+       for(int i = 0; i < VEC_SZ/4; i++){
           printf("0x%08x ", result[i]);
        }
        printf("\n\nExpected:\n");
-       for(int i = 0; i < 16/4; i++){
+       for(int i = 0; i < VEC_SZ/4; i++){
           printf("0x%08x ", expected[i]);
        }
        TEST_FAILED("Result differ from expected value");

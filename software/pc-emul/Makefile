@@ -41,8 +41,11 @@ SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
 endif
 
 ifeq ($(ALGORITHM),MCELIECE)
+SRC+= $(FIRM_DIR)/versatMCELIECE.cpp
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullMCELIECETests.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/operations.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/versat_pk_gen.cpp
 SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/*.c)
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)/common
 SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/common/*.c)

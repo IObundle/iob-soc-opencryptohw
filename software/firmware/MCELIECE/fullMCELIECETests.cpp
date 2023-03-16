@@ -84,9 +84,7 @@ void Full_McEliece_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("VectorLikeOperation"));
-    Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    VersatInit(versat);
 
     // Receive Input Data
     int din_ptr = 0, din_size = 0;
@@ -113,7 +111,6 @@ void Full_McEliece_Test(Versat* versat) {
 
     // Message test loop
     int i=0;
-    uint8_t *msg = NULL;
     for(i=0; i< (int) num_seeds; i++){
         // Parse seeds
         din_ptr += get_seed(&(din_fp[din_ptr]), &seed);
