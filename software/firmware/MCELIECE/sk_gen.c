@@ -9,6 +9,12 @@
 #include "params.h"
 #include "util.h"
 
+#ifndef PC
+#include "printf.h"
+#else
+#include <stdio.h>
+#endif
+
 /* input: f, element in GF((2^m)^t) */
 /* output: out, minimal polynomial of f */
 /* return: 0 for success and -1 for failure */
@@ -19,6 +25,8 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
     gf mask, inv, t;
 
     // fill matrix
+    printf("\tgenpoly: fill matrix\n");
+    printf("\t\tmat addr: %x\n", &(mat[SYS_T][SYS_T-1]));
 
     mat[0][0] = 1;
 
@@ -29,12 +37,15 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
     for (i = 0; i < SYS_T; i++) {
         mat[1][i] = f[i];
     }
+    printf("\tgenpoly: set row 0, 1\n");
 
     for (j = 2; j <= SYS_T; j++) {
+        printf("\t\trow %d\n", j);
         PQCLEAN_MCELIECE348864_CLEAN_GF_mul(mat[j], mat[j - 1], f);
     }
 
     // gaussian
+    printf("\tgenpoly: gaussian\n");
 
     for (j = 0; j < SYS_T; j++) {
         for (k = j + 1; k < SYS_T; k++) {
@@ -66,6 +77,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
             }
         }
     }
+    printf("\tgenpoly: pre store output\n");
 
     for (i = 0; i < SYS_T; i++) {
         out[i] = mat[ SYS_T ][ i ];

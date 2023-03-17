@@ -66,8 +66,14 @@ int save_msg(uint8_t *ptr, uint8_t* msg, int size){
 void Full_McEliece_Test(Versat* versat) {
     printf("Init Full McEliece Test\n");
     uint8_t *seed = NULL;
+#ifdef PC
     uint8_t public_key[PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES] = {0};
     uint8_t secret_key[PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES] = {0};
+#else
+    uint8_t *public_key = (uint8_t*) (1<<(FIRM_ADDR_W));
+    uint8_t *secret_key = (uint8_t*) (public_key + \
+            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES);
+#endif
     unsigned int num_seeds = 0;
 
 // Pointer to DDR_MEM
@@ -77,7 +83,8 @@ void Full_McEliece_Test(Versat* versat) {
 #ifndef RUN_EXTMEM
     char *ddr_mem = (char*) (EXTRA_BASE);
 #else
-    char *ddr_mem = (char*) ((1<<(FIRM_ADDR_W)));
+    char *ddr_mem = (char*) (secret_key + \
+            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES);
 #endif
 #endif
     // Init ethernet

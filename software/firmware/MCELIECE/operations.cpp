@@ -14,6 +14,11 @@ extern "C"{
 
 #include <stdint.h>
 #include <string.h>
+#ifndef PC
+#include "printf.h"
+#else
+#include <stdio.h>
+#endif
 }
 
 int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_enc(
@@ -97,10 +102,12 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
     gf irr[ SYS_T ]; // Goppa polynomial
     uint32_t perm[ 1 << GFBITS ]; // random permutation
 
+    printf("pre randombytes\n");
     randombytes(seed, sizeof(seed));
 
     while (1) {
         rp = r;
+        printf("pre aes\n");
         PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(r, sizeof(r), nonce, seed);
         memcpy(seed, &r[ sizeof(r) - 32 ], 32);
 
@@ -108,14 +115,17 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
             f[i] = PQCLEAN_MCELIECE348864_CLEAN_load2(rp + i * 2);
         }
         rp += sizeof(f);
+        printf("pre genpoly_gen\n");
         if (PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(irr, f)) {
             continue;
         }
 
         for (i = 0; i < (1 << GFBITS); i++) {
+            printf("\tperm[%d]\n", i);
             perm[i] = PQCLEAN_MCELIECE348864_CLEAN_load4(rp + i * 4);
         }
         rp += sizeof(perm);
+        printf("pre perm_check\n");
         if (PQCLEAN_MCELIECE348864_CLEAN_perm_check(perm)) {
             continue;
         }
@@ -123,11 +133,13 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
         for (i = 0; i < SYS_T;   i++) {
             PQCLEAN_MCELIECE348864_CLEAN_store2(sk + SYS_N / 8 + i * 2, irr[i]);
         }
+        printf("pre pk_gen\n");
         if (PQCLEAN_MCELIECE348864_CLEAN_pk_gen(pk, perm, sk + SYS_N / 8)) {
             continue;
         }
 
         memcpy(sk, rp, SYS_N / 8);
+        printf("pre controlbits\n");
         PQCLEAN_MCELIECE348864_CLEAN_controlbits(sk + SYS_N / 8 + IRR_BYTES, perm);
 
         break;

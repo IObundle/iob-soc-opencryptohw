@@ -21,8 +21,8 @@ int printf_(const char* format, ...);
 static Accelerator* accel = NULL;
 static FUInstance* McElieceInstance = NULL;
 static FUDeclaration* type = NULL;
-static int run_cnt = 0;
-static int first_run = 1;
+// static int run_cnt = 0;
+// static int first_run = 1;
 
 void VersatInit(Versat* versat) {
     if (accel == NULL) {
@@ -63,30 +63,30 @@ void VersatLineXOR(uint8_t *mat, uint8_t *row, int n_cols, uint8_t mask) {
    // printf("\t%d\n", run_cnt);
    // run_cnt++;
    
-   if (first_run == 1){
-       printf("mask: 0x%02x\n", mask);
-       printf("mask_int: 0x%08x\n", mask_int);
-       printf("mat:\n");
-       for(int i = 0; i < n_cols_int; i++){
-          printf("0x%08x ", mat_int[i]);
-       }
-       printf("\nrow:\n");
-       for(int i = 0; i < n_cols_int; i++){
-          printf("0x%08x ", row_int[i]);
-       }
-   }
-
+   // if (first_run == 1){
+   //     printf("mask: 0x%02x\n", mask);
+   //     printf("mask_int: 0x%08x\n", mask_int);
+   //     printf("mat:\n");
+   //     for(int i = 0; i < n_cols_int; i++){
+   //        printf("0x%08x ", mat_int[i]);
+   //     }
+   //     printf("\nrow:\n");
+   //     for(int i = 0; i < n_cols_int; i++){
+   //        printf("0x%08x ", row_int[i]);
+   //     }
+   // }
+   //
    for (int c = 0; c < n_cols_int; c++){
         mat_int[c] = VersatUnitRead(outputInst,c);
    }
-
-   if (first_run == 1){
-       printf("\nResult:\n");
-       for(int i = 0; i < n_cols_int; i++){
-          printf("0x%08x ", mat_int[i]);
-       }
-       first_run = 0;
-   }
+   //
+   // if (first_run == 1){
+   //     printf("\nResult:\n");
+   //     for(int i = 0; i < n_cols_int; i++){
+   //        printf("0x%08x ", mat_int[i]);
+   //     }
+   //     first_run = 0;
+   // }
    
    return;
 }
