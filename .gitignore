@@ -26,6 +26,7 @@ software/*/*
 !software/firmware/crypto/
 !software/firmware/SHA256/
 !software/firmware/AES256/
+!software/firmware/MCELIECE/
 !software/firmware/units/
 
 !software/console/console

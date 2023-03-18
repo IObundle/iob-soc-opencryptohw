@@ -102,6 +102,17 @@ void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
    config->incrA = 1;
 }
 
+void ConfigureMemoryLinearOut(FUInstance* inst, int amountOfData){
+   IntSet(inst->config,0,sizeof(MemConfig));
+   volatile MemConfig* config = (volatile MemConfig*) inst->config;
+
+   config->iterA = 1;
+   config->perA = amountOfData;
+   config->dutyA = amountOfData;
+   config->incrA = 1;
+   config->in0_wr = 1;
+}
+
 void ConfigureMemoryReceive(FUInstance* inst, int amountOfData,int interdataDelay){
    IntSet(inst->config,0,sizeof(MemConfig));
    volatile MemConfig* config = (volatile MemConfig*) inst->config;

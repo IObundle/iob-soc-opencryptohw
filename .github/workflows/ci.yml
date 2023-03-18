@@ -77,7 +77,7 @@ jobs:
 
   AES-fpga:
     runs-on: self-hosted
-    timeout-minutes: 60
+    timeout-minutes: 75
 
     steps:
       - uses: actions/checkout@v3
@@ -88,28 +88,28 @@ jobs:
       - name: fpga clean
         run: make test-fpga-clean ALGORITHM=AES256
 
-  # fusesoc-sim:
-  #   runs-on: self-hosted
-  #   timeout-minutes: 10
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: FuseSoC Simulation
-  #       run: make fusesoc-sim-run
-  #     - name: FuseSoC clean
-  #       run: make fusesoc-clean
-  #
-  # fusesoc-fpga:
-  #   runs-on: self-hosted
-  #   timeout-minutes: 60
-  #
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       with:
-  #         submodules: 'recursive'
-  #     - name: FuseSoC FPGA Test
-  #       run: make fusesoc-fpga-run
-  #     - name: FuseSoC clean
-  #       run: make -C fusesoc clean-all
+  AES-fusesoc-sim:
+    runs-on: self-hosted
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: FuseSoC Simulation
+        run: make fusesoc-sim-run ALGORITHM=AES256
+      - name: FuseSoC clean
+        run: make fusesoc-clean
+
+  AES-fusesoc-fpga:
+    runs-on: self-hosted
+    timeout-minutes: 75
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: FuseSoC FPGA Test
+        run: make fusesoc-fpga-run ALGORITHM=AES256
+      - name: FuseSoC clean
+        run: make -C fusesoc clean-all
