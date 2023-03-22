@@ -98,7 +98,7 @@ build: $(FW_EMUL)
 	mkdir -p trace_out
 
 $(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
 	
 run: build $(SOC_IN_BIN)
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
