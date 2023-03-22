@@ -217,6 +217,7 @@ filesets:
     files:
       - fusesoc/scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
       - fusesoc/scripts/pre_run_queue_hook.sh: {copyto: pre_run_queue_hook.sh}
+      - software/python/board_client.py: {copyto: software/python/board_client.py}
     file_type: user
 
   pre_build_fix:
