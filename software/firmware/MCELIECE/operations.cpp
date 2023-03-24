@@ -19,6 +19,7 @@ extern "C"{
 #else
 #include <stdio.h>
 #endif
+#include "memory_pool.h"
 }
 
 int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_enc(
@@ -87,34 +88,59 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_dec(
     return 0;
 }
 
+#ifdef SIM
+int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
+(
+    uint8_t *pk,
+    uint8_t *sk
+) {
+    uint8_t seed[ 32 ];
+    uint8_t nonce[ 16 ] = {0};
+
+    // set seed
+    randombytes(seed, sizeof(seed));
+
+    // generate placeholder sk: SK_BYTES from seed
+    PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(sk, SK_BYTES, nonce, seed);
+
+    // generate placeholder pk from placeholder sk
+    PQCLEAN_MCELIECE348864_CLEAN_pk_gen(pk, NULL, sk + SYS_N / 8);
+
+    return 0;
+}
+#else
 int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
 (
     uint8_t *pk,
     uint8_t *sk
 ) {
     int i;
-    uint8_t seed[ 32 ];
-    uint8_t r[ SYS_T * 2 + (1 << GFBITS)*sizeof(uint32_t) + SYS_N / 8 + 32 ];
-    uint8_t nonce[ 16 ] = {0};
+    uint8_t *seed = (uint8_t*) MemPool_Alloc(32*sizeof(uint8_t));
+    uint8_t *r = (uint8_t*) MemPool_Alloc(( SYS_T * 2 + (1 << GFBITS)*sizeof(uint32_t) + SYS_N / 8 + 32 )*sizeof(uint8_t));
+    size_t sizeof_r =  (SYS_T * 2 + (1 << GFBITS)*sizeof(uint32_t) + SYS_N / 8 + 32)*sizeof(uint8_t);
+    uint8_t *nonce = (uint8_t*) MemPool_Alloc(16*sizeof(uint8_t));
+    for (int i = 0; i < 16; i++) {
+        nonce[i] = 0;
+    }
     uint8_t *rp;
 
-    gf f[ SYS_T ]; // element in GF(2^mt)
-    gf irr[ SYS_T ]; // Goppa polynomial
-    uint32_t perm[ 1 << GFBITS ]; // random permutation
+    gf *f = (gf*) MemPool_Alloc(SYS_T*sizeof(gf));
+    gf *irr = (gf*) MemPool_Alloc(SYS_T*sizeof(gf));
+    uint32_t *perm = (uint32_t*) MemPool_Alloc((1 << GFBITS)*sizeof(uint32_t));
 
     printf("pre randombytes\n");
-    randombytes(seed, sizeof(seed));
+    randombytes(seed, 32*sizeof(uint8_t));
 
     while (1) {
         rp = r;
         printf("pre aes\n");
-        PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(r, sizeof(r), nonce, seed);
-        memcpy(seed, &r[ sizeof(r) - 32 ], 32);
+        PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(r, sizeof_r, nonce, seed);
+        memcpy(seed, &r[ sizeof_r - 32 ], 32);
 
         for (i = 0; i < SYS_T; i++) {
             f[i] = PQCLEAN_MCELIECE348864_CLEAN_load2(rp + i * 2);
         }
-        rp += sizeof(f);
+        rp += SYS_T*sizeof(gf);
         printf("pre genpoly_gen\n");
         if (PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(irr, f)) {
             continue;
@@ -124,7 +150,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
             printf("\tperm[%d]\n", i);
             perm[i] = PQCLEAN_MCELIECE348864_CLEAN_load4(rp + i * 4);
         }
-        rp += sizeof(perm);
+        rp += (1 << GFBITS)*sizeof(uint32_t);
         printf("pre perm_check\n");
         if (PQCLEAN_MCELIECE348864_CLEAN_perm_check(perm)) {
             continue;
@@ -145,6 +171,13 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
         break;
     }
 
+    MemPool_Free((1 << GFBITS)*sizeof(uint32_t)); // perm
+    MemPool_Free(SYS_T*sizeof(gf)); // irr
+    MemPool_Free(SYS_T*sizeof(gf)); // f
+    MemPool_Free(16*sizeof(uint8_t)); // nonce
+    MemPool_Free(( SYS_T * 2 + (1 << GFBITS)*sizeof(uint32_t) + SYS_N / 8 + 32 )*sizeof(uint8_t)); // r
+    MemPool_Free(32*sizeof(uint8_t)); // seed
+
     return 0;
 }
-
+#endif // SIM

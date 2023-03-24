@@ -66,14 +66,11 @@ int save_msg(uint8_t *ptr, uint8_t* msg, int size){
 void Full_McEliece_Test(Versat* versat) {
     printf("Init Full McEliece Test\n");
     uint8_t *seed = NULL;
-#ifdef PC
-    uint8_t public_key[PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES] = {0};
-    uint8_t secret_key[PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES] = {0};
-#else
-    uint8_t *public_key = (uint8_t*) (1<<(FIRM_ADDR_W));
-    uint8_t *secret_key = (uint8_t*) (public_key + \
-            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES);
-#endif
+    MemPool_Create(MEMORY_POOL_SIZE);
+    uint8_t *public_key = (uint8_t*) MemPool_Alloc( \
+            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
+    uint8_t *secret_key = (uint8_t*) MemPool_Alloc( \
+            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES*sizeof(uint8_t));
     unsigned int num_seeds = 0;
 
 // Pointer to DDR_MEM
@@ -149,5 +146,7 @@ void Full_McEliece_Test(Versat* versat) {
     eth_send_variable_file((char *) dout_fp, dout_size);
 #endif
     
+    MemPool_Report("program end");
+    MemPool_Destroy();
     return;
 }

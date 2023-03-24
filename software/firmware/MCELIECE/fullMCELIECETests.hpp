@@ -13,11 +13,13 @@ extern "C"{
 #endif
 #include "api.h"
 #include "nistkatrng.h"
+#include "memory_pool.h"
 }
 #include "versat.hpp"
 #include "versatMCELIECE.hpp"
 
 #define SEED_BYTES (48)
+#define MEMORY_POOL_SIZE (10000000)
 
 int get_int(char* ptr, unsigned int *i_val);
 int get_ptext_key_pair(uint8_t *ptr, uint8_t **ptext_ptr, uint8_t **key_ptr);
