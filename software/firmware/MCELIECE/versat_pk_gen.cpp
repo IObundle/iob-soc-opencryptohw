@@ -21,6 +21,47 @@ extern "C"{
 static int test = 0;
 static int n_systematic = 0;
 
+#ifdef SIM
+/* input: secret key sk */
+/* output: public key pk */
+/* this function only mocks public key generation */
+int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8_t *sk) {
+    int i, j, c;
+    printf("sim pk_gen\n");
+    
+    // this should never happen
+    if (perm != NULL) {
+        return -1;
+    }
+
+    uint8_t *mat = (uint8_t*) MemPool_Alloc(( GFBITS * SYS_T )*( SYS_N / 8 )*sizeof(uint8_t));
+    // uint8_t mat[ GFBITS * SYS_T ][ SYS_N / 8 ];
+    uint8_t mask = 0xFF; // all ones
+
+    // initialize first two mat rows
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < SYS_N / 8; j++) {
+            mat[i*(SYS_N/8)+j] = sk[i * SYS_N / 8 + j];
+        }
+    }
+
+    // calculate remaining rows
+    for (i = 2; i < (GFBITS * SYS_T); i++) {
+        for (c = 0; c < SYS_N / 8; c++) {
+            mat[i*(SYS_N/8)+c] = mat[(i-1)*(SYS_N/8)+c] ^ (mat[(i-2)*(SYS_N/8)+c] & mask);
+        }
+    }
+
+    // copy mat to pk
+    for (i = 0; i < PK_NROWS; i++) {
+        memcpy(pk + i * PK_ROW_BYTES, &(mat[i*(SYS_N/8)]) + PK_NROWS / 8, PK_ROW_BYTES);
+    }
+
+    MemPool_Free(( GFBITS * SYS_T )*( SYS_N / 8 )*sizeof(uint8_t)); // mat
+
+    return 0;
+}
+#else
 /* input: secret key sk */
 /* output: public key pk */
 int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8_t *sk) {
@@ -181,4 +222,4 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
     MemPool_Free((1 << GFBITS)*sizeof(uint64_t)); // buf
     return 0;
 }
-
+#endif // SIM

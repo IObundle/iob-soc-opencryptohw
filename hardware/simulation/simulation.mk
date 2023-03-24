@@ -57,8 +57,14 @@ VSRC+=system_tb.v
 endif
 
 # Input/Output
+ifeq ($(ALGORITHM),MCELIECE)
+SIM_TEST_VECTOR_RSP=$(dir $(TEST_VECTOR_RSP))/sim_$(notdir $(TEST_VECTOR_RSP))
+else
+SIM_TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+endif
+
 SOC_IN_BIN=soc-in.bin
-TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(TEST_VECTOR_RSP))_d_in.bin
+TEST_IN_BIN=$(SW_TEST_DIR)/$(basename $(SIM_TEST_VECTOR_RSP))_d_in.bin
 SOC_OUT_BIN:=soc-out.bin
 
 #RULES
@@ -138,13 +144,13 @@ sim-shortmsg:
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
-	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
+	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(SIM_TEST_VECTOR_RSP)
 
 $(SOC_IN_BIN): $(TEST_IN_BIN)
 	cp $< $@
 
 $(TEST_IN_BIN):
-	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(TEST_VECTOR_RSP)
+	make -C $(SW_TEST_DIR) gen_test_data TEST_VECTOR_RSP=$(SIM_TEST_VECTOR_RSP)
 
 #clean target common to all simulators
 clean-remote: hw-clean

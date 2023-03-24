@@ -88,6 +88,27 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_dec(
     return 0;
 }
 
+#ifdef SIM
+int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
+(
+    uint8_t *pk,
+    uint8_t *sk
+) {
+    uint8_t seed[ 32 ];
+    uint8_t nonce[ 16 ] = {0};
+
+    // set seed
+    randombytes(seed, sizeof(seed));
+
+    // generate placeholder sk: SK_BYTES from seed
+    PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(sk, SK_BYTES, nonce, seed);
+
+    // generate placeholder pk from placeholder sk
+    PQCLEAN_MCELIECE348864_CLEAN_pk_gen(pk, NULL, sk + SYS_N / 8);
+
+    return 0;
+}
+#else
 int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
 (
     uint8_t *pk,
@@ -159,4 +180,4 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
 
     return 0;
 }
-
+#endif // SIM
