@@ -36,9 +36,10 @@ void VersatInit(Versat* versat) {
     }
     return;
 }
-void VersatLineXOR(uint8_t *mat, uint8_t *row, int n_cols, uint8_t mask) {
+void VersatLineXOR(uint8_t* out, uint8_t *mat, uint8_t *row, int n_cols, uint8_t mask) {
    uint32_t mask_int = (mask) | (mask << 8) | (mask << 8*2) | (mask << 8*3);
    uint32_t *mat_int = (uint32_t*) mat;
+   uint32_t *out_int = (uint32_t*) out;
    uint32_t *row_int = (uint32_t*) row;
    int n_cols_int = (n_cols >> 2);
 
@@ -77,13 +78,13 @@ void VersatLineXOR(uint8_t *mat, uint8_t *row, int n_cols, uint8_t mask) {
    // }
    //
    for (int c = 0; c < n_cols_int; c++){
-        mat_int[c] = VersatUnitRead(outputInst,c);
+        out_int[c] = VersatUnitRead(outputInst,c);
    }
    //
    // if (first_run == 1){
    //     printf("\nResult:\n");
    //     for(int i = 0; i < n_cols_int; i++){
-   //        printf("0x%08x ", mat_int[i]);
+   //        printf("0x%08x ", out_int[i]);
    //     }
    //     first_run = 0;
    // }

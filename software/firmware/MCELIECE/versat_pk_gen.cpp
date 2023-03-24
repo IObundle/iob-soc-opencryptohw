@@ -47,9 +47,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
 
     // calculate remaining rows
     for (i = 2; i < (GFBITS * SYS_T); i++) {
-        for (c = 0; c < SYS_N / 8; c++) {
-            mat[i*(SYS_N/8)+c] = mat[(i-1)*(SYS_N/8)+c] ^ (mat[(i-2)*(SYS_N/8)+c] & mask);
-        }
+        VersatLineXOR(&(mat[i*(SYS_N/8)+0]), &(mat[(i-1)*(SYS_N/8)+0]), &(mat[(i-2)*(SYS_N/8)+0]), SYS_N / 8, mask);
     }
 
     // copy mat to pk
@@ -175,7 +173,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
 
                 if (mask != 0){
                     printf("\trow pre: %d\n", row);
-                    VersatLineXOR(&(mat[row*(SYS_N/8)+0]), &(mat[k*(SYS_N/8)+0]), SYS_N / 8, mask);
+                    VersatLineXOR(&(mat[row*(SYS_N/8)+0]), &(mat[row*(SYS_N/8)+0]), &(mat[k*(SYS_N/8)+0]), SYS_N / 8, mask);
                     // printf("\trow post: %d\n", row);
                 }
                 // for (c = 0; c < SYS_N / 8; c++) {
