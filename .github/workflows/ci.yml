@@ -75,19 +75,6 @@ jobs:
       - name: simulation clean
         run: make test-sim-clean ALGORITHM=AES256
 
-  AES-fpga:
-    runs-on: self-hosted
-    timeout-minutes: 75
-
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: 'recursive'
-      - name: fpga build
-        run: make test-fpga ALGORITHM=AES256
-      - name: fpga clean
-        run: make test-fpga-clean ALGORITHM=AES256
-
   AES-fusesoc-sim:
     runs-on: self-hosted
     timeout-minutes: 25
@@ -113,3 +100,29 @@ jobs:
         run: make fusesoc-fpga-run ALGORITHM=AES256
       - name: FuseSoC clean
         run: make -C fusesoc clean-all
+
+  MCELIECE-pc-emul:
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: test-pc-emul
+        run: make test-pc-emul ALGORITHM=AES256
+      - name: test-clean
+        run: make test-pc-emul-clean ALGORITHM=AES256
+
+  MCELIECE-simulation:
+    runs-on: self-hosted
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: simulate system
+        run: make test-sim ALGORITHM=MCELIECE
+      - name: simulation clean
+        run: make test-sim-clean ALGORITHM=MCELIECE

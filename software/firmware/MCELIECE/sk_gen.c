@@ -26,9 +26,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
     gf mask, inv, t;
 
     // fill matrix
-    printf("\tgenpoly: fill matrix\n");
-    printf("\t\tmat addr: %x\n", &(mat[SYS_T*SYS_T+SYS_T-1]));
-
     mat[0*SYS_T+0] = 1;
 
     for (i = 1; i < SYS_T; i++) {
@@ -38,7 +35,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
     for (i = 0; i < SYS_T; i++) {
         mat[1*SYS_T+i] = f[i];
     }
-    printf("\tgenpoly: set row 0, 1\n");
 
     for (j = 2; j <= SYS_T; j++) {
         // printf("\t\trow %d\n", j);
@@ -46,8 +42,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
     }
 
     // gaussian
-    printf("\tgenpoly: gaussian\n");
-
     for (j = 0; j < SYS_T; j++) {
         for (k = j + 1; k < SYS_T; k++) {
             mask = PQCLEAN_MCELIECE348864_CLEAN_gf_iszero(mat[ j*SYS_T + j ]);
@@ -79,7 +73,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_genpoly_gen(gf *out, gf *f) {
             }
         }
     }
-    printf("\tgenpoly: pre store output\n");
 
     for (i = 0; i < SYS_T; i++) {
         out[i] = mat[ SYS_T*SYS_T + i ];
