@@ -27,8 +27,8 @@ SOC_OUT_BIN:=soc-out.bin
 ETH_LOG=ethernet.log
 
 # Board grad / release commands
-GRAB_CMD=while $(SW_DIR)/python/board_client.py grab $(USER) | grep "busy" --color=never; do sleep 10; done
-RELEASE_CMD=$(SW_DIR)/python/board_client.py release $(USER)
+GRAB_CMD=board_client.py grab
+RELEASE_CMD=board_client.py release
 
 #RULES
 
