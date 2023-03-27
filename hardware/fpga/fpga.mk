@@ -27,7 +27,7 @@ SOC_OUT_BIN:=soc-out.bin
 ETH_LOG=ethernet.log
 
 # Board grad / release commands
-GRAB_CMD=board_client.py grab
+GRAB_CMD=board_client.py grab 180
 RELEASE_CMD=board_client.py release
 
 #RULES
