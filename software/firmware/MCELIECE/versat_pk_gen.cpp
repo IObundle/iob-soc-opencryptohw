@@ -80,43 +80,36 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
 
     g[ SYS_T ] = 1;
 
-    printf("\tinit g\n");
     for (i = 0; i < SYS_T; i++) {
         g[i] = PQCLEAN_MCELIECE348864_CLEAN_load2(sk);
         g[i] &= GFMASK;
         sk += 2;
     }
 
-    printf("\tinit buf\n");
     for (i = 0; i < (1 << GFBITS); i++) {
         buf[i] = perm[i];
         buf[i] <<= 31;
         buf[i] |= i;
     }
 
-    printf("\tsort\n");
     PQCLEAN_MCELIECE348864_CLEAN_sort_63b(1 << GFBITS, buf);
 
-    printf("\tbuf\n");
     for (i = 0; i < (1 << GFBITS); i++) {
         perm[i] = buf[i] & GFMASK;
     }
-    printf("\tL\n");
+
     for (i = 0; i < SYS_N;         i++) {
         L[i] = PQCLEAN_MCELIECE348864_CLEAN_bitrev((gf)perm[i]);
     }
 
     // filling the matrix
 
-    printf("\troot\n");
     PQCLEAN_MCELIECE348864_CLEAN_root(inv, g, L);
 
-    printf("\tinv\n");
     for (i = 0; i < SYS_N; i++) {
         inv[i] = PQCLEAN_MCELIECE348864_CLEAN_gf_inv(inv[i]);
     }
 
-    printf("\tinit mat 0\n");
     for (i = 0; i < PK_NROWS; i++) {
         for (j = 0; j < SYS_N / 8; j++) {
             // mat[i][j] = 0;
@@ -146,7 +139,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
                 mat[( i * GFBITS + k)*(SYS_N/8) + (j / 8) ] = b;
             }
         }
-        printf("\t3l i: %d\n", i);
 
         for (j = 0; j < SYS_N; j++) {
             inv[j] = PQCLEAN_MCELIECE348864_CLEAN_gf_mul(inv[j], L[j]);
@@ -155,8 +147,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
     }
 
     // gaussian elimination
-    printf("\tgaussian elimination\n", i);
-
     for (i = 0; i < (GFBITS * SYS_T + 7) / 8; i++) {
         for (j = 0; j < 8; j++) {
             row = i * 8 + j;
@@ -172,9 +162,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
                 mask = -mask;
 
                 if (mask != 0){
-                    printf("\trow pre: %d\n", row);
                     VersatLineXOR(&(mat[row*(SYS_N/8)+0]), &(mat[row*(SYS_N/8)+0]), &(mat[k*(SYS_N/8)+0]), SYS_N / 8, mask);
-                    // printf("\trow post: %d\n", row);
                 }
                 // for (c = 0; c < SYS_N / 8; c++) {
                 //     mat[ row ][ c ] ^= mat[ k ][ c ] & mask;
@@ -198,9 +186,12 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
                     mask &= 1;
                     mask = -mask;
 
-                    for (c = 0; c < SYS_N / 8; c++) {
-                        mat[ k*(SYS_N/8) + c ] ^= mat[ row*(SYS_N/8) + c ] & mask;
+                    if (mask != 0){
+                        VersatLineXOR(&(mat[k*(SYS_N/8)+0]), &(mat[k*(SYS_N/8)+0]), &(mat[row*(SYS_N/8)+0]), SYS_N / 8, mask);
                     }
+                    // for (c = 0; c < SYS_N / 8; c++) {
+                    //     mat[ k*(SYS_N/8) + c ] ^= mat[ row*(SYS_N/8) + c ] & mask;
+                    // }
                 }
             }
         }
