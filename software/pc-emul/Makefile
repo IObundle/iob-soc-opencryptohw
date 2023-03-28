@@ -23,20 +23,32 @@ HDR+=$(FIRM_DIR)/unitConfiguration.hpp
 
 #SOURCES
 SRC+= $(UART_DIR)/software/printf.c
-SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/versatAES.cpp
 
 ifeq ($(ALGORITHM),SHA256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
 endif
 
 ifeq ($(ALGORITHM),AES256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
+endif
+
+ifeq ($(ALGORITHM),MCELIECE)
+SRC+= $(FIRM_DIR)/versatMCELIECE.cpp
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullMCELIECETests.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/operations.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/versat_pk_gen.cpp
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/*.c)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)/common
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/common/*.c)
 endif
 
 INCLUDE+=$(incdir)./build
@@ -86,7 +98,7 @@ build: $(FW_EMUL)
 	mkdir -p trace_out
 
 $(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc #-lncurses
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
 	
 run: build $(SOC_IN_BIN)
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/

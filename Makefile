@@ -6,28 +6,28 @@ include $(ROOT_DIR)/config.mk
 #
 FUSESOC_DIR=fusesoc
 fusesoc-setup:
-	make -C $(FUSESOC_DIR) setup
+	make -C $(FUSESOC_DIR) setup ALGORITHM=$(ALGORITHM)
 
 fusesoc-sim-setup:
-	make -C $(FUSESOC_DIR) sim-setup
+	make -C $(FUSESOC_DIR) sim-setup ALGORITHM=$(ALGORITHM)
 
 fusesoc-sim-build:
-	make -C $(FUSESOC_DIR) sim-build
+	make -C $(FUSESOC_DIR) sim-build ALGORITHM=$(ALGORITHM)
 		
 fusesoc-sim-run:
-	make -C $(FUSESOC_DIR) sim-run
+	make -C $(FUSESOC_DIR) sim-run ALGORITHM=$(ALGORITHM)
 
 fusesoc-fpga-setup:
-	make -C $(FUSESOC_DIR) fpga-setup
+	make -C $(FUSESOC_DIR) fpga-setup ALGORITHM=$(ALGORITHM)
 
 fusesoc-fpga-build:
-	make -C $(FUSESOC_DIR) fpga-build
+	make -C $(FUSESOC_DIR) fpga-build ALGORITHM=$(ALGORITHM)
 		
 fusesoc-fpga-run: fusesoc-fpga-build
-	make -C $(FUSESOC_DIR) fpga-run
+	make -C $(FUSESOC_DIR) fpga-run ALGORITHM=$(ALGORITHM)
 
 fusesoc-clean:
-	make -C $(FUSESOC_DIR) clean
+	make -C $(FUSESOC_DIR) clean ALGORITHM=$(ALGORITHM)
 
 #
 # OPENLANE TARGETS

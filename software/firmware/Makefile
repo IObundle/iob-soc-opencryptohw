@@ -33,22 +33,35 @@ INCLUDE+=$(incdir)$(FIRM_DIR)/units
 
 #SOURCES
 SRC+= firmware.S $(ALGORITHM)/firmware.cpp $(UART_DIR)/software/printf.c
-SRC+= $(FIRM_DIR)/crypto/*.c
 SRC+= $(FIRM_DIR)/automaticTests.cpp
 SRC+= $(FIRM_DIR)/unitConfiguration.cpp
 SRC+= $(FIRM_DIR)/versatSHA.cpp
 SRC+= $(FIRM_DIR)/versatAES.cpp
 
 ifeq ($(ALGORITHM),SHA256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullSHATests.cpp
 endif
 
 ifeq ($(ALGORITHM),AES256)
+SRC+= $(FIRM_DIR)/crypto/*.c
 INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
 INCLUDE+=$(incdir)$(CACHE_DIR)/software/
 SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullAESTests.cpp
 endif
+
+ifeq ($(ALGORITHM),MCELIECE)
+SRC+= $(FIRM_DIR)/versatMCELIECE.cpp
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/fullMCELIECETests.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/operations.cpp
+SRC+= $(FIRM_DIR)/$(ALGORITHM)/versat_pk_gen.cpp
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/*.c)
+INCLUDE+=$(incdir)$(FIRM_DIR)/$(ALGORITHM)/common
+SRC+= $(wildcard $(FIRM_DIR)/$(ALGORITHM)/common/*.c)
+endif
+
 
 #PROFILE
 ifeq ($(PROFILE),1)
