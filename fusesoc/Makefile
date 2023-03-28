@@ -1,6 +1,7 @@
 ROOT_DIR=..
 
 CORE=iobundle:opencryptohw:0.0.1
+CACHE_CORE=$(subst :,_,$(CORE))
 
 FPGA_SERVER=$(VIVADO_SERVER)
 FPGA_USER=$(VIVADO_USER)
@@ -70,6 +71,7 @@ clean-all: clean clean-remote
 
 clean:
 	rm -rf build
+	rm -rf $(HOME)/.cache/fusesoc/generated/$(CACHE_CORE)*
 
 clean-remote:
 ifneq ($(BOARD_SERVER),)
