@@ -20,7 +20,9 @@ void MemPool_Create(int pool_size) {
 
 void MemPool_Destroy(void) {
   if (pool.pool_ptr != NULL) {
+#ifdef PC
     free(pool.pool_ptr);
+#endif
     pool.pool_ptr = NULL;
     pool.free_ptr = NULL;
     pool.pool_size = 0;

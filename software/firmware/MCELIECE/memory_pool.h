@@ -1,8 +1,12 @@
 #ifndef H_MEMORY_POOL_H
 #define H_MEMORY_POOL_H
 #include <stdint.h>
+#ifdef PC
 #include <stdio.h>
 #include <stdlib.h>
+#else
+#include "printf.h"
+#endif
 
 struct MemoryPool_ {
   uint8_t *pool_ptr;
