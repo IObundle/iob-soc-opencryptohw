@@ -2,12 +2,12 @@
 
 static MemoryPool pool;
 
-void MemPool_Create(int pool_size) {
+void MemPool_Create(int pool_size, int offset) {
   if (pool_size > 0) {
 #ifdef PC
     pool.pool_ptr = (uint8_t *)malloc(pool_size * sizeof(uint8_t));
 #else
-    pool.pool_ptr = (uint8_t *) (1 << (FIRM_ADDR_W));
+    pool.pool_ptr = (uint8_t *) ((1 << (FIRM_ADDR_W))+offset);
 #endif
     if (pool.pool_ptr != NULL) {
       pool.pool_size = pool_size;

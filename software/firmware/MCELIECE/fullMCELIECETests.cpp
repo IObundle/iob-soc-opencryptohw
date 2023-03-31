@@ -66,7 +66,7 @@ int save_msg(uint8_t *ptr, uint8_t* msg, int size){
 void Full_McEliece_Test(Versat* versat) {
     printf("Init Full McEliece Test\n");
     uint8_t *seed = NULL;
-    MemPool_Create(MEMORY_POOL_SIZE);
+    MemPool_Create(MEMORY_POOL_SIZE, MAX_NUM_SEEDS*SEED_BYTES);
     uint8_t *public_key = (uint8_t*) MemPool_Alloc( \
             PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
     uint8_t *secret_key = (uint8_t*) MemPool_Alloc( \
@@ -80,8 +80,7 @@ void Full_McEliece_Test(Versat* versat) {
 #ifndef RUN_EXTMEM
     char *ddr_mem = (char*) (EXTRA_BASE);
 #else
-    char *ddr_mem = (char*) (secret_key + \
-            PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES);
+    char *ddr_mem = (char*) (1 << (FIRM_ADDR_W));
 #endif
 #endif
     // Init ethernet
@@ -111,7 +110,8 @@ void Full_McEliece_Test(Versat* versat) {
     dout_size = num_seeds*(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES+ \
             PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES);
     // Output file starts after input file
-    dout_fp = din_fp + din_size;
+    // dout_fp = din_fp + din_size;
+    dout_fp = (uint8_t*) MemPool_Alloc(dout_size);
 
     // Message test loop
     int i=0;
@@ -146,6 +146,9 @@ void Full_McEliece_Test(Versat* versat) {
     eth_send_variable_file((char *) dout_fp, dout_size);
 #endif
     
+    MemPool_Alloc(dout_size);
+    MemPool_Alloc(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES*sizeof(uint8_t));
+    MemPool_Alloc(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
     MemPool_Report("program end");
     MemPool_Destroy();
     return;
