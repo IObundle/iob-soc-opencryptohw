@@ -7,6 +7,12 @@
 
 
 #include <stdint.h>
+#include "memory_pool.h"
+#ifndef PC
+#include "printf.h"
+#else
+#include <stdio.h>
+#endif
 
 void PQCLEAN_MCELIECE348864_CLEAN_sort_63b(int n, uint64_t *x);
 void PQCLEAN_MCELIECE348864_CLEAN_controlbits(unsigned char *out, const uint32_t *pi);
