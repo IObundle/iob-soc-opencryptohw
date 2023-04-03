@@ -19,6 +19,7 @@ typedef struct MemoryPool_ MemoryPool;
 void MemPool_Create(int pool_size, int offset);
 void MemPool_Destroy(void);
 void *MemPool_Alloc(int alloc_size);
+void *MemPool_Calloc(int alloc_size);
 void MemPool_Free(int free_size);
 void MemPool_Report(char *rpt_str);
 

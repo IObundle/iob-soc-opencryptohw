@@ -182,13 +182,13 @@ static void controlbitsfrompermutation(int w, int n, int step, int off, unsigned
 
     printf("\t\tcontrobitsfromperm %d\n", w);
 
-    uint32_t *ip = (uint32_t*) MemPool_Alloc(N*sizeof(uint32_t));
-    uint32_t *I = (uint32_t*) MemPool_Alloc(2*N*sizeof(uint32_t));
-    uint32_t *P_ = (uint32_t*) MemPool_Alloc(2*N*sizeof(uint32_t));
-    uint32_t *PI = (uint32_t*) MemPool_Alloc(2*N*sizeof(uint32_t));
-    uint32_t *T = (uint32_t*) MemPool_Alloc(2*N*sizeof(uint32_t));
-    uint32_t *piflip = (uint32_t*) MemPool_Alloc(N*sizeof(uint32_t));
-    uint32_t *subpi = (uint32_t*) MemPool_Alloc(2*(N/2)*sizeof(uint32_t));
+    uint32_t *ip = (uint32_t*) MemPool_Calloc(N*sizeof(uint32_t));
+    uint32_t *I = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
+    uint32_t *P_ = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
+    uint32_t *PI = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
+    uint32_t *T = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
+    uint32_t *piflip = (uint32_t*) MemPool_Calloc(N*sizeof(uint32_t));
+    uint32_t *subpi = (uint32_t*) MemPool_Calloc(2*(N/2)*sizeof(uint32_t));
 
     if (w == 1) {
         c[ off / 8 ] |= (pi[0] & 1) << (off % 8);
@@ -277,16 +277,13 @@ static void controlbitsfrompermutation(int w, int n, int step, int off, unsigned
 /* output: out, control bits w.r.t. pi */
 void PQCLEAN_MCELIECE348864_CLEAN_controlbits(unsigned char *out, const uint32_t *pi) {
     unsigned int i;
-    unsigned char *c = (unsigned char*) MemPool_Alloc( \
+    unsigned char *c = (unsigned char*) MemPool_Calloc( \
             ((2 * GFBITS - 1) * (1 << GFBITS) / 16 ) *(sizeof(unsigned char)));
-
-    for (i = 0; i < sizeof(c); i++) {
-        c[i] = 0;
-    }
+    int size_c = (2 * GFBITS - 1) * (1 << GFBITS) / 16;
 
     controlbitsfrompermutation(GFBITS, (1 << GFBITS), 1, 0, c, pi);
 
-    for (i = 0; i < sizeof(c); i++) {
+    for (i = 0; i < size_c; i++) {
         out[i] = c[i];
     }
     MemPool_Free(((2*GFBITS-1)*(1<<GFBITS)/16)*(sizeof(unsigned char))); // c

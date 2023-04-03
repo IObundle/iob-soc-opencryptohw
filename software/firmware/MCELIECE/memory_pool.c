@@ -43,6 +43,16 @@ void *MemPool_Alloc(int alloc_size) {
   return (void*) alloc_ptr;
 }
 
+void *MemPool_Calloc(int alloc_size) {
+    // allocate memory
+    uint8_t* alloc_ptr = MemPool_Alloc(alloc_size);
+    // set memory to zero
+    for (int i = 0; i < alloc_size; i++) {
+        alloc_ptr[i] = 0;
+    }
+    return (void*) alloc_ptr;
+}
+
 void MemPool_Free(int free_size) {
   if (free_size < (pool.free_ptr - pool.pool_ptr)) {
     pool.free_ptr -= free_size;
