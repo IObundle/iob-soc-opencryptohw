@@ -125,19 +125,23 @@ test-validate:
 # Clean
 #
 
-clean-all: hw-clean
+clean-all: clean-local clean-remote
+
+clean-local: hw-clean
 	@rm -f $(FPGA_OBJ) $(FPGA_LOG) $(SOC_LOG) $(ETH_LOG)
 	@rm -rf $(FPGA_VERSAT_OBJ) $(FPGA_VERSAT_LOG)
 	@make -C $(SW_TEST_DIR) clean
+
+clean-remote:
 ifneq ($(FPGA_SERVER),)
 	ssh $(FPGA_USER)@$(FPGA_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(FPGA_USER)@$(FPGA_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) clean CLEANIP=$(CLEANIP)'
+	ssh $(FPGA_USER)@$(FPGA_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) clean-local CLEANIP=$(CLEANIP)'
 endif
 ifneq ($(BOARD_SERVER),)
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) clean'
+	ssh $(BOARD_USER)@$(BOARD_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD) clean-local'
 endif
 
 #clean test log only when board testing begins
@@ -167,4 +171,4 @@ debug:
 .PHONY: run build \
 	release \
 	test test-shortmsg run-shortmsg test-validate \
-	clean-all clean-testlog
+	clean-all clean-testlog clean-local clean-remote
