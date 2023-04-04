@@ -128,7 +128,7 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
     gf *irr = (gf*) MemPool_Alloc(SYS_T*sizeof(gf));
     uint32_t *perm = (uint32_t*) MemPool_Alloc((1 << GFBITS)*sizeof(uint32_t));
 
-    printf("\trandombytes\n");
+    printf("\n\trandombytes\n");
     randombytes(seed, 32*sizeof(uint8_t));
 
     while (1) {
@@ -137,7 +137,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
         PQCLEAN_MCELIECE348864_CLEAN_aes256ctr(r, sizeof_r, nonce, seed);
         memcpy(seed, &r[ sizeof_r - 32 ], 32);
 
-        printf("\tload2\n");
         for (i = 0; i < SYS_T; i++) {
             f[i] = PQCLEAN_MCELIECE348864_CLEAN_load2(rp + i * 2);
         }
@@ -147,7 +146,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
             continue;
         }
 
-        printf("\tload4\n");
         for (i = 0; i < (1 << GFBITS); i++) {
             perm[i] = PQCLEAN_MCELIECE348864_CLEAN_load4(rp + i * 4);
         }
@@ -157,7 +155,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
             continue;
         }
 
-        printf("\tstore2\n");
         for (i = 0; i < SYS_T;   i++) {
             PQCLEAN_MCELIECE348864_CLEAN_store2(sk + SYS_N / 8 + i * 2, irr[i]);
         }
@@ -173,7 +170,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_crypto_kem_keypair
         break;
     }
 
-    printf("\tOperations MemPool_Free()\n");
     MemPool_Free((1 << GFBITS)*sizeof(uint32_t)); // perm
     MemPool_Free(SYS_T*sizeof(gf)); // irr
     MemPool_Free(SYS_T*sizeof(gf)); // f

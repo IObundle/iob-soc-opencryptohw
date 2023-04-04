@@ -149,7 +149,6 @@ void Full_McEliece_Test(Versat* versat) {
     MemPool_Alloc(dout_size);
     MemPool_Alloc(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES*sizeof(uint8_t));
     MemPool_Alloc(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
-    MemPool_Report("program end");
     MemPool_Destroy();
     return;
 }

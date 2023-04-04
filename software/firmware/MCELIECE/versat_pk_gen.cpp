@@ -27,7 +27,6 @@ static int n_systematic = 0;
 /* this function only mocks public key generation */
 int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8_t *sk) {
     int i, j, c;
-    printf("sim pk_gen\n");
     
     // this should never happen
     if (perm != NULL) {
@@ -92,29 +91,24 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
         buf[i] |= i;
     }
 
-    printf("\t\tsort\n");
     PQCLEAN_MCELIECE348864_CLEAN_sort_63b(1 << GFBITS, buf);
 
     for (i = 0; i < (1 << GFBITS); i++) {
         perm[i] = buf[i] & GFMASK;
     }
 
-    printf("\t\tbitrev\n");
     for (i = 0; i < SYS_N;         i++) {
         L[i] = PQCLEAN_MCELIECE348864_CLEAN_bitrev((gf)perm[i]);
     }
 
     // filling the matrix
 
-    printf("\t\troot\n");
     PQCLEAN_MCELIECE348864_CLEAN_root(inv, g, L);
 
-    printf("\t\tgf_inv\n");
     for (i = 0; i < SYS_N; i++) {
         inv[i] = PQCLEAN_MCELIECE348864_CLEAN_gf_inv(inv[i]);
     }
 
-    printf("\t\tmat = 0\n");
     for (i = 0; i < PK_NROWS; i++) {
         for (j = 0; j < SYS_N / 8; j++) {
             // mat[i][j] = 0;
@@ -122,7 +116,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
         }
     }
 
-    printf("\t\tinv:\n");
     for (i = 0; i < SYS_T; i++) {
         for (j = 0; j < SYS_N; j += 8) {
             for (k = 0; k < GFBITS;  k++) {
@@ -149,7 +142,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
         for (j = 0; j < SYS_N; j++) {
             inv[j] = PQCLEAN_MCELIECE348864_CLEAN_gf_mul(inv[j], L[j]);
         }
-        printf("\t\t\tinv[%d]\n", i);
 
     }
 
@@ -157,7 +149,6 @@ int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8
     for (i = 0; i < (GFBITS * SYS_T + 7) / 8; i++) {
         for (j = 0; j < 8; j++) {
             row = i * 8 + j;
-            printf("\t\trow %d\n", row);
 
             if (row >= GFBITS * SYS_T) {
                 break;

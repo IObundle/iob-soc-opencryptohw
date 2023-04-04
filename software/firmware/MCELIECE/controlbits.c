@@ -180,8 +180,6 @@ static void controlbitsfrompermutation(int w, int n, int step, int off, unsigned
     int k;
     int t;
 
-    printf("\t\tcontrobitsfromperm %d\n", w);
-
     uint32_t *ip = (uint32_t*) MemPool_Calloc(N*sizeof(uint32_t));
     uint32_t *I = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
     uint32_t *P_ = (uint32_t*) MemPool_Calloc(2*N*sizeof(uint32_t));
