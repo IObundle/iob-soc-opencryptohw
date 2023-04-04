@@ -19,6 +19,7 @@ extern "C"{
 #include "versatMCELIECE.hpp"
 
 #define SEED_BYTES (48)
+#define MAX_NUM_SEEDS (10)
 #define MEMORY_POOL_SIZE (10000000)
 
 int get_int(char* ptr, unsigned int *i_val);
