@@ -375,6 +375,71 @@ targets:
       pre_run: [console_sim_hook]
       post_run: [validate_hook_aes256]
 
+  sim-MCELIECE:
+    <<: *default
+    description: Simulate the System with MCELIECE
+    default_tool: verilator
+    filesets_append:
+      - console
+      - validate
+      - tb
+      - verilator
+      - console_sim
+    generate_append: 
+      - versat_gen_mceliece
+      - system_gen_hw_mceliece
+      - firmware_sim_gen_mceliece
+      - tb_gen_hw_mceliece
+      - input_gen_mceliece_sim
+      - uart_mkregs_gen_sw
+    toplevel:
+      - system_top
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          - -cc --exe --build # Generate C++ in executable form and compile it after
+          - -Wall # Enable all style warnings; may not want this on less solid designs
+          - -Wno-lint # Disable all lint warnings
+          - -Wno-fatal # Disable fatal exit on warnings
+          - --trace # Make waveforms
+          - +1800-2005ext+v # Use SystemVerilog 2005 with file extension .v
+          - --error-limit 1000 # Exit if number of errors passes 1000
+          - -MAKEFLAGS "CXXFLAGS=\"-DFREQ=50000000 -DBAUD=2500000\"" # Pass defines to the verilator cpp testbench compilation
+          - --unroll-count 4096 # Allow for loop unrolling up to 4096
+          - system_tb.cpp
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=13
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=24
+      - AXI_ADDR_W
+      - BAUD
+      - FREQ
+      - FW_SIZE
+    hooks:
+      pre_run: [console_sim_hook]
+      post_run: [validate_hook_mceliece]
+
   fpga-SHA256:
     <<: *default
     description: System FPGA Synthesis and Execution
@@ -490,6 +555,8 @@ scripts:
     cmd: [bash, validate_hook.sh, SHA256]
   validate_hook_aes256:
     cmd: [bash, validate_hook.sh, AES256]
+  validate_hook_mceliece:
+    cmd: [bash, validate_hook.sh, MCELIECE]
   pre_build_fix_aes256:
     cmd: [bash, pre_build_fix_aes256.sh]
 
@@ -610,6 +677,66 @@ generate:
         fileset: versat
         file_type: verilogSource
 
+  versat_gen_mceliece:
+    generator: custom
+    parameters:
+      command: make pc-emul-gen-versat ALGORITHM=MCELIECE
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - software/pc-emul/versat_instance.v
+          - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES.v
+          - software/pc-emul/src/CH.v
+          - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/ComplexAdder.v
+          - software/pc-emul/src/ComplexMultiplier.v
+          - software/pc-emul/src/ComplexShareConfig.v
+          - software/pc-emul/src/Constants.v
+          - software/pc-emul/src/ConvolutionStage.v
+          - software/pc-emul/src/Convolution.v
+          - software/pc-emul/src/DoRow.v
+          - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/FourthLineKey.v
+          - software/pc-emul/src/F_Stage.v
+          - software/pc-emul/src/F.v
+          - software/pc-emul/src/KeySchedule256.v
+          - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRound.v
+          - software/pc-emul/src/Maj.v
+          - software/pc-emul/src/MatrixMultiplication.v
+          - software/pc-emul/src/MatrixMultiplicationVread.v
+          - software/pc-emul/src/MixColumns.v
+          - software/pc-emul/src/MixProduct.v
+          - software/pc-emul/src/M_Stage.v
+          - software/pc-emul/src/M.v
+          - software/pc-emul/src/OnlyInputToOutput.v
+          - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/SBox.v
+          - software/pc-emul/src/SemiComplexAdder.v
+          - software/pc-emul/src/ShaSingleState.v
+          - software/pc-emul/src/ShaState.v
+          - software/pc-emul/src/SHA.v
+          - software/pc-emul/src/ShiftRows.v
+          - software/pc-emul/src/sigma_stage.v
+          - software/pc-emul/src/sigma.v
+          - software/pc-emul/src/Sigma.v
+          - software/pc-emul/src/SimpleAdder.v
+          - software/pc-emul/src/SimpleShareConfig.v
+          - software/pc-emul/src/StaticConst.v
+          - software/pc-emul/src/StaticMuladd.v
+          - software/pc-emul/src/StaticMux.v
+          - software/pc-emul/src/StringHasher.v
+          - software/pc-emul/src/T1.v
+          - software/pc-emul/src/T2.v
+          - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VectorLikeOperation.v
+          - software/pc-emul/src/VReadToVWrite.v
+        fileset: versat
+        file_type: verilogSource
+
   firmware_sim_gen_sha256:
     generator: custom
     parameters:
@@ -628,6 +755,20 @@ generate:
     generator: custom
     parameters:
       command: ./fusesoc/scripts/firmware_sim_gen.sh ALGORITHM=AES256
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
+        fileset: tb
+        file_type: user
+
+  firmware_sim_gen_mceliece:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/firmware_sim_gen.sh ALGORITHM=MCELIECE
       copy_core: true
       run_from_core: true
       output:
@@ -777,6 +918,19 @@ generate:
         fileset: hw
         file_type: verilogSource
 
+  system_gen_hw_mceliece:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/system_gen_hw.sh ALGORITHM=MCELIECE
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - m_axi_wire.vh: {is_include_file: true}
+          - system.v
+        fileset: hw
+        file_type: verilogSource
+
   tb_gen_hw_sha256:
     generator: custom
     parameters:
@@ -795,6 +949,20 @@ generate:
     generator: custom
     parameters:
       command: ./fusesoc/scripts/tb_gen_hw.sh ALGORITHM=AES256
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - s_axi_portmap.vh: {is_include_file: true}
+          - system_top.v
+          - system_tb.v
+        fileset: tb
+        file_type: verilogSource
+
+  tb_gen_hw_mceliece:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/tb_gen_hw.sh ALGORITHM=MCELIECE
       copy_core: true
       run_from_core: true
       output:
@@ -828,6 +996,19 @@ generate:
         files:
           - software/test/AES256/AESECB256_d_in.bin: {copyto: soc-in.bin}
           - software/test/AES256/AESECB256_d_out.bin: {copyto: AESECB256_d_out.bin}
+        fileset: console
+        file_type: user
+
+  input_gen_mceliece_sim:
+    generator: custom
+    parameters:
+      command: make -C software/test gen_test_data ALGORITHM=MCELIECE TEST_VECTOR_RSP=MCELIECE/sim_kat_kem_reduce.rsp
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - software/test/MCELIECE/sim_kat_kem_reduce_d_in.bin: {copyto: soc-in.bin}
+          - software/test/MCELIECE/sim_kat_kem_reduce_d_out.bin: {copyto: kat_kem_reduce_d_out.bin}
         fileset: console
         file_type: user
 
