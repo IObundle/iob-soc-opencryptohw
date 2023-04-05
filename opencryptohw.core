@@ -219,10 +219,16 @@ filesets:
       - fusesoc/scripts/pre_run_queue_hook.sh: {copyto: pre_run_queue_hook.sh}
     file_type: user
 
-  pre_build_fix:
+  pre_build_fix_aes256:
     files:
-      - fusesoc/scripts/pre_build_fix_aes256.sh: {copyto: pre_build_fix_aes256.sh}
+      - fusesoc/scripts/pre_build_fix.sh: {copyto: pre_build_fix.sh}
       - fusesoc/scripts/fpga-AES256-fix.tcl: {copyto: fpga-AES256-fix.tcl}
+    file_type: user
+
+  pre_build_fix_mceliece:
+    files:
+      - fusesoc/scripts/pre_build_fix.sh: {copyto: pre_build_fix.sh}
+      - fusesoc/scripts/fpga-MCELIECE-fix.tcl: {copyto: fpga-MCELIECE-fix.tcl}
     file_type: user
 
 targets:
@@ -501,7 +507,7 @@ targets:
       - validate
       - ku040
       - console_fpga
-      - pre_build_fix
+      - pre_build_fix_aes256
     generate_append: 
       - system_gen_hw_aes256
       - versat_gen_aes256
@@ -544,6 +550,59 @@ targets:
       pre_run: [queue_in_hook]
       post_run: [console_fpga_hook, validate_hook_aes256]
 
+  fpga-MCELIECE:
+    <<: *default
+    description: System FPGA Synthesis and Execution
+    default_tool: vivado
+    filesets_append:
+      - console
+      - eth_console
+      - validate
+      - ku040
+      - console_fpga
+      - pre_build_fix_mceliece
+    generate_append: 
+      - system_gen_hw_mceliece
+      - versat_gen_mceliece
+      - firmware_fpga_gen_mceliece
+      - input_gen_mceliece_fpga
+    toplevel:
+      - top_system
+    tools:
+      vivado:
+        part: xcku040-fbva676-1-c
+        synth: vivado
+        pnr: vivado
+    parameters:
+      - RUN_EXTMEM
+      - USE_DDR
+      - INIT_MEM=false
+      - DATA_W
+      - ADDR_W
+      - BOOTROM_ADDR_W
+      - SRAM_ADDR_W
+      - FIRM_ADDR_W
+      - DCACHE_ADDR_W
+      - N_SLAVES
+      - E
+      - P
+      - B
+      - UART
+      - TIMER
+      - VERSAT
+      - ETHERNET
+      - N_SLAVES_W
+      - HARDWARE_TEST=13
+      - USE_MUL_DIV
+      - USE_COMPRESSED
+      - DDR_DATA_W=32
+      - DDR_ADDR_W=30
+      - AXI_ADDR_W
+    hooks:
+      pre_build: [pre_build_fix_mceliece]
+      pre_run: [queue_in_hook]
+      post_run: [console_fpga_hook, validate_hook_mceliece]
+
 scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
@@ -558,7 +617,9 @@ scripts:
   validate_hook_mceliece:
     cmd: [bash, validate_hook.sh, MCELIECE]
   pre_build_fix_aes256:
-    cmd: [bash, pre_build_fix_aes256.sh]
+    cmd: [bash, pre_build_fix.sh, AES256]
+  pre_build_fix_mceliece:
+    cmd: [bash, pre_build_fix.sh, MCELIECE]
 
 generate:
   versat_gen_sha256:
@@ -807,6 +868,20 @@ generate:
         fileset: ku040
         file_type: user
 
+  firmware_fpga_gen_mceliece:
+    generator: custom
+    parameters:
+      command: ./fusesoc/scripts/firmware_fpga_gen.sh ALGORITHM=MCELIECE
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - boot.hex: {copyto: boot.hex}
+          - firmware.bin: {copyto: firmware.bin}
+          - firmware.hex: {copyto: firmware.hex}
+        fileset: ku040
+        file_type: user
+
   cache_if_gen:
     generator: custom
     parameters:
@@ -1009,6 +1084,19 @@ generate:
         files:
           - software/test/MCELIECE/sim_kat_kem_reduce_d_in.bin: {copyto: soc-in.bin}
           - software/test/MCELIECE/sim_kat_kem_reduce_d_out.bin: {copyto: kat_kem_reduce_d_out.bin}
+        fileset: console
+        file_type: user
+
+  input_gen_mceliece_fpga:
+    generator: custom
+    parameters:
+      command: make -C software/test gen_test_data ALGORITHM=MCELIECE
+      copy_core: true
+      run_from_core: true
+      output:
+        files:
+          - software/test/MCELIECE/kat_kem_reduce_d_in.bin: {copyto: soc-in.bin}
+          - software/test/MCELIECE/kat_kem_reduce_d_out.bin: {copyto: kat_kem_reduce_d_out.bin}
         fileset: console
         file_type: user
 
