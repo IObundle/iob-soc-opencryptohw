@@ -6,7 +6,6 @@
 //  Modified for liboqs by Douglas Stebila
 //
 
-#include <assert.h>
 #include <string.h>
 
 #include "aes.h"
@@ -36,7 +35,6 @@ static void AES256_ECB(uint8_t *key, uint8_t *ctr, uint8_t *buffer) {
 void nist_kat_init(uint8_t *entropy_input, const uint8_t *personalization_string, int security_strength) {
     uint8_t seed_material[48];
 
-    assert(security_strength == 256);
     memcpy(seed_material, entropy_input, 48);
     if (personalization_string) {
         for (int i = 0; i < 48; i++) {

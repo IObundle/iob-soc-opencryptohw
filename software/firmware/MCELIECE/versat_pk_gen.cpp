@@ -27,7 +27,6 @@ static int n_systematic = 0;
 /* this function only mocks public key generation */
 int PQCLEAN_MCELIECE348864_CLEAN_pk_gen(uint8_t *pk, uint32_t *perm, const uint8_t *sk) {
     int i, j, c;
-    printf("sim pk_gen\n");
     
     // this should never happen
     if (perm != NULL) {

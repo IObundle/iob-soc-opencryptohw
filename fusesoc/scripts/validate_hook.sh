@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Validate test results
-# Usage: ./path/to/validate_hook.sh {SHA256,AES256}
+# Usage: ./path/to/validate_hook.sh {SHA256,AES256,MCELIECE}
 
 # Variables
 if [[ "$1" == "SHA256" ]]
@@ -9,6 +9,9 @@ then
 elif [[ "$1" == "AES256" ]]
 then
     VALIDATION_OUT_BIN=AESECB256_d_out.bin
+elif [[ "$1" == "MCELIECE" ]]
+then
+    VALIDATION_OUT_BIN=kat_kem_reduce_d_out.bin
 else
     VALIDATION_OUT_BIN=""
 fi

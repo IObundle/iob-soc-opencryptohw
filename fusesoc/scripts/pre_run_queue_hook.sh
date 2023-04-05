@@ -7,4 +7,4 @@ PYTHON_DIR=software/python
 trap "board_client.py release exit" INT TERM KILL
 
 # grab board
-board_client.py grab 180
+board_client.py grab 600
