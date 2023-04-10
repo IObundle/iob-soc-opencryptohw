@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generate system.v
-# Usage: ./path/to/system_gen_hw.sh ALGORITHM={SHA256,AES256}
+# Usage: ./path/to/system_gen_hw.sh ALGORITHM={SHA256,AES256,MCELIECE}
 
 # Variables
 AXI_GEN="./submodules/LIB/software/python/axi_gen.py"

@@ -50,6 +50,12 @@ Each test vector is adapted from the [AES Multiblock Message Test (MMT) Sample
 Vectors](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/aesmct_intermediate.zip)
 where each plaintext is the first block from each multiblock vector.
 
+### MCELIECE
+The McEliece test vector is the first keypair test from the [NIST Classic
+McEliece Post-Quantum Cryptography Round 4
+Submission](https://csrc.nist.gov/csrc/media/Projects/post-quantum-cryptography/documents/round-4/submissions/mceliece-kat-Round4.tar.gz)
+for the McEliece348864 version.
+
 # PC Emulation
 The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
 ```
@@ -57,6 +63,8 @@ The IOb-SoC-OpenCryptoHW system can build and run an environment for PC with:
 make test-pc-emul ALGORITHM=SHA256
 # AES256 pc-emul test
 make test-pc-emul ALGORITHM=AES256
+# MCELIECE pc-emul test
+make test-pc-emul ALGORITHM=MCELIECE
 ```
 
 The implementation output can be checked manually from terminal and
@@ -65,7 +73,7 @@ The implementation output can be checked manually from terminal and
 ### Clean environment
 To clean the workspace after PC emulation:
 ```
-make test-pc-emul-clean ALGORITHM={SHA256,AES256}
+make test-pc-emul-clean ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 ### Requirements
 PC emulation program requires:
@@ -82,14 +90,14 @@ icarus with:
 # Test with all supported simulators
 make test-sim
 # Test with a specific simulator
-make sim-test SIMULATOR=icarus ALGORITHM={SHA256,AES256}
-make sim-test SIMULATOR=verilator ALGORITHM={SHA256,AES256}
+make sim-test SIMULATOR=icarus ALGORITHM={SHA256,AES256,MCELIECE}
+make sim-test SIMULATOR=verilator ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
 ### Clean environment
 To clean the workspace after the RISCV emulation:
 ```
-make test-sim-clean ALGORITHM={SHA256,AES256}
+make test-sim-clean ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
 ### Requirements/Setup
@@ -116,13 +124,13 @@ The synthesis results can be found in: `hardware/fpga/vivado/AES-KU040-DB-G`.
 ## FPGA Test
 For a complete FPGA test (synthesis, load and execution), run:
 ```
-make test-fpga ALGORITHM={SHA256,AES256}
+make test-fpga ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
 ### Clean environment
 To clean the workspace after the FPGA execution:
 ```
-make test-fpga-clean ALGORITHM={SHA256,AES256}
+make test-fpga-clean ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
 ### Requirements/Setup
@@ -175,17 +183,17 @@ The log file can be reviewed in
 The netlist file can be reviewed in
 `hardware/fpga/vivado/AES-KU040-DB-G/iob_versat.edif`.
 
-# FuseSoC (SHA256 currently)
+# FuseSoC
 IOb-SoC-OpenCryptoHW supports alternative
 [FuseSoC](https://github.com/olofk/fusesoc) flows for simulation and fpga.
 Run the targets:
 ```
 # FuseSoC simulation flow
-make fusesoc-sim-run
-make fusesoc-clean
+make fusesoc-sim-run ALGORITHM={SHA256,AES256,MCELIECE}
+make fusesoc-clean ALGORITHM={SHA256,AES256,MCELIECE}
 # FuseSoC fpga flow
-make fusesoc-fpga-run
-make fusesoc-fpga-clean
+make fusesoc-fpga-run ALGORITHM={SHA256,AES256,MCELIECE}
+make fusesoc-fpga-clean ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
 # OpenLane (SHA256 currently)

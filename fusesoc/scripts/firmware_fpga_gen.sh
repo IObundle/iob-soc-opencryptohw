@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generate Firmware for FPGA
-# Usage: ./path/to/firmware_fpga_gen.sh ALGORITHM={SHA256,AES256}
+# Usage: ./path/to/firmware_fpga_gen.sh ALGORITHM={SHA256,AES256,MCELIECE}
 
 # Variables
 FIRM_DIR="software/firmware"
