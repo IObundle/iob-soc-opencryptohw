@@ -3,6 +3,7 @@
 #include "versat.hpp"
 #include "unitConfiguration.hpp"
 #include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 
 extern "C" {
 #ifndef PC
@@ -85,13 +86,13 @@ void FillSBox(FUInstance* inst){
 
 void FillSubBytes(FUInstance* inst){
    for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(inst,"s%d",i));
+      FillSBox(GetInstanceByName(accel,"s%d",i));
    }
 }
 
 void FillKeySchedule(FUInstance* inst){
    for(int i = 0; i < 2; i++){
-      FUInstance* table = GetInstanceByName(inst,"s","b%d",i);
+      FUInstance* table = GetInstanceByName(accel,"s","b%d",i);
 
       FillSBox(table);
    }
@@ -99,8 +100,8 @@ void FillKeySchedule(FUInstance* inst){
 
 void FillKeySchedule256(FUInstance* inst){
    for(int i = 0; i < 2; i++){
-      FUInstance* table1 = GetInstanceByName(inst,"s","b%d",i);
-      FUInstance* table2 = GetInstanceByName(inst,"q","b%d",i);
+      FUInstance* table1 = GetInstanceByName(accel,"s","b%d",i);
+      FUInstance* table2 = GetInstanceByName(accel,"q","b%d",i);
 
       FillSBox(table1);
       FillSBox(table2);
@@ -108,10 +109,10 @@ void FillKeySchedule256(FUInstance* inst){
 }
 
 void FillRow(FUInstance* row){
-   FUInstance* mul2_0 = GetInstanceByName(row,"mul2_0");
-   FUInstance* mul2_1 = GetInstanceByName(row,"mul2_1");
-   FUInstance* mul3_0 = GetInstanceByName(row,"mul3_0");
-   FUInstance* mul3_1 = GetInstanceByName(row,"mul3_1");
+   FUInstance* mul2_0 = GetInstanceByName(accel,"mul2_0");
+   FUInstance* mul2_1 = GetInstanceByName(accel,"mul2_1");
+   FUInstance* mul3_0 = GetInstanceByName(accel,"mul3_0");
+   FUInstance* mul3_1 = GetInstanceByName(accel,"mul3_1");
 
    for(int i = 0; i < 256; i++){
       VersatUnitWrite(mul2_0,i,mul2[i]);
@@ -123,27 +124,27 @@ void FillRow(FUInstance* row){
 
 void FillRound(FUInstance* round){
    for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(round,"subBytes","s%d",i));
+      FillSBox(GetInstanceByName(accel,"subBytes","s%d",i));
    }
 
    for(int i = 0; i < 4; i++){
-      FillRow(GetInstanceByName(round,"mixColumns","d%d",i));
+      FillRow(GetInstanceByName(accel,"mixColumns","d%d",i));
    }
 }
 
 void FillAES(FUInstance* inst) {
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
    for(int i = 0; i < 7; i++){
-      FUInstance* constRcon = GetInstanceByName(inst,"rcon%d",i);
+      FUInstance* constRcon = GetInstanceByName(accel,"rcon%d",i);
       constRcon->config[0] = rcon[i];
 
-      FillKeySchedule256(GetInstanceByName(inst,"key%d",i));
+      FillKeySchedule256(GetInstanceByName(accel,"key%d",i));
    }
 
-   FillSubBytes(GetInstanceByName(inst,"subBytes"));
+   FillSubBytes(GetInstanceByName(accel,"subBytes"));
 
    for(int i = 0; i < 13; i++){
-      FillRound(GetInstanceByName(inst,"round%d",i));
+      FillRound(GetInstanceByName(accel,"round%d",i));
    }
 }
 
@@ -184,7 +185,7 @@ void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cyp
    AcceleratorRun(accel);
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
 #ifndef PC
    cache_invalidate();

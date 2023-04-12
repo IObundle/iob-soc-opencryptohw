@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-m32 -Wall -g #-fsanitize=address
+GLOBAL_CFLAGS:=-std=c++17 -m32 -Wall -g #-fsanitize=address
 
 include ../software.mk
 
@@ -110,7 +110,9 @@ run: build $(SOC_IN_BIN)
 clean: clean-eth-socket
 	@rm -rf $(FW_EMUL) periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
-	@rm -f versat_data.inc versat_defs.vh versat_instance.v
+	@rm -f versat_data.inc versat_defs.vh versat_instance.v \
+		versat_external_memory_inst.vh versat_external_memory_port.vh \
+		versat_external_memory_portmap.vh
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@rm -f $(FIRM_DIR)/*.inc
@@ -134,6 +136,9 @@ validate:
 gen-versat: $(VERSAT_GEN)
 	cp -u versat_instance.v $(HW_DIR)/src/
 	cp -u versat_defs.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_inst.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_port.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_portmap.vh $(HW_DIR)/include/
 	cp -u versat_data.inc $(FIRM_DIR)/
 	cp -u ./build/verilogWrapper.inc $(FIRM_DIR)/
 	cp -u src/* $(HW_DIR)/src/GeneratedUnits/

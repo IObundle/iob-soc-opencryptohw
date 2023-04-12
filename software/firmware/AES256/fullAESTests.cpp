@@ -87,9 +87,9 @@ void Full_AES_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+    FUDeclaration* type = GetTypeByName(versat,STRING("ReadWriteAES"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
     // Receive Input Data
     int din_ptr = 0, din_size = 0;

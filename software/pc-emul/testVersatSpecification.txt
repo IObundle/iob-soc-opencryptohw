@@ -215,8 +215,8 @@ module sigma(x){
    Const const2;
    Const const3;
 #
-   a1 = x >>> const1;
-   a2 = x >>> const2;
+   a1 = x >>< const1;
+   a2 = x >>< const2;
    a3 = x >> const3;
 
    b1 = a1 ^ a2;
@@ -231,9 +231,9 @@ module Sigma(x){
    Const const2;
    Const const3;
 #
-   a1 = x >>> const1;
-   a2 = x >>> const2;
-   a3 = x >>> const3;
+   a1 = x >>< const1;
+   a2 = x >>< const2;
+   a3 = x >>< const3;
 
    b1 = a1 ^ a2;
 

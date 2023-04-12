@@ -21,14 +21,14 @@ int printf_(const char* format, ...);
 #include "fullSHATests.hpp"
 
 // Automatically times a block in number of counts
-struct TimeIt{
-   int line;
-   char fileId;
-
-   TimeIt(int line,char fileId){this->line = line;this->fileId = fileId;timer_reset();};
-   ~TimeIt(){unsigned long long end = timer_get_count();printf("%c:%d %llu\n",fileId,line,end);}
-};
-#define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
+// struct TimeIt{
+//    int line;
+//    char fileId;
+//
+//    TimeIt(int line,char fileId){this->line = line;this->fileId = fileId;timer_reset();};
+//    ~TimeIt(){unsigned long long end = timer_get_count();printf("%c:%d %llu\n",fileId,line,end);}
+// };
+// #define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
 
 #ifndef PC
 #define printf printf_
@@ -176,12 +176,12 @@ Current standard procedure:
 
    Can be used just like any other declaration
 
-      FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MERGED"));
+      FUDeclaration* type = GetTypeByName(versat,STRING("MERGED"));
 
    Same interface to instantiate a merge as any other unit
 
       Accelerator* accel = CreateAccelerator(versat);
-      FUInstance* top = CreateFUInstance(accel,type,MakeSizedString("Test"));
+      FUInstance* top = CreateFUInstance(accel,type,STRING("Test"));
 
    Problem, what to do if two units share the same name in the merge but are different types?
 

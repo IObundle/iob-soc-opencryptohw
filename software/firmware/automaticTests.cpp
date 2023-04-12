@@ -6,6 +6,7 @@
 #include "utils.hpp"
 #include "unitConfiguration.hpp"
 #include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 #include "versatSHA.hpp"
 #include "versatAES.hpp"
 
@@ -45,8 +46,8 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,unsigned in
    for(unsigned int i = 0; i < numberInputs; i++){
       Assert(i < ARRAY_SIZE(regIn));
 
-      SizedString name = MakeSizedString(regIn[i]);
-      inputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),name);
+      String name = STRING(regIn[i]);
+      inputs[i] = CreateFUInstance(accel,GetTypeByName(versat,STRING("Reg")),name);
       ConnectUnits(inputs[i],0,inst,i);
 
       int val = va_arg(args,int);
@@ -56,15 +57,15 @@ int* TestInstance(Versat* versat,Accelerator* accel,FUInstance* inst,unsigned in
    for(unsigned int i = 0; i < numberOutputs; i++){
       Assert(i < ARRAY_SIZE(regOut));
 
-      SizedString name = MakeSizedString(regOut[i]);
-      outputs[i] = CreateFUInstance(accel,GetTypeByName(versat,MakeSizedString("Reg")),name);
+      String name = STRING(regOut[i]);
+      outputs[i] = CreateFUInstance(accel,GetTypeByName(versat,STRING("Reg")),name);
 
       ConnectUnits(inst,i,outputs[i],0);
    }
 
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    for(unsigned int i = 0; i < numberOutputs; i++){
       out[i] = outputs[i]->state[0];
@@ -142,9 +143,9 @@ static TestInfo Expect_(const char* functionName,int testNumber, const char* exp
 #define TEST(TEST_NAME) static TestInfo TEST_NAME(Versat* versat,int testNumber)
 
 TEST(TestMStage){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("M_Stage"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("M_Stage"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* top = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* top = CreateFUInstance(accel,type,STRING("Test"));
 
    FUInstance* inst = GetInstanceByName(accel,"Test","sigma");
 
@@ -161,9 +162,9 @@ TEST(TestMStage){
 }
 
 TEST(TestFStage){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("F_Stage"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("F_Stage"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FUInstance* t = GetInstanceByName(accel,"Test","f_stage","t");
    int constants[] = {6,11,25,2,13,22};
@@ -184,8 +185,8 @@ TEST(TestFStage){
 
 TEST(VReadToVWrite){
    Accelerator* accel = CreateAccelerator(versat);
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("VReadToVWrite"));
-   CreateFUInstance(accel,type,MakeSizedString("test"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("VReadToVWrite"));
+   CreateFUInstance(accel,type,STRING("test"));
 
    int readBuffer[16];
    int writeBuffer[16];
@@ -206,7 +207,7 @@ TEST(VReadToVWrite){
    AcceleratorRun(accel); // Write data
    #endif
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    char buffer[1024];
    char* ptr = buffer;
@@ -222,8 +223,8 @@ TEST(StringHasher){
    char testString[] = "123249819835894981389Waldo198239812849825899904924oefhcasjngwoeijfjvakjndcoiqwj";
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("StringHasher"));
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("test"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("StringHasher"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("test"));
 
    FUInstance* muladd = GetInstanceByName(accel,"test","mul1","mul");
 
@@ -260,7 +261,7 @@ TEST(StringHasher){
 
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    for(size_t i = 0; i < sizeof(testString) - 5; i++){
       int val = VersatUnitRead(bytesOut,i);
@@ -296,8 +297,8 @@ TEST(Convolution){
    }
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("Convolution"));
-   CreateFUInstance(accel,type,MakeSizedString("test"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("Convolution"));
+   CreateFUInstance(accel,type,STRING("test"));
 
    //write data in versat mems
    volatile VReadConfig* pixelConfigs[5];
@@ -382,15 +383,15 @@ TEST(Convolution){
       }
    }
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    return EXPECT("-520 -251 -49 -33 -42 303 -221 -100 -149 ","%s",buffer);
 }
 
 TEST(MatrixMultiplication){
    Accelerator* accel = CreateAccelerator(versat);
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplication"));
-   CreateFUInstance(accel,type,MakeSizedString("test"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("MatrixMultiplication"));
+   CreateFUInstance(accel,type,STRING("test"));
 
    FUInstance* memA = GetInstanceByName(accel,"test","matA");
    FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -420,7 +421,7 @@ TEST(MatrixMultiplication){
 
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    char buffer[1024];
    char* ptr = buffer;
@@ -441,8 +442,8 @@ TEST(MatrixMultiplicationVRead){
    volatile int* resPtr = (volatile int*) matrixRes;
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MatrixMultiplicationVread"));
-   CreateFUInstance(accel,type,MakeSizedString("test"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("MatrixMultiplicationVread"));
+   CreateFUInstance(accel,type,STRING("test"));
 
    FUInstance* memA = GetInstanceByName(accel,"test","matA");
    FUInstance* memB = GetInstanceByName(accel,"test","matB");
@@ -488,7 +489,7 @@ TEST(MatrixMultiplicationVRead){
    AcceleratorRun(accel);
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    char buffer[1024];
    char* ptr = buffer;
@@ -515,9 +516,9 @@ TEST(VersatAddRoundKey){
                   };
    #endif
 
-   FUDeclaration* addRoundKey = GetTypeByName(versat,MakeSizedString("AddRoundKey"));
+   FUDeclaration* addRoundKey = GetTypeByName(versat,STRING("AddRoundKey"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,addRoundKey,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,addRoundKey,STRING("Test"));
 
    int* out = TestInstance(versat,accel,inst,32,16,
                               0x04,0xe0,0x48,0x28, // Cypher
@@ -541,9 +542,9 @@ TEST(VersatAddRoundKey){
 }
 
 TEST(LookupTable){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("LookupTable"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("LookupTable"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    int addrA = 0;
    int addrB = 4;
@@ -572,9 +573,9 @@ TEST(VersatSubBytes){
                      0xae,0xf1,0xe5,0x30};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SBox"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SBox"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    #if 1
    FillSubBytes(inst);
@@ -599,9 +600,9 @@ TEST(VersatShiftRows){
                   0xae,0xf1,0xe5,0x30};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ShiftRows"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ShiftRows"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    //bool tmp = SetDebug(versat,true);
 
@@ -625,9 +626,9 @@ TEST(VersatShiftRows){
 }
 
 TEST(VersatDoRows){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("DoRow"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("DoRow"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FillRow(inst);
 
@@ -655,9 +656,9 @@ TEST(VersatMixColumns){
                      0xe5,0x9a,0x7a,0x4c};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MixColumns"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("MixColumns"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    for(int i = 0; i < 4; i++){
       FillRow(GetInstanceByName(accel,"Test","d%d",i));
@@ -679,9 +680,9 @@ TEST(FirstLineKey){
    int input[] = {0x09,0xcf,0x4f,0x3c,0x2b,0x7e,0x15,0x16,0x01};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("FirstLineKey"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("FirstLineKey"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    for(int i = 0; i < 2; i++){
       FUInstance* table = GetInstanceByName(accel,"Test","b%d",i);
@@ -711,9 +712,9 @@ TEST(KeySchedule){
                   0x01}; // rcon
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("KeySchedule"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("KeySchedule"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FillKeySchedule(inst);
 
@@ -740,9 +741,9 @@ TEST(AESRound){
                   0x17,0xb1,0x39,0x05};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("MainRound"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("MainRound"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FillRound(inst);
 
@@ -806,9 +807,9 @@ TEST(AES){
                   0x16,0xa6,0x88,0x3c};
    #endif
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("AES"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("AES"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FillAES(inst);
 
@@ -840,9 +841,9 @@ TEST(ReadWriteAES){
                   0xe5,0x4c,0xc2,0x4b};
    int result[16];
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ReadWriteAES"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),16,cypher);
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),32,key);
@@ -854,7 +855,7 @@ TEST(ReadWriteAES){
    AcceleratorRun(accel);
    AcceleratorRun(accel);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    char buffer[1024];
    char* ptr = buffer;
@@ -890,9 +891,9 @@ TEST(VectorLikeOperation){
        expected[i] = ~(mat[i]);
    }
 
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("VectorLikeOperation"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("VectorLikeOperation"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    // printf("config vread\n");
    ConfigureSimpleVRead(GetInstanceByName(accel,"Test","row"), VEC_SZ / 4,(int*) row);
@@ -925,7 +926,7 @@ TEST(VectorLikeOperation){
    }
    
    // printf("output versat\n");
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    // printf("cmp results\n");
    if (memcmp(result, expected, VEC_SZ/4) == 0) {
@@ -965,9 +966,9 @@ int SimpleAdderInstance(Accelerator* accel,int a,int b){
 }
 
 TEST(SimpleAdder){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    int result = SimpleAdderInstance(accel,3,4);
 
@@ -1026,9 +1027,9 @@ int SemiComplexAdderInstance(Accelerator* accel,int a,int b){
 }
 
 TEST(ComplexMultiplier){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexMultiplier"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ComplexMultiplier"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    int result = ComplexMultiplierInstance(accel,4,5);
 
@@ -1036,9 +1037,9 @@ TEST(ComplexMultiplier){
 }
 
 TEST(SimpleShareConfig){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleShareConfig"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SimpleShareConfig"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    FUInstance* a1 = GetInstanceByName(accel,"Test","a1");
    FUInstance* a2 = GetInstanceByName(accel,"Test","a2");
@@ -1075,9 +1076,9 @@ TEST(SimpleShareConfig){
 }
 
 TEST(ComplexShareConfig){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ComplexShareConfig"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    // Test by changing config for shared 1
    FUInstance* a11 = GetInstanceByName(accel,"Test","shared1","a1");
@@ -1117,9 +1118,9 @@ TEST(ComplexShareConfig){
 }
 
 TEST(SimpleFlatten){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SimpleAdder"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    Accelerator* flatten = Flatten(versat,accel,1);
 
@@ -1129,9 +1130,9 @@ TEST(SimpleFlatten){
 }
 
 TEST(FlattenShareConfig){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ComplexShareConfig"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ComplexShareConfig"));
    Accelerator* accel_ = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel_,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel_,type,STRING("Test"));
 
    Accelerator* flatten = Flatten(versat,accel_,99);
 
@@ -1173,9 +1174,9 @@ TEST(FlattenShareConfig){
 }
 
 TEST(FlattenSHA){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SHA"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    Accelerator* flatten = Flatten(versat,accel,99);
 
@@ -1194,10 +1195,10 @@ TEST(FlattenSHA){
 }
 
 TEST(ComplexFlatten){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("ReadWriteAES"));
    #if 1
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst =  CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst =  CreateFUInstance(accel,type,STRING("Test"));
    #endif
 
    Accelerator* flatten = Flatten(versat,accel,99);
@@ -1225,7 +1226,7 @@ TEST(ComplexFlatten){
    //CheckMemory(flatten,flatten);
    //DisplayAcceleratorMemory(flatten);
 
-   OutputVersatSource(versat,flatten,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,flatten,".");
 
    char buffer[1024];
    char* ptr = buffer;
@@ -1237,13 +1238,13 @@ TEST(ComplexFlatten){
 }
 
 TEST(SimpleMergeNoCommon){
-   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
-   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ComplexMultiplier"));
+   FUDeclaration* typeA = GetTypeByName(versat,STRING("SimpleAdder"));
+   FUDeclaration* typeB = GetTypeByName(versat,STRING("ComplexMultiplier"));
 
-   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("NoCommonMerged"));
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,STRING("NoCommonMerged"));
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,merged,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,merged,STRING("Test"));
 
    int resA = 0;
    int resB = 0;
@@ -1251,19 +1252,19 @@ TEST(SimpleMergeNoCommon){
    resA = SimpleAdderInstance(accel,3,4);
    resB = ComplexMultiplierInstance(accel,2,3);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    return EXPECT("7 6","%d %d",resA,resB);
 }
 
 TEST(SimpleMergeUnitCommonNoEdge){
-   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
-   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ComplexAdder"));
+   FUDeclaration* typeA = GetTypeByName(versat,STRING("SimpleAdder"));
+   FUDeclaration* typeB = GetTypeByName(versat,STRING("ComplexAdder"));
 
-   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("UnitCommonNoEdgeMerged"));
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,STRING("UnitCommonNoEdgeMerged"));
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,merged,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,merged,STRING("Test"));
 
    int resA = 0;
    int resB = 0;
@@ -1275,19 +1276,19 @@ TEST(SimpleMergeUnitCommonNoEdge){
    ActivateMergedAccelerator(versat,accel,typeB);
    resB = ComplexAdderInstance(accel,2,3);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    return EXPECT("9 5","%d %d",resA,resB);
 }
 
 TEST(SimpleMergeUnitAndEdgeCommon){
-   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SimpleAdder"));
-   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("SemiComplexAdder"));
+   FUDeclaration* typeA = GetTypeByName(versat,STRING("SimpleAdder"));
+   FUDeclaration* typeB = GetTypeByName(versat,STRING("SemiComplexAdder"));
 
-   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("UnitAndEdgeCommonMerged"));
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,STRING("UnitAndEdgeCommonMerged"));
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,merged,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,merged,STRING("Test"));
 
    int resA = 0;
    int resB = 0;
@@ -1299,19 +1300,19 @@ TEST(SimpleMergeUnitAndEdgeCommon){
    ActivateMergedAccelerator(versat,accel,typeB);
    resB = SemiComplexAdderInstance(accel,2,3);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    return EXPECT("9 5","%d %d",resA,resB);
 }
 
 TEST(SimpleMergeInputOutputCommon){
-   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("ComplexAdder"));
-   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ComplexMultiplier"));
+   FUDeclaration* typeA = GetTypeByName(versat,STRING("ComplexAdder"));
+   FUDeclaration* typeB = GetTypeByName(versat,STRING("ComplexMultiplier"));
 
-   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("InputOutputCommonMerged"));
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,STRING("InputOutputCommonMerged"));
 
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,merged,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,merged,STRING("Test"));
 
    int resA = 0;
    int resB = 0;
@@ -1323,24 +1324,24 @@ TEST(SimpleMergeInputOutputCommon){
    ActivateMergedAccelerator(versat,accel,typeB);
    resB = ComplexMultiplierInstance(accel,2,3);
 
-   OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+   OutputVersatSource(versat,accel,".");
 
    return EXPECT("9 6","%d %d",resA,resB);
 }
 
 TEST(ComplexMerge){
-   FUDeclaration* typeA = GetTypeByName(versat,MakeSizedString("SHA"));
-   FUDeclaration* typeB = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
+   FUDeclaration* typeA = GetTypeByName(versat,STRING("SHA"));
+   FUDeclaration* typeB = GetTypeByName(versat,STRING("ReadWriteAES"));
 
-   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,MakeSizedString("SHA_AES"));
+   FUDeclaration* merged = MergeAccelerators(versat,typeA,typeB,STRING("SHA_AES"));
 
    TEST_PASSED;
 }
 
 TEST(SHA){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SHA"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    SetSHAAccelerator(accel,inst);
 
@@ -1359,9 +1360,9 @@ TEST(SHA){
 }
 
 TEST(MultipleSHATests){
-   FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+   FUDeclaration* type = GetTypeByName(versat,STRING("SHA"));
    Accelerator* accel = CreateAccelerator(versat);
-   FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+   FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    SetSHAAccelerator(accel,inst);
 

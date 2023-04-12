@@ -24,6 +24,7 @@ module system
    //Memory macros
    `include "sram_port.vh"
    `include "bootrom_port.vh"
+   `include "versat_external_memory_port.vh"
           
 `ifdef USE_DDR 
    //address write

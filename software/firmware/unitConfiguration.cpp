@@ -1,6 +1,7 @@
 #include "unitConfiguration.hpp"
 
 #include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 
 void IntSet(int* buffer,int value,int byteSize){
    int nInts = byteSize / 4;
@@ -92,7 +93,7 @@ void ConfigureRightSideMatrix(FUInstance* inst, int iterations){
    config->incr2A = 0;
 }
 
-void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
+void ConfigureMemoryLinear(FUInstance* inst, int amountOfData, int start){
    IntSet(inst->config,0,sizeof(MemConfig));
    volatile MemConfig* config = (volatile MemConfig*) inst->config;
 
@@ -100,6 +101,7 @@ void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
    config->perA = amountOfData;
    config->dutyA = amountOfData;
    config->incrA = 1;
+   config->startA = start;
 }
 
 void ConfigureMemoryLinearOut(FUInstance* inst, int amountOfData){

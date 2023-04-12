@@ -84,9 +84,9 @@ void Full_SHA_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+    FUDeclaration* type = GetTypeByName(versat,STRING("SHA"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
     SetSHAAccelerator(accel,inst);
     InitVersatSHA(versat,true);
 

@@ -243,6 +243,7 @@ module system_top (
     `include "sram_inst.vh"
     `include "bootrom_inst.vh"
     `include "iob_eth_buffer_inst.vh"
+    `include "versat_external_memory_inst.vh"
 
    //
    // UNIT UNDER TEST
@@ -251,6 +252,7 @@ module system_top (
                //PORTS
          `include "sram_portmap.vh"
          `include "bootrom_portmap.vh"
+         `include "versat_external_memory_portmap.vh"
 `ifdef USE_DDR
          //address write
          .m_axi_awid    (sys_awid),
