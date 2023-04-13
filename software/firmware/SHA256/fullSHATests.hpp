@@ -1,6 +1,7 @@
 #ifndef HPP_FULLSHATESTS_HPP
 #define HPP_FULLSHATESTS_HPP
 
+#include <cstdio>
 extern "C"{
 // #include "iob-cache.h"
 #include "periphs.h"

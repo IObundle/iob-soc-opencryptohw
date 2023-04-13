@@ -141,6 +141,7 @@ gen-versat: $(VERSAT_GEN)
 	cp -u versat_external_memory_portmap.vh $(HW_DIR)/include/
 	cp -u versat_data.inc $(FIRM_DIR)/
 	cp -u ./build/verilogWrapper.inc $(FIRM_DIR)/
+	cp -u ./build/basicWrapper.inc $(FIRM_DIR)/
 	cp -u src/* $(HW_DIR)/src/GeneratedUnits/
 
 $(VERSAT_GEN):

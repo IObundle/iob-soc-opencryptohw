@@ -1,9 +1,8 @@
 #include "unitConfiguration.hpp"
 
-#include "verilogWrapper.inc"
 #include "basicWrapper.inc"
 
-void IntSet(int* buffer,int value,int byteSize){
+void IntSet(volatile int* buffer,int value,int byteSize){
    int nInts = byteSize / 4;
 
    for(int i = 0; i < nInts; i++){
@@ -31,7 +30,7 @@ void ConfigureSimpleVRead(FUInstance* inst, int numberItems,int* memory){
    c->incrB = 1;
    c->perB = 1;
    c->dutyB = 1;
-   c->ext_addr = (int) memory;
+   c->ext_addr = (iptr) memory;
    c->length = numberItems - 1; // AXI requires length of len - 1
 }
 
@@ -50,7 +49,7 @@ void ConfigureSimpleVWrite(FUInstance* inst, int numberItems,int* memory){
    c->int_addr = 0;
    c->pingPong = 0;
    c->length = numberItems - 1;
-   c->ext_addr = (int) memory;
+   c->ext_addr = (iptr) memory;
 
    // Memory side
    c->iterB = numberItems;

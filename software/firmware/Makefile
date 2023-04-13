@@ -27,6 +27,7 @@ include $(VERSAT_DIR)/software/embedded/embedded.mk
 HDR+=periphs.h
 HDR+=versat_data.inc
 HDR+=verilogWrapper.inc
+HDR+=basicWrapper.inc
 
 #INCLUDES
 INCLUDE+=$(incdir)$(FIRM_DIR)/units
@@ -89,7 +90,7 @@ firmware.elf: ../template.lds $(HDR) $(SRC)
 versat_data.inc: $(PC_DIR)/versat_data.inc
 	cp $< $@
 
-verilogWrapper.inc: $(PC_DIR)/build/verilogWrapper.inc
+%Wrapper.inc: $(PC_DIR)/build/%Wrapper.inc
 	cp $< $@
 
 $(PC_DIR)/%.inc:
@@ -103,7 +104,7 @@ clean:
 	@rm -rf firmware.bin firmware.elf firmware.map *.hex periphs.h UARTsw_reg.h TIMERsw_reg.h *swreg.h \
 		*swreg_emb.c \
 		*d_in.bin *d_out.bin \
-		verilogWrapper.inc versat_data.inc \
+		verilogWrapper.inc basicWrapper.inc versat_data.inc \
 		eth_frame_struct.h
 
 .PHONY: build clean
