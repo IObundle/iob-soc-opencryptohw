@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-std=c++17 -m32 -Wall -g #-fsanitize=address
+GLOBAL_CFLAGS:=-std=c++17 -m32 -Wall -g -DVERSAT_DEBUG #-fsanitize=address
 
 include ../software.mk
 
