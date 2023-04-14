@@ -43,7 +43,7 @@ ifeq ($(NORUN),0)
 ifeq ($(BOARD_SERVER),)
 	cp $(FIRM_DIR)/firmware.bin .
 	bash -c "trap '$(RELEASE_CMD)' INT TERM KILL; $(GRAB_CMD); ../prog.sh; $(CONSOLE_CMD) $(TEST_LOG); $(RELEASE_CMD);"
-	cp $(SW_DIR)/python/$(SOC_OUT_BIN) .
+	# cp $(SW_DIR)/python/$(SOC_OUT_BIN) .
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)

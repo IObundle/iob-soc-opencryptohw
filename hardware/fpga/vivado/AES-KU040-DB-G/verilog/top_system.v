@@ -211,6 +211,7 @@ module top_system
 
     `include "sram_inst.vh"
     `include "bootrom_inst.vh"
+    `include "versat_external_memory_inst.vh"
 
    //
    // SYSTEM
@@ -230,6 +231,7 @@ module top_system
 
       `include "sram_portmap.vh"
       `include "bootrom_portmap.vh"
+      `include "versat_external_memory_portmap.vh"
 
 `ifdef USE_DDR
       //address write

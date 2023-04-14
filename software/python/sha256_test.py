@@ -32,11 +32,11 @@ if __name__ == "__main__":
     SyncAckFirst(socket)
     SendVariableFile(socket,send_file)
 
-    # Receive Variable Data File
-    print("\nStarting file reception...")
-
-    SyncAckLast(socket)
-    RcvVariableFile(socket,rcv_file)
+    # # Receive Variable Data File
+    # print("\nStarting file reception...")
+    #
+    # SyncAckLast(socket)
+    # RcvVariableFile(socket,rcv_file)
 
     # Close Socket
     socket.close()
