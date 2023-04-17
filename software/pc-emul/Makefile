@@ -130,7 +130,7 @@ test: clean
 	make validate
 
 validate:
-	cp $(SW_DIR)/python/$(SOC_OUT_BIN) $(SW_TEST_DIR)
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
 
 gen-versat: $(VERSAT_GEN)
