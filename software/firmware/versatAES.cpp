@@ -84,9 +84,9 @@ void FillSBox(FUInstance* inst){
    }
 }
 
-void FillSubBytes(FUInstance* inst){
+void FillSubBytes(Accelerator* accel){
    for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(accel,"s%d",i));
+      FillSBox(GetInstanceByName(accel,"Test", "aes", "subBytes", "s%d",i));
    }
 }
 
@@ -98,21 +98,22 @@ void FillKeySchedule(FUInstance* inst){
    }
 }
 
-void FillKeySchedule256(FUInstance* inst){
+void FillKeySchedule256(Accelerator* accel, int keyInst){
    for(int i = 0; i < 2; i++){
-      FUInstance* table1 = GetInstanceByName(accel,"s","b%d",i);
-      FUInstance* table2 = GetInstanceByName(accel,"q","b%d",i);
+      FUInstance* table1 = GetInstanceByName(accel,"Test", "aes", "key%d", keyInst, "s","b%d",i);
+      // FUInstance* table1 = GetInstanceByName(accel,"Test", "aes", "key%d","s","b%d",keyInst,i);
+      FUInstance* table2 = GetInstanceByName(accel,"Test", "aes", "key%d", keyInst, "q","b%d",i);
 
       FillSBox(table1);
       FillSBox(table2);
    }
 }
 
-void FillRow(FUInstance* row){
-   FUInstance* mul2_0 = GetInstanceByName(accel,"mul2_0");
-   FUInstance* mul2_1 = GetInstanceByName(accel,"mul2_1");
-   FUInstance* mul3_0 = GetInstanceByName(accel,"mul3_0");
-   FUInstance* mul3_1 = GetInstanceByName(accel,"mul3_1");
+void FillRow(Accelerator* accel, int roundNum, int colNum){
+   FUInstance* mul2_0 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul2_0");
+   FUInstance* mul2_1 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul2_1");
+   FUInstance* mul3_0 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul3_0");
+   FUInstance* mul3_1 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul3_1");
 
    for(int i = 0; i < 256; i++){
       VersatUnitWrite(mul2_0,i,mul2[i]);
@@ -122,29 +123,30 @@ void FillRow(FUInstance* row){
    }
 }
 
-void FillRound(FUInstance* round){
+void FillRound(Accelerator* accel, int roundNum){
    for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(accel,"subBytes","s%d",i));
+      FillSBox(GetInstanceByName(accel,"Test","aes","round%d",roundNum,"subBytes","s%d",i));
    }
 
    for(int i = 0; i < 4; i++){
-      FillRow(GetInstanceByName(accel,"mixColumns","d%d",i));
+      // FillRow(GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",i));
+      FillRow(accel, roundNum, i);
    }
 }
 
-void FillAES(FUInstance* inst) {
+void FillAES(Accelerator* accel) {
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
    for(int i = 0; i < 7; i++){
-      FUInstance* constRcon = GetInstanceByName(accel,"rcon%d",i);
+      FUInstance* constRcon = GetInstanceByName(accel,"Test", "aes", "rcon%d",i);
       constRcon->config[0] = rcon[i];
 
-      FillKeySchedule256(GetInstanceByName(accel,"key%d",i));
+      FillKeySchedule256(accel, i);
    }
 
-   FillSubBytes(GetInstanceByName(accel,"subBytes"));
+   FillSubBytes(accel);
 
    for(int i = 0; i < 13; i++){
-      FillRound(GetInstanceByName(accel,"round%d",i));
+      FillRound(accel, i);
    }
 }
 
@@ -165,7 +167,7 @@ void int_to_byte(int *in, uint8_t *out, int size) {
 }
 
 void Versat_init_AES(Accelerator* accel) {
-    FillAES(GetInstanceByName(accel,"Test","aes"));
+    FillAES(accel);
     return;
 }
 

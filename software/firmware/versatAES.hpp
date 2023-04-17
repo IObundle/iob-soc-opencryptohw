@@ -19,17 +19,17 @@ extern const uint8_t mul3[];
 
 void FillSBox(FUInstance* inst);
 
-void FillSubBytes(FUInstance* inst);
+void FillSubBytes(Accelerator* accel);
 
 void FillKeySchedule(FUInstance* inst);
 
-void FillKeySchedule256(FUInstance* inst);
+void FillKeySchedule256(Accelerator* accel, int keyInst);
 
-void FillRow(FUInstance* row);
+void FillRow(Accelerator* accel, int roundNum, int colNum);
 
-void FillRound(FUInstance* round);
+void FillRound(Accelerator* accel, int roundNum);
 
-void FillAES(FUInstance* inst); 
+void FillAES(Accelerator* accel); 
 
 void Versat_init_AES(Accelerator* accel);
 
