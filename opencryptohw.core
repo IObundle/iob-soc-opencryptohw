@@ -632,6 +632,9 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
@@ -689,6 +692,9 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
@@ -748,6 +754,9 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
