@@ -20,15 +20,15 @@ int printf_(const char* format, ...);
 
 #include "fullMCELIECETests.hpp"
 
-// Automatically times a block in number of counts
-struct TimeIt{
-   int line;
-   char fileId;
-
-   TimeIt(int line,char fileId){this->line = line;this->fileId = fileId;timer_reset();};
-   ~TimeIt(){unsigned long long end = timer_get_count();printf("%c:%d %llu\n",fileId,line,end);}
-};
-#define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
+// // Automatically times a block in number of counts
+// struct TimeIt{
+//    int line;
+//    char fileId;
+//
+//    TimeIt(int line,char fileId){this->line = line;this->fileId = fileId;timer_reset();};
+//    ~TimeIt(){unsigned long long end = timer_get_count();printf("%c:%d %llu\n",fileId,line,end);}
+// };
+// #define TIME_IT(ID) TimeIt timer_##__LINE__(__LINE__,ID)
 
 #ifndef PC
 #define printf printf_
