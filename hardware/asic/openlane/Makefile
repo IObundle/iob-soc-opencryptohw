@@ -65,4 +65,5 @@ clean:
 	make -C $(PC_DIR) clean
 	make -C $(ROOT_DIR) fw-clean
 	rm -rf *.v *.vh *.hex
+	rm -rf $(INC_DIR)/versat_external_memory*.vh
 	# make -C $(OPENLANE_TOOL_DIR) clean_runs

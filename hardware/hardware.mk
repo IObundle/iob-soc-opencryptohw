@@ -62,6 +62,7 @@ INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
 VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
 VHDR+=$(INC_DIR)/sram_port.vh $(INC_DIR)/sram_portmap.vh
 VHDR+=$(INC_DIR)/bootrom_port.vh $(INC_DIR)/bootrom_portmap.vh
+VHDR+=$(INC_DIR)/versat_external_memory_port.vh $(INC_DIR)/versat_external_memory_portmap.vh
 VHDR+=versat_defs.vh
 
 #axi wires to connect cache to external memory in system top
