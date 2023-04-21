@@ -215,8 +215,9 @@ filesets:
 
   console_fpga:
     files:
-      - fusesoc/scripts/console_fpga_hook.sh: {copyto: console_fpga_hook.sh}
       - fusesoc/scripts/pre_run_queue_hook.sh: {copyto: pre_run_queue_hook.sh}
+      - software/python/board_client.py: {copyto: software/python/board_client.py}
+      - software/python/iob_colors.py: {copyto: software/python/iob_colors.py}
     file_type: user
 
   pre_build_fix_aes256:
@@ -495,7 +496,7 @@ targets:
       - AXI_ADDR_W
     hooks:
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_sha256]
+      post_run: [validate_hook_sha256]
 
   fpga-AES256:
     <<: *default
@@ -548,7 +549,7 @@ targets:
     hooks:
       pre_build: [pre_build_fix_aes256]
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_aes256]
+      post_run: [validate_hook_aes256]
 
   fpga-MCELIECE:
     <<: *default
@@ -601,15 +602,13 @@ targets:
     hooks:
       pre_build: [pre_build_fix_mceliece]
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_mceliece]
+      post_run: [validate_hook_mceliece]
 
 scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
   queue_in_hook:
     cmd: [bash, pre_run_queue_hook.sh]
-  console_fpga_hook:
-    cmd: [bash, console_fpga_hook.sh]
   validate_hook_sha256:
     cmd: [bash, validate_hook.sh, SHA256]
   validate_hook_aes256:

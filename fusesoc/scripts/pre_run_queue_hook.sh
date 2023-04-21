@@ -2,9 +2,5 @@
 
 PYTHON_DIR=software/python
 
-# release on INT TERM and KILL interrupts
-# board_client.py installed in system from (iob-lib)
-trap "board_client.py release exit" INT TERM KILL
-
-# grab board
-board_client.py grab 600
+# grab board + skip programing + console command
+python3 ./software/python/board_client.py grab 600 -p 'echo prog.sh' -c 'python3 ./software/console/eth_console -s /dev/usb-uart -f'
