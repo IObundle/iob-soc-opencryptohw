@@ -26,6 +26,9 @@ uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
 UNIQ_VSRC = $(call uniq, $(VSRC))
 UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
+# Special external port define
+DEFINE+=$(defmacro)VERSAT_EXTERNAL_MEMORY
+
 all: run
 
 setup: gen-versat
