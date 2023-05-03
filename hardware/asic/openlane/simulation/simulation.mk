@@ -73,7 +73,7 @@ ifeq ($(SIM_SERVER),)
 else
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
-	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/asic/openlane/simulation build VCD=$(VCD) SIMULATOR=$(SIMULATOR)'
+	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/asic/openlane/simulation build VCD=$(VCD) SIMULATOR=$(SIMULATOR) ALGORITHM=$(ALGORITHM) HARDWARE_TEST=$(HARDWARE_TEST)'
 endif
 
 run: sim
@@ -90,7 +90,7 @@ ifeq ($(SIM_SERVER),)
 else
 	ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(SIM_SYNC_FLAGS) $(ROOT_DIR) $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)
-	bash -c "trap 'make kill-remote-sim' INT TERM KILL; ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/asic/openlane/simulation $@ SIMULATOR=$(SIMULATOR) INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM) VCD=$(VCD) TEST_LOG=\"$(TEST_LOG)\"'"
+	bash -c "trap 'make kill-remote-sim' INT TERM KILL; ssh $(SIM_SSH_FLAGS) $(SIM_USER)@$(SIM_SERVER) 'make -C $(REMOTE_ROOT_DIR)/hardware/asic/openlane/simulation $@ SIMULATOR=$(SIMULATOR) ALGORITHM=$(ALGORITHM) INIT_MEM=$(INIT_MEM) USE_DDR=$(USE_DDR) RUN_EXTMEM=$(RUN_EXTMEM) VCD=$(VCD) TEST_LOG=\"$(TEST_LOG)\"'"
 ifneq ($(TEST_LOG),)
 	scp $(SIM_USER)@$(SIM_SERVER):$(REMOTE_ROOT_DIR)/hardware/simulation/$(SIMULATOR)/test.log $(SIM_DIR)
 endif
@@ -140,8 +140,8 @@ test-shortmsg: sim-shortmsg # validate
 
 sim-shortmsg:
 	make -C $(PC_DIR) gen-versat
-	make build INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=2
-	make run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=2
+	make build INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=$(HARDWARE_TEST) ALGORITHM=$(ALGORITHM)
+	make run INIT_MEM=1 USE_DDR=1 RUN_EXTMEM=1 HARDWARE_TEST=$(HARDWARE_TEST) ALGORITHM=$(ALGORITHM)
 
 validate:
 	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
