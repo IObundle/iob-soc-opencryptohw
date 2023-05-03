@@ -133,12 +133,12 @@ post-synth/system.v: post-synth/system.v.xz
 	unxz -f $<
 
 post-synth/system.v.xz:
-	../scripts/download_file.sh $(POST_SYNTH_ID) $@
+	../scripts/download_file.sh $(ALGORITHM) $@
 
 post-layout/system.nl.v: post-layout/system.nl.v.xz
 	unxz -f $<
 
 post-layout/system.nl.v.xz:
-	../scripts/download_file.sh $(POST_LAYOUT_ID) $@
+	../scripts/download_file.sh $(ALGORITHM) $@
 
 .PHONY: hw-clean
