@@ -15,7 +15,12 @@ INIT_MEM=0
 endif
 
 #console command
+ifeq ($(ALGORITHM),AES256)
+CONSOLE_CMD=$(PYTHON_DIR)/console -s /dev/usb-uart
+else
 CONSOLE_CMD=$(CONSOLE_DIR)/eth_console -s /dev/usb-uart
+endif
+
 ifeq ($(INIT_MEM),0)
 CONSOLE_CMD+=-f
 endif
@@ -52,7 +57,9 @@ ifneq ($(TEST_LOG),)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/test.log .
 endif
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/$(SOC_OUT_BIN) .
+ifneq ($(ALGORITHM),AES256)
 	scp $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)/hardware/fpga/$(TOOL)/$(BOARD)/ethernet.log .
+endif
 endif
 endif
 

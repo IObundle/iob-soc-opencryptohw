@@ -97,14 +97,14 @@ void Full_AES_Test(Versat* versat) {
     int dout_ptr = 0, dout_size = 0;
     uint8_t *dout_fp;
 
-#ifdef SIM
+// #ifdef SIM
     // Receive input data from uart 
     char input_file_name[] = "soc-in.bin";
     din_size = uart_recvfile(input_file_name, (char *) din_fp);    
-#else
-    // Receive input data from ethernet
-    din_size = eth_rcv_variable_file((char *) din_fp);
-#endif
+// #else
+//     // Receive input data from ethernet
+//     din_size = eth_rcv_variable_file((char *) din_fp);
+// #endif
     printf("Received file with %d bytes\n", din_size);
 
     // Calculate output size and allocate output memory
