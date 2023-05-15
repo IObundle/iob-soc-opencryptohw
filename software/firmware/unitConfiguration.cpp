@@ -23,7 +23,7 @@ void ConfigureSimpleVRead(FUInstance* inst, int numberItems,int* memory){
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 0;
+   c->pingPong = 1;
 
    // B - versat side
    c->iterB = numberItems;
@@ -47,7 +47,7 @@ void ConfigureSimpleVWrite(FUInstance* inst, int numberItems,int* memory){
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 0;
+   c->pingPong = 1;
    c->length = numberItems - 1;
    c->ext_addr = (iptr) memory;
 

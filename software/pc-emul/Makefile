@@ -96,9 +96,10 @@ build: $(FW_EMUL)
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
+	mkdir -p verilated
 
 $(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o $(VERILATE_DIR)/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
 	
 run: build $(SOC_IN_BIN)
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
@@ -122,6 +123,7 @@ clean: clean-eth-socket
 	@rm -f -r ./debug
 	@rm -f -r ./src
 	@rm -f -r ./trace_out
+	@rm -f -r ./verilated
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 	@rm -f -r *.dot
 
@@ -165,6 +167,13 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$(ALGORITHM)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
 ./build/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
+	mkdir -p ./build; mv ./obj/*.o ./build/;
+	mv ./obj/*.h ./build/
+	rm -r -f ./obj
+
+$(VERILATE_DIR)/V%.h: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;

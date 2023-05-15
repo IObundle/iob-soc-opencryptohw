@@ -10,6 +10,7 @@ module xunitF #(
     input               clk,
     input               rst,
     
+    input               running,
     input               run,
     output              done,
 
