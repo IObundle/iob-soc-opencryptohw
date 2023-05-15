@@ -48,7 +48,7 @@ ifeq ($(NORUN),0)
 ifeq ($(BOARD_SERVER),)
 	cp $(FIRM_DIR)/firmware.bin .
 	$(BOARD_GRAB_CMD) -p '$(FPGA_PROG)' -c '$(CONSOLE_CMD) $(TEST_LOG)'
-	# cp $(SW_DIR)/python/$(SOC_OUT_BIN) .
+	if [ -f $(SW_DIR)/python/$(SOC_OUT_BIN) ]; then cp $(SW_DIR)/python/$(SOC_OUT_BIN) .; fi
 else
 	ssh $(BOARD_USER)@$(BOARD_SERVER) "if [ ! -d $(REMOTE_ROOT_DIR) ]; then mkdir -p $(REMOTE_ROOT_DIR); fi"
 	rsync -avz --delete --force --exclude-from=$(ROOT_DIR)/.rsync_exclude $(ROOT_DIR) $(BOARD_USER)@$(BOARD_SERVER):$(REMOTE_ROOT_DIR)
