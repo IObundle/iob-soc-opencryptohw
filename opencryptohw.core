@@ -136,6 +136,7 @@ filesets:
       - submodules/VERSAT/hardware/src/PipelineRegister.v
       - submodules/VERSAT/hardware/src/Reg.v
       - submodules/VERSAT/hardware/src/SwapEndian.v
+      - submodules/VERSAT/hardware/src/TimedMux.v
       - submodules/VERSAT/hardware/src/VRead.v
       - submodules/VERSAT/hardware/src/VWrite.v
       - submodules/VERSAT/hardware/src/xaddrgen2.v
@@ -635,12 +636,13 @@ generate:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
-          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -649,8 +651,11 @@ generate:
           - software/pc-emul/src/Convolution.v
           - software/pc-emul/src/DoRow.v
           - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
+          - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
@@ -680,6 +685,7 @@ generate:
           - software/pc-emul/src/T1.v
           - software/pc-emul/src/T2.v
           - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VectorLikeOperation.v
           - software/pc-emul/src/VReadToVWrite.v
         fileset: versat
         file_type: verilogSource
