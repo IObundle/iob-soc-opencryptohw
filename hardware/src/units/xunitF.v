@@ -131,7 +131,7 @@ begin
       end else begin
          delay <= delay - 1;
       end
-   end else begin
+   end else if(running) begin
       a <= T1 + T2;
       b <= a;
       c <= b;
