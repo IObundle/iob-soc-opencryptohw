@@ -763,12 +763,13 @@ generate:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
-          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -780,6 +781,7 @@ generate:
           - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
           - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
           - software/pc-emul/src/MainRound.v
