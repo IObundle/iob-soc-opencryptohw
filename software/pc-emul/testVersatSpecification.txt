@@ -797,11 +797,8 @@ module ShiftRows(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf){
 
 module MixProduct(mul2,mul3,x11,x12){
 #
-   a = mul2 ^ mul3;
-   b = x11 ^ x12;
-   d = a ^ b;
-
-   d -> out;
+   res = mul2 ^ mul3 ^ x11 ^ x12;
+   res -> out;
 }
 
 module DoRow(x0,x1,x2,x3){
@@ -940,13 +937,10 @@ module FirstLineKey(x0,x1,x2,x3,w0,w1,w2,w3,rcon){
 #
    x1 -> b0:0;
    x2 -> b0:1;
-
    x3 -> b1:0;
    x0 -> b1:1;
 
-   a1 = b0:0 ^ w0;
-
-   d0 = a1 ^ rcon;
+   d0 = b0:0 ^ w0 ^ rcon;
    d1 = b0:1 ^ w1;
    d2 = b1:0 ^ w2;
    d3 = b1:1 ^ w3;
@@ -1383,26 +1377,201 @@ module VectorLikeOperation(){
 
    b -> output;
 }
-/*
-   Two graphs:
 
-      One graph for the initial phase
-      Another graph for everything else?
-         If allow only one unit, then it's very easy to perform the templating code
 
-   Initial
-      Statements can only be: input -> state
 
-      input -> comb presents a problem. Need to provide a mux 
 
-   For loop:
-      Statements can only be: input -> state
-                              input -> out
-                              input -> comb
-                              comb -> state
-                              comb -> out
-                              state -> comb
-                              state -> out
+
+
+
+
+
+
+
+module MainRoundAndKey(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,rcon){
+   MainRound round;
+   KeySchedule key;
+#
+   x0 -> round:0;
+   x1 -> round:1;
+   x2 -> round:2;
+   x3 -> round:3;
+   x4 -> round:4;
+   x5 -> round:5;
+   x6 -> round:6;
+   x7 -> round:7;
+   x8 -> round:8;
+   x9 -> round:9;
+   xa -> round:10;
+   xb -> round:11;
+   xc -> round:12;
+   xd -> round:13;
+   xe -> round:14;
+   xf -> round:15;
+   k0 -> key:0;
+   k1 -> key:1;
+   k2 -> key:2;
+   k3 -> key:3;
+   k4 -> key:4;
+   k5 -> key:5;
+   k6 -> key:6;
+   k7 -> key:7;
+   k8 -> key:8;
+   k9 -> key:9;
+   ka -> key:10;
+   kb -> key:11;
+   kc -> key:12;
+   kd -> key:13;
+   ke -> key:14;
+   kf -> key:15;
+   rcon -> key:16;
    
+   key:0..15 -> round:16..31;
 
-*/
+   round:0..15 -> out:0..15;
+   key:0..15 -> out:16..31;
+}
+
+iterative AESPathExample(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,rcon0,rcon1,rcon2,rcon3,rcon4,rcon5,rcon6,rcon7,rcon8){
+   MainRoundAndKey roundAndKey;
+# 9
+   x0 -> roundAndKey:0;
+   x1 -> roundAndKey:1;
+   x2 -> roundAndKey:2;
+   x3 -> roundAndKey:3;
+   x4 -> roundAndKey:4;
+   x5 -> roundAndKey:5;
+   x6 -> roundAndKey:6;
+   x7 -> roundAndKey:7;
+   x8 -> roundAndKey:8;
+   x9 -> roundAndKey:9;
+   xa -> roundAndKey:10;
+   xb -> roundAndKey:11;
+   xc -> roundAndKey:12;
+   xd -> roundAndKey:13;
+   xe -> roundAndKey:14;
+   xf -> roundAndKey:15;
+   k0 -> roundAndKey:16;
+   k1 -> roundAndKey:17;
+   k2 -> roundAndKey:18;
+   k3 -> roundAndKey:19;
+   k4 -> roundAndKey:20;
+   k5 -> roundAndKey:21;
+   k6 -> roundAndKey:22;
+   k7 -> roundAndKey:23;
+   k8 -> roundAndKey:24;
+   k9 -> roundAndKey:25;
+   ka -> roundAndKey:26;
+   kb -> roundAndKey:27;
+   kc -> roundAndKey:28;
+   kd -> roundAndKey:29;
+   ke -> roundAndKey:30;
+   kf -> roundAndKey:31;
+
+   roundAndKey:0..31 -> roundAndKey:0..31;
+
+   %0 rcon0 -> roundAndKey:32;
+   %1 rcon1 -> roundAndKey:32;
+   %2 rcon2 -> roundAndKey:32;
+   %3 rcon3 -> roundAndKey:32;
+   %4 rcon4 -> roundAndKey:32;
+   %5 rcon5 -> roundAndKey:32;
+   %6 rcon6 -> roundAndKey:32;
+   %7 rcon7 -> roundAndKey:32;
+   %8 rcon8 -> roundAndKey:32;
+
+   roundAndKey:0..31 -> out:0..31;
+}
+
+module AESWithIterative(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf){
+   Const rcon0;
+   Const rcon1;
+   Const rcon2;
+   Const rcon3;
+   Const rcon4;
+   Const rcon5;
+   Const rcon6;
+   Const rcon7;
+   Const rcon8;
+   Const rcon9;
+   
+   AESPathExample mk0;
+
+   KeySchedule key9;
+
+   AddRoundKey firstKey;
+   SBox subBytes;
+   ShiftRows shiftRows;
+   AddRoundKey lastKey;
+#
+   x0 -> firstKey:0;
+   x1 -> firstKey:1;
+   x2 -> firstKey:2;
+   x3 -> firstKey:3;
+   x4 -> firstKey:4;
+   x5 -> firstKey:5;
+   x6 -> firstKey:6;
+   x7 -> firstKey:7;
+   x8 -> firstKey:8;
+   x9 -> firstKey:9;
+   xa -> firstKey:10;
+   xb -> firstKey:11;
+   xc -> firstKey:12;
+   xd -> firstKey:13;
+   xe -> firstKey:14;
+   xf -> firstKey:15;
+   k0 -> firstKey:16;
+   k1 -> firstKey:17;
+   k2 -> firstKey:18;
+   k3 -> firstKey:19;
+   k4 -> firstKey:20;
+   k5 -> firstKey:21;
+   k6 -> firstKey:22;
+   k7 -> firstKey:23;
+   k8 -> firstKey:24;
+   k9 -> firstKey:25;
+   ka -> firstKey:26;
+   kb -> firstKey:27;
+   kc -> firstKey:28;
+   kd -> firstKey:29;
+   ke -> firstKey:30;
+   kf -> firstKey:31;
+
+   firstKey:0..15 -> mk0:0..15;
+   k0 -> mk0:16;
+   k1 -> mk0:17;
+   k2 -> mk0:18;
+   k3 -> mk0:19;
+   k4 -> mk0:20;
+   k5 -> mk0:21;
+   k6 -> mk0:22;
+   k7 -> mk0:23;
+   k8 -> mk0:24;
+   k9 -> mk0:25;
+   ka -> mk0:26;
+   kb -> mk0:27;
+   kc -> mk0:28;
+   kd -> mk0:29;
+   ke -> mk0:30;
+   kf -> mk0:31;
+   rcon0 -> mk0:32;
+   rcon1 -> mk0:33;
+   rcon2 -> mk0:34;
+   rcon3 -> mk0:35;
+   rcon4 -> mk0:36;
+   rcon5 -> mk0:37;
+   rcon6 -> mk0:38;
+   rcon7 -> mk0:39;
+   rcon8 -> mk0:40;
+   
+   mk0:0..15 -> subBytes:0..15;
+   mk0:16..31 -> key9:0..15;
+
+   rcon9 -> key9:16;
+   subBytes:0..15 -> shiftRows:0..15;
+   shiftRows:0..15 -> lastKey:0..15;
+
+   key9:0..15 -> lastKey:16..31;
+
+   lastKey:0..15 -> out:0..15;
+}
