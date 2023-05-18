@@ -1387,6 +1387,272 @@ module VectorLikeOperation(){
 
 
 
+module RoundPairAndKey(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,k10,k11,k12,k13,k14,k15,k16,k17,k18,k19,k1a,k1b,k1c,k1d,k1e,k1f,rcon){
+   MainRound round1;
+   MainRound round2;
+   KeySchedule256 key;
+#
+   x0 -> round1:0;
+   x1 -> round1:1;
+   x2 -> round1:2;
+   x3 -> round1:3;
+   x4 -> round1:4;
+   x5 -> round1:5;
+   x6 -> round1:6;
+   x7 -> round1:7;
+   x8 -> round1:8;
+   x9 -> round1:9;
+   xa -> round1:10;
+   xb -> round1:11;
+   xc -> round1:12;
+   xd -> round1:13;
+   xe -> round1:14;
+   xf -> round1:15;
+
+   k0 -> key:0;
+   k1 -> key:1;
+   k2 -> key:2;
+   k3 -> key:3;
+   k4 -> key:4;
+   k5 -> key:5;
+   k6 -> key:6;
+   k7 -> key:7;
+   k8 -> key:8;
+   k9 -> key:9;
+   ka -> key:10;
+   kb -> key:11;
+   kc -> key:12;
+   kd -> key:13;
+   ke -> key:14;
+   kf -> key:15;
+   k10 -> key:16;
+   k11 -> key:17;
+   k12 -> key:18;
+   k13 -> key:19;
+   k14 -> key:20;
+   k15 -> key:21;
+   k16 -> key:22;
+   k17 -> key:23;
+   k18 -> key:24;
+   k19 -> key:25;
+   k1a -> key:26;
+   k1b -> key:27;
+   k1c -> key:28;
+   k1d -> key:29;
+   k1e -> key:30;
+   k1f -> key:31;
+   rcon -> key:32;
+   
+   key:0..15 -> round1:16..31;
+
+   round1:0..15 -> round2:0..15;
+   key:16..31 -> round2:16..31;
+
+   round2:0..15 -> out:0..15;
+   key:0..31 -> out:16..47;
+}
+
+iterative AES256Path(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,k10,k11,k12,k13,k14,k15,k16,k17,k18,k19,k1a,k1b,k1c,k1d,k1e,k1f,rcon0,rcon1,rcon2,rcon3,rcon4,rcon5){
+   RoundPairAndKey roundPairAndKey;
+# 6
+   x0 -> roundPairAndKey:0;
+   x1 -> roundPairAndKey:1;
+   x2 -> roundPairAndKey:2;
+   x3 -> roundPairAndKey:3;
+   x4 -> roundPairAndKey:4;
+   x5 -> roundPairAndKey:5;
+   x6 -> roundPairAndKey:6;
+   x7 -> roundPairAndKey:7;
+   x8 -> roundPairAndKey:8;
+   x9 -> roundPairAndKey:9;
+   xa -> roundPairAndKey:10;
+   xb -> roundPairAndKey:11;
+   xc -> roundPairAndKey:12;
+   xd -> roundPairAndKey:13;
+   xe -> roundPairAndKey:14;
+   xf -> roundPairAndKey:15;
+   k0 -> roundPairAndKey:16;
+   k1 -> roundPairAndKey:17;
+   k2 -> roundPairAndKey:18;
+   k3 -> roundPairAndKey:19;
+   k4 -> roundPairAndKey:20;
+   k5 -> roundPairAndKey:21;
+   k6 -> roundPairAndKey:22;
+   k7 -> roundPairAndKey:23;
+   k8 -> roundPairAndKey:24;
+   k9 -> roundPairAndKey:25;
+   ka -> roundPairAndKey:26;
+   kb -> roundPairAndKey:27;
+   kc -> roundPairAndKey:28;
+   kd -> roundPairAndKey:29;
+   ke -> roundPairAndKey:30;
+   kf -> roundPairAndKey:31;
+   k10 -> roundPairAndKey:32;
+   k11 -> roundPairAndKey:33;
+   k12 -> roundPairAndKey:34;
+   k13 -> roundPairAndKey:35;
+   k14 -> roundPairAndKey:36;
+   k15 -> roundPairAndKey:37;
+   k16 -> roundPairAndKey:38;
+   k17 -> roundPairAndKey:39;
+   k18 -> roundPairAndKey:40;
+   k19 -> roundPairAndKey:41;
+   k1a -> roundPairAndKey:42;
+   k1b -> roundPairAndKey:43;
+   k1c -> roundPairAndKey:44;
+   k1d -> roundPairAndKey:45;
+   k1e -> roundPairAndKey:46;
+   k1f -> roundPairAndKey:47;
+
+   roundPairAndKey:0..47 -> roundPairAndKey:0..47;
+
+   %0 rcon0 -> roundPairAndKey:48;
+   %1 rcon1 -> roundPairAndKey:48;
+   %2 rcon2 -> roundPairAndKey:48;
+   %3 rcon3 -> roundPairAndKey:48;
+   %4 rcon4 -> roundPairAndKey:48;
+   %5 rcon5 -> roundPairAndKey:48;
+
+   roundPairAndKey:0..47 -> out:0..47;
+}
+
+module AES256WithIterative(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,k10,k11,k12,k13,k14,k15,k16,k17,k18,k19,k1a,k1b,k1c,k1d,k1e,k1f){
+   Const rcon0;
+   Const rcon1;
+   Const rcon2;
+   Const rcon3;
+   Const rcon4;
+   Const rcon5;
+   Const rcon6;
+   
+   AES256Path mk0;
+
+   KeySchedule256 key6;
+
+   AddRoundKey firstKey;
+   MainRound round0;
+   SBox subBytes;
+   ShiftRows shiftRows;
+   AddRoundKey lastKey;
+#
+   x0 -> firstKey:0;
+   x1 -> firstKey:4;
+   x2 -> firstKey:8;
+   x3 -> firstKey:12;
+   x4 -> firstKey:1;
+   x5 -> firstKey:5;
+   x6 -> firstKey:9;
+   x7 -> firstKey:13;
+   x8 -> firstKey:2;
+   x9 -> firstKey:6;
+   xa -> firstKey:10;
+   xb -> firstKey:14;
+   xc -> firstKey:3;
+   xd -> firstKey:7;
+   xe -> firstKey:11;
+   xf -> firstKey:15;
+   k0 -> firstKey:16;
+   k1 -> firstKey:20;
+   k2 -> firstKey:24;
+   k3 -> firstKey:28;
+   k4 -> firstKey:17;
+   k5 -> firstKey:21;
+   k6 -> firstKey:25;
+   k7 -> firstKey:29;
+   k8 -> firstKey:18;
+   k9 -> firstKey:22;
+   ka -> firstKey:26;
+   kb -> firstKey:30;
+   kc -> firstKey:19;
+   kd -> firstKey:23;
+   ke -> firstKey:27;
+   kf -> firstKey:31;
+
+   firstKey:0..15 -> round0:0..15;
+   k10 -> round0:16;
+   k11 -> round0:20;
+   k12 -> round0:24;
+   k13 -> round0:28;
+   k14 -> round0:17;
+   k15 -> round0:21;
+   k16 -> round0:25;
+   k17 -> round0:29;
+   k18 -> round0:18;
+   k19 -> round0:22;
+   k1a -> round0:26;
+   k1b -> round0:30;
+   k1c -> round0:19;
+   k1d -> round0:23;
+   k1e -> round0:27;
+   k1f -> round0:31;
+
+   round0:0..15 -> mk0:0..15;
+   k0 -> mk0:16;
+   k1 -> mk0:20;
+   k2 -> mk0:24;
+   k3 -> mk0:28;
+   k4 -> mk0:17;
+   k5 -> mk0:21;
+   k6 -> mk0:25;
+   k7 -> mk0:29;
+   k8 -> mk0:18;
+   k9 -> mk0:22;
+   ka -> mk0:26;
+   kb -> mk0:30;
+   kc -> mk0:19;
+   kd -> mk0:23;
+   ke -> mk0:27;
+   kf -> mk0:31;
+   k10 -> mk0:32;
+   k11 -> mk0:36;
+   k12 -> mk0:40;
+   k13 -> mk0:44;
+   k14 -> mk0:33;
+   k15 -> mk0:37;
+   k16 -> mk0:41;
+   k17 -> mk0:45;
+   k18 -> mk0:34;
+   k19 -> mk0:38;
+   k1a -> mk0:42;
+   k1b -> mk0:46;
+   k1c -> mk0:35;
+   k1d -> mk0:39;
+   k1e -> mk0:43;
+   k1f -> mk0:47;
+   rcon0 -> mk0:48;
+   rcon1 -> mk0:49;
+   rcon2 -> mk0:50;
+   rcon3 -> mk0:51;
+   rcon4 -> mk0:52;
+   rcon5 -> mk0:53;
+   
+
+   mk0:16..47 -> key6:0..31;
+   rcon6 -> key6:32;
+
+   mk0:0..15 -> subBytes:0..15;
+   subBytes:0..15 -> shiftRows:0..15;
+
+   shiftRows:0..15 -> lastKey:0..15;
+   key6:0..15 -> lastKey:16..31;
+
+   lastKey:0 -> out:0;
+   lastKey:1 -> out:4;
+   lastKey:2 -> out:8;
+   lastKey:3 -> out:12;
+   lastKey:4 -> out:1;
+   lastKey:5 -> out:5;
+   lastKey:6 -> out:9;
+   lastKey:7 -> out:13;
+   lastKey:8 -> out:2;
+   lastKey:9 -> out:6;
+   lastKey:10 -> out:10;
+   lastKey:11 -> out:14;
+   lastKey:12 -> out:3;
+   lastKey:13 -> out:7;
+   lastKey:14 -> out:11;
+   lastKey:15 -> out:15;
+}
 
 module MainRoundAndKey(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xa,xb,xc,xd,xe,xf,k0,k1,k2,k3,k4,k5,k6,k7,k8,k9,ka,kb,kc,kd,ke,kf,rcon){
    MainRound round;

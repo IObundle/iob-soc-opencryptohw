@@ -1423,11 +1423,13 @@ static void FillSubBytes_iter(Accelerator* topLevel,FUInstance* inst){
    }
 }
 
-static void FillKeySchedule_iter(Accelerator* topLevel,FUInstance* inst){
+static void FillKeySchedule256_iter(Accelerator* topLevel,FUInstance* inst){
    for(int i = 0; i < 2; i++){
-      FUInstance* table = GetSubInstanceByName(topLevel,inst,"s","b%d",i);
+      FUInstance* table1 = GetSubInstanceByName(topLevel,inst,"s","b%d",i);
+      FUInstance* table2 = GetSubInstanceByName(topLevel,inst,"q","b%d",i);
 
-      FillSBox_iter(table);
+      FillSBox_iter(table1);
+      FillSBox_iter(table2);
    }
 }
 
@@ -1491,41 +1493,48 @@ void FillRound_iter(Accelerator* topLevel,FUInstance* round){
    }
 }
 
-static void FillRoundAndKey_iter(Accelerator* topLevel,FUInstance* roundAndKey){
-   FillRound_iter(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"round"));
-   FillKeySchedule_iter(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"key"));
+static void FillRoundPairAndKey_iter(Accelerator* topLevel,FUInstance* roundAndKey){
+   FillRound_iter(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"round1"));
+   FillRound_iter(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"round2"));
+   FillKeySchedule256_iter(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"key"));
 }
 
 TEST(AESWithIterative){
    SimpleAccelerator test = {};
-   InitSimpleAccelerator(&test,versat,"AESWithIterative");
+   InitSimpleAccelerator(&test,versat,"AES256WithIterative");
 
-   FUInstance* t = GetInstanceByName(test.accel,"Test","mk0","roundAndKey");
+   FUInstance* t = GetInstanceByName(test.accel,"Test","mk0","roundPairAndKey");
    FUInstance* s = GetInstanceByName(test.accel,"Test","subBytes");
-   FUInstance* k = GetInstanceByName(test.accel,"Test","key9");
+   FUInstance* k = GetInstanceByName(test.accel,"Test","key6");
+   FUInstance* r = GetInstanceByName(test.accel,"Test","round0");
 
    FillSubBytes_iter(test.accel,s);
-   FillKeySchedule_iter(test.accel,k);
+   FillKeySchedule256_iter(test.accel,k);
+   FillRound_iter(test.accel,r);
 
    FUInstance* merge = GetInstanceByName(test.accel,"Test","mk0","Merge0");
    merge->config[0] = 4;
 
-   int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40,0x80,0x1b,0x36};
-   for(int i = 0; i < 10; i++){
+   int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
+   for(int i = 0; i < 7; i++){
       FUInstance* inst = GetInstanceByName(test.accel,"Test","rcon%d",i);
       inst->config[0] = rcon[i];
    }
 
-   FillRoundAndKey_iter(test.accel,t);
+   FillRoundPairAndKey_iter(test.accel,t);
 
-   int* out = RunSimpleAccelerator(&test,0x32,0x88,0x31,0xe0,
-                                         0x43,0x5a,0x31,0x37,
-                                         0xf6,0x30,0x98,0x07,
-                                         0xa8,0x8d,0xa2,0x34,
-                                         0x2b,0x28,0xab,0x09,
-                                         0x7e,0xae,0xf7,0xcf,
-                                         0x15,0xd2,0x15,0x4f,
-                                         0x16,0xa6,0x88,0x3c);
+   int* out = RunSimpleAccelerator(&test, 0xcc,0xc6,0x2c,0x6b,
+                                          0x0a,0x09,0xa6,0x71,
+                                          0xd6,0x44,0x56,0x81,
+                                          0x8d,0xb2,0x9a,0x4d,
+                                          0xcc,0x22,0xda,0x78,
+                                          0x7f,0x37,0x57,0x11,
+                                          0xc7,0x63,0x02,0xbe,
+                                          0xf0,0x97,0x9d,0x8e,
+                                          0xdd,0xf8,0x42,0x82,
+                                          0x9c,0x2b,0x99,0xef,
+                                          0x3d,0xd0,0x4e,0x23,
+                                          0xe5,0x4c,0xc2,0x4b);
 
    OutputVersatSource(versat,&test,".");
 
@@ -1535,7 +1544,7 @@ TEST(AESWithIterative){
       ptr += sprintf(ptr,"0x%02x ",out[i]);
    }
 
-   return EXPECT("0x39 0x02 0xdc 0x19 0x25 0xdc 0x11 0x6a 0x84 0x09 0x85 0x0b 0x1d 0xfb 0x97 0x32 ","%s",buffer);
+   return EXPECT("0xdf 0x86 0x34 0xca 0x02 0xb1 0x3a 0x12 0x5b 0x78 0x6e 0x1d 0xce 0x90 0x65 0x8b ","%s",buffer);
 }
 
 // When 1, need to pass 0 to enable test (changes enabler from 1 to 0)
