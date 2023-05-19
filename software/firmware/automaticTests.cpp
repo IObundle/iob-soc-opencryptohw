@@ -579,7 +579,7 @@ TEST(VersatSubBytes){
    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    #if 1
-   FillSubBytes(accel);
+   // FillSubBytes(accel);
    #endif
 
    int* out = TestInstance(versat,accel,inst,16,16,0x19,0xa0,0x9a,0xe9,0x3d,0xf4,0xc6,0xf8,0xe3,0xe2,0x8d,0x48,0xbe,0x2b,0x2a,0x08);
@@ -631,7 +631,7 @@ TEST(VersatDoRows){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
-   FillRow(accel, 0, 0);
+   // FillRow(accel, 0, 0);
 
    int* out = TestInstance(versat,accel,inst,4,4,0xdb,0x13,0x53,0x45);
 
@@ -662,7 +662,7 @@ TEST(VersatMixColumns){
    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
    for(int i = 0; i < 4; i++){
-      FillRow(accel, 0, i);
+      // FillRow(accel, 0, i);
    }
 
    int* out = TestInstance(versat,accel,inst,16,16,0xd4,0xe0,0xb8,0x1e,0xbf,0xb4,0x41,0x27,0x5d,0x52,0x11,0x98,0x30,0xae,0xf1,0xe5);
@@ -717,7 +717,7 @@ TEST(KeySchedule){
    Accelerator* accel = CreateAccelerator(versat);
    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
 
-   FillKeySchedule(inst);
+   // FillKeySchedule(inst);
 
    int* out = TestInstance(versat,accel,inst,17,16,0x2b,0x28,0xab,0x09,0x7e,0xae,0xf7,0xcf,0x15,0xd2,0x15,0x4f,0x16,0xa6,0x88,0x3c,0x01);
 
@@ -1508,9 +1508,9 @@ TEST(AESWithIterative){
    FUInstance* k = GetInstanceByName(test.accel,"Test","key6");
    FUInstance* r = GetInstanceByName(test.accel,"Test","round0");
 
-   FillSubBytes_iter(test.accel,s);
-   FillKeySchedule256_iter(test.accel,k);
-   FillRound_iter(test.accel,r);
+   FillSubBytes(test.accel,s);
+   FillKeySchedule256(test.accel,k);
+   FillRound(test.accel,r);
 
    FUInstance* merge = GetInstanceByName(test.accel,"Test","mk0","Merge0");
    merge->config[0] = 8;
@@ -1521,7 +1521,7 @@ TEST(AESWithIterative){
       inst->config[0] = rcon[i];
    }
 
-   FillRoundPairAndKey_iter(test.accel,t);
+   FillRoundPairAndKey(test.accel,t);
 
    int* out = RunSimpleAccelerator(&test, 0xcc,0xc6,0x2c,0x6b,
                                           0x0a,0x09,0xa6,0x71,

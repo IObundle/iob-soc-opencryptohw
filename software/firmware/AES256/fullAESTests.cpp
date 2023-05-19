@@ -87,9 +87,8 @@ void Full_AES_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,STRING("ReadWriteAES"));
-    Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
+    SimpleAccelerator test = {};
+    InitSimpleAccelerator(&test,versat,"AES256WithIterative");
 
     // Receive Input Data
     int din_ptr = 0, din_size = 0;
@@ -114,7 +113,7 @@ void Full_AES_Test(Versat* versat) {
     dout_fp = din_fp + din_size;
 
     // Initialize VersatAES
-    Versat_init_AES(accel);
+    Versat_init_AES(test.accel);
 
     // Message test loop
     int i=0;
@@ -124,7 +123,7 @@ void Full_AES_Test(Versat* versat) {
         din_ptr += get_ptext_key_pair(&(din_fp[din_ptr]), &plaintext, &key);
         printf("\ttest vector #%d/%d...", i+1, num_msgs);
 
-        VersatAES(versat, accel, ciphertext, plaintext, key);
+        VersatAES(&test, ciphertext, plaintext, key);
         printf("done!\n");
 
         // Save to memory

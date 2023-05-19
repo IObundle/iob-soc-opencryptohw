@@ -22,7 +22,7 @@ static Accelerator* accel;
 static FUInstance* aesInstance;
 static FUDeclaration* type;
 
-const uint8_t sbox[256] = {
+const uint32_t sbox[256] = { // done
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
   0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
   0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -40,7 +40,7 @@ const uint8_t sbox[256] = {
   0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
   0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16 };
 
-const uint8_t mul2[] = {
+const uint32_t mul2[] = {
    0x00,0x02,0x04,0x06,0x08,0x0a,0x0c,0x0e,0x10,0x12,0x14,0x16,0x18,0x1a,0x1c,0x1e,
    0x20,0x22,0x24,0x26,0x28,0x2a,0x2c,0x2e,0x30,0x32,0x34,0x36,0x38,0x3a,0x3c,0x3e,
    0x40,0x42,0x44,0x46,0x48,0x4a,0x4c,0x4e,0x50,0x52,0x54,0x56,0x58,0x5a,0x5c,0x5e,
@@ -59,7 +59,7 @@ const uint8_t mul2[] = {
    0xfb,0xf9,0xff,0xfd,0xf3,0xf1,0xf7,0xf5,0xeb,0xe9,0xef,0xed,0xe3,0xe1,0xe7,0xe5
 };
 
-const uint8_t mul3[] = {
+const uint32_t mul3[] = {
    0x00,0x03,0x06,0x05,0x0c,0x0f,0x0a,0x09,0x18,0x1b,0x1e,0x1d,0x14,0x17,0x12,0x11,
    0x30,0x33,0x36,0x35,0x3c,0x3f,0x3a,0x39,0x28,0x2b,0x2e,0x2d,0x24,0x27,0x22,0x21,
    0x60,0x63,0x66,0x65,0x6c,0x6f,0x6a,0x69,0x78,0x7b,0x7e,0x7d,0x74,0x77,0x72,0x71,
@@ -78,76 +78,52 @@ const uint8_t mul3[] = {
    0x0b,0x08,0x0d,0x0e,0x07,0x04,0x01,0x02,0x13,0x10,0x15,0x16,0x1f,0x1c,0x19,0x1a
 };
 
-void FillSBox(FUInstance* inst){
-   for(int i = 0; i < 256; i++){
-      VersatUnitWrite(inst,i,sbox[i]);
-   }
+void FillSBox(FUInstance* inst){ // done
+   VersatMemoryCopy(inst,inst->memMapped,(int*) sbox,256);
 }
 
-void FillSubBytes(Accelerator* accel){
+void FillSubBytes(Accelerator* topLevel,FUInstance* inst){ // done
    for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(accel,"Test", "aes", "subBytes", "s%d",i));
+      FillSBox(GetSubInstanceByName(topLevel,inst,"s%d",i));
    }
 }
 
-void FillKeySchedule(FUInstance* inst){
+void FillKeySchedule256(Accelerator* topLevel,FUInstance* inst){ // done
    for(int i = 0; i < 2; i++){
-      FUInstance* table = GetInstanceByName(accel,"s","b%d",i);
-
-      FillSBox(table);
-   }
-}
-
-void FillKeySchedule256(Accelerator* accel, int keyInst){
-   for(int i = 0; i < 2; i++){
-      FUInstance* table1 = GetInstanceByName(accel,"Test", "aes", "key%d", keyInst, "s","b%d",i);
-      // FUInstance* table1 = GetInstanceByName(accel,"Test", "aes", "key%d","s","b%d",keyInst,i);
-      FUInstance* table2 = GetInstanceByName(accel,"Test", "aes", "key%d", keyInst, "q","b%d",i);
+      FUInstance* table1 = GetSubInstanceByName(topLevel,inst,"s","b%d",i);
+      FUInstance* table2 = GetSubInstanceByName(topLevel,inst,"q","b%d",i);
 
       FillSBox(table1);
       FillSBox(table2);
    }
 }
 
-void FillRow(Accelerator* accel, int roundNum, int colNum){
-   FUInstance* mul2_0 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul2_0");
-   FUInstance* mul2_1 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul2_1");
-   FUInstance* mul3_0 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul3_0");
-   FUInstance* mul3_1 = GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",colNum,"mul3_1");
+void FillRow(Accelerator* topLevel,FUInstance* row){ // done
+    FUInstance* mul2_0 = GetSubInstanceByName(topLevel,row,"mul2_0");
+    FUInstance* mul2_1 = GetSubInstanceByName(topLevel,row,"mul2_1");
+    FUInstance* mul3_0 = GetSubInstanceByName(topLevel,row,"mul3_0");
+    FUInstance* mul3_1 = GetSubInstanceByName(topLevel,row,"mul3_1");
 
-   for(int i = 0; i < 256; i++){
-      VersatUnitWrite(mul2_0,i,mul2[i]);
-      VersatUnitWrite(mul2_1,i,mul2[i]);
-      VersatUnitWrite(mul3_0,i,mul3[i]);
-      VersatUnitWrite(mul3_1,i,mul3[i]);
-   }
+    VersatMemoryCopy(mul2_0,mul2_0->memMapped,(int*) mul2,256);
+    VersatMemoryCopy(mul2_1,mul2_1->memMapped,(int*) mul2,256);
+    VersatMemoryCopy(mul3_0,mul3_0->memMapped,(int*) mul3,256);
+    VersatMemoryCopy(mul3_1,mul3_1->memMapped,(int*) mul3,256);
 }
 
-void FillRound(Accelerator* accel, int roundNum){
-   for(int i = 0; i < 8; i++){
-      FillSBox(GetInstanceByName(accel,"Test","aes","round%d",roundNum,"subBytes","s%d",i));
-   }
+void FillRound(Accelerator* topLevel,FUInstance* round){ // done
+    for(int i = 0; i < 8; i++){
+        FillSBox(GetSubInstanceByName(topLevel,round,"subBytes","s%d",i));
+    }
 
-   for(int i = 0; i < 4; i++){
-      // FillRow(GetInstanceByName(accel,"Test","aes","round%d",roundNum,"mixColumns","d%d",i));
-      FillRow(accel, roundNum, i);
-   }
+    for(int i = 0; i < 4; i++){
+        FillRow(topLevel,GetSubInstanceByName(topLevel,round,"mixColumns","d%d",i));
+    }
 }
 
-void FillAES(Accelerator* accel) {
-   int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
-   for(int i = 0; i < 7; i++){
-      FUInstance* constRcon = GetInstanceByName(accel,"Test", "aes", "rcon%d",i);
-      constRcon->config[0] = rcon[i];
-
-      FillKeySchedule256(accel, i);
-   }
-
-   FillSubBytes(accel);
-
-   for(int i = 0; i < 13; i++){
-      FillRound(accel, i);
-   }
+void FillRoundPairAndKey(Accelerator* topLevel,FUInstance* roundAndKey){ // done
+    FillRound(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"round1"));
+    FillRound(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"round2"));
+    FillKeySchedule256(topLevel,GetSubInstanceByName(topLevel,roundAndKey,"key"));
 }
 
 void byte_to_int(uint8_t *in, int *out, int size) {
@@ -167,11 +143,29 @@ void int_to_byte(int *in, uint8_t *out, int size) {
 }
 
 void Versat_init_AES(Accelerator* accel) {
-    FillAES(accel);
+    FUInstance* t = GetInstanceByName(accel,"Test","mk0","roundPairAndKey");
+    FUInstance* s = GetInstanceByName(accel,"Test","subBytes");
+    FUInstance* k = GetInstanceByName(accel,"Test","key6");
+    FUInstance* r = GetInstanceByName(accel,"Test","round0");
+
+    FillSubBytes(accel,s); //done
+    FillKeySchedule256(accel,k); // done
+    FillRound(accel,r); // done
+
+    FUInstance* merge = GetInstanceByName(accel,"Test","mk0","Merge0");
+    merge->config[0] = 8;
+
+    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
+    for(int i = 0; i < 7; i++){
+        FUInstance* inst = GetInstanceByName(accel,"Test","rcon%d",i);
+        inst->config[0] = rcon[i];
+    }
+
+    FillRoundPairAndKey(accel,t); // done
     return;
 }
 
-void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cypher, uint8_t *key) {
+void VersatAES(SimpleAccelerator* simple, uint8_t *result, uint8_t *cypher, uint8_t *key) {
    int cypher_int[AES_BLK_SIZE] = {0};
    int key_int[AES_KEY_SIZE] = {0};
    int result_int[AES_BLK_SIZE] = {0};
@@ -179,15 +173,21 @@ void VersatAES(Versat* versat, Accelerator* accel, uint8_t *result, uint8_t *cyp
    byte_to_int(cypher, cypher_int, AES_BLK_SIZE);
    byte_to_int(key, key_int, AES_KEY_SIZE);
 
-   ConfigureSimpleVRead(GetInstanceByName(accel,"Test","cypher"),AES_BLK_SIZE,cypher_int);
-   ConfigureSimpleVRead(GetInstanceByName(accel,"Test","key"),AES_KEY_SIZE,key_int);
-   ConfigureSimpleVWrite(GetInstanceByName(accel,"Test","results"),AES_BLK_SIZE,result_int);
+   int i = 0;
+   for(i = 0; i < AES_BLK_SIZE; i++){
+      simple->inputs[i]->config[0] = cypher_int[i];
+   }
+   for(i = 0; i < AES_KEY_SIZE; i++){
+      simple->inputs[i+AES_BLK_SIZE]->config[0] = key_int[i];
+   }
 
-   AcceleratorRun(accel);
-   AcceleratorRun(accel);
-   AcceleratorRun(accel);
+   AcceleratorRun(simple->accel);
 
-   OutputVersatSource(versat,accel,".");
+   for(i = 0; i < AES_BLK_SIZE; i++){
+      result_int[i] = simple->outputs[i]->state[0];
+   }
+
+   // OutputVersatSource(versat,accel,".");
 
 #ifndef PC
    cache_invalidate();
