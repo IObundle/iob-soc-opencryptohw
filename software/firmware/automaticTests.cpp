@@ -1513,7 +1513,7 @@ TEST(AESWithIterative){
    FillRound_iter(test.accel,r);
 
    FUInstance* merge = GetInstanceByName(test.accel,"Test","mk0","Merge0");
-   merge->config[0] = 4;
+   merge->config[0] = 8;
 
    int rcon[] = {0x01,0x02,0x04,0x08,0x10,0x20,0x40};
    for(int i = 0; i < 7; i++){
