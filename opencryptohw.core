@@ -135,7 +135,9 @@ filesets:
       - submodules/VERSAT/hardware/src/MyAddressGen.v
       - submodules/VERSAT/hardware/src/PipelineRegister.v
       - submodules/VERSAT/hardware/src/Reg.v
+      - submodules/VERSAT/hardware/src/StridedMerge.v
       - submodules/VERSAT/hardware/src/SwapEndian.v
+      - submodules/VERSAT/hardware/src/TestConst.v
       - submodules/VERSAT/hardware/src/TimedMux.v
       - submodules/VERSAT/hardware/src/VRead.v
       - submodules/VERSAT/hardware/src/VWrite.v
@@ -306,7 +308,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=2
+      - HARDWARE_TEST=0
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -371,7 +373,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=10
+      - HARDWARE_TEST=1
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -436,7 +438,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=13
+      - HARDWARE_TEST=2
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -490,7 +492,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=2
+      - HARDWARE_TEST=0
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -542,7 +544,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=10
+      - HARDWARE_TEST=1
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -595,7 +597,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=13
+      - HARDWARE_TEST=2
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -701,12 +703,17 @@ generate:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
-          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES256Path.v
+          - software/pc-emul/src/AES256WithIterative.v
+          - software/pc-emul/src/AESPathExample.v
           - software/pc-emul/src/AES.v
+          - software/pc-emul/src/AESWithIterative.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -714,12 +721,14 @@ generate:
           - software/pc-emul/src/ConvolutionStage.v
           - software/pc-emul/src/Convolution.v
           - software/pc-emul/src/DoRow.v
-          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
           - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRoundAndKey.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
           - software/pc-emul/src/MatrixMultiplication.v
@@ -730,6 +739,7 @@ generate:
           - software/pc-emul/src/M.v
           - software/pc-emul/src/OnlyInputToOutput.v
           - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/RoundPairAndKey.v
           - software/pc-emul/src/SBox.v
           - software/pc-emul/src/SemiComplexAdder.v
           - software/pc-emul/src/ShaSingleState.v
@@ -748,6 +758,7 @@ generate:
           - software/pc-emul/src/T1.v
           - software/pc-emul/src/T2.v
           - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VectorLikeOperation.v
           - software/pc-emul/src/VReadToVWrite.v
         fileset: versat
         file_type: verilogSource
@@ -766,7 +777,11 @@ generate:
           - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
           - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES256Path.v
+          - software/pc-emul/src/AES256WithIterative.v
+          - software/pc-emul/src/AESPathExample.v
           - software/pc-emul/src/AES.v
+          - software/pc-emul/src/AESWithIterative.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
           - software/pc-emul/src/Comb_M_Stage.v
@@ -784,6 +799,7 @@ generate:
           - software/pc-emul/src/Iterative_SHA_F.v
           - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRoundAndKey.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
           - software/pc-emul/src/MatrixMultiplication.v
@@ -794,6 +810,7 @@ generate:
           - software/pc-emul/src/M.v
           - software/pc-emul/src/OnlyInputToOutput.v
           - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/RoundPairAndKey.v
           - software/pc-emul/src/SBox.v
           - software/pc-emul/src/SemiComplexAdder.v
           - software/pc-emul/src/ShaSingleState.v
