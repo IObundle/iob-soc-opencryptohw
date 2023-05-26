@@ -1,6 +1,6 @@
 ROOT_DIR:=../..
 
-GLOBAL_CFLAGS:=-m32 -Wall -g #-fsanitize=address
+GLOBAL_CFLAGS:=-std=c++17 -m32 -Wall -g -O2 -DVERSAT_DEBUG #-fsanitize=address
 
 include ../software.mk
 
@@ -96,9 +96,10 @@ build: $(FW_EMUL)
 	mkdir -p debug
 	mkdir -p src
 	mkdir -p trace_out
+	mkdir -p verilated
 
 $(FW_EMUL): $(HDR) $(SRC) $(UNIT_HDR) $(CPP_OBJ) $(OBJ)
-	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
+	gcc -o $@ $(GLOBAL_CFLAGS) $(DEFINE) $(INCLUDE) -I$(VERILATOR_INCLUDE) $(SRC) ./build/*.o $(VERILATE_DIR)/*.o -lstdc++ -lm -lgcc -lc -lpthread #-lncurses
 	
 run: build $(SOC_IN_BIN)
 	@mkdir -p $(HW_DIR)/src/GeneratedUnits/
@@ -110,7 +111,9 @@ run: build $(SOC_IN_BIN)
 clean: clean-eth-socket
 	@rm -rf $(FW_EMUL) periphs.h *swreg*.h *swreg*.c test.log soc2cnsl cnsl2soc \
 		$(ETH_LOG) $(SOC_LOG) eth_frame_struct.h $(EMUL_PROFILE_LOG) *.bin
-	@rm -f versat_data.inc versat_defs.vh versat_instance.v
+	@rm -f versat_data.inc versat_defs.vh versat_instance.v \
+		versat_external_memory_inst.vh versat_external_memory_port.vh \
+		versat_external_memory_portmap.vh
 	@make -C $(SW_DIR)/python clean
 	@make -C $(SW_TEST_DIR) clean
 	@rm -f $(FIRM_DIR)/*.inc
@@ -120,6 +123,7 @@ clean: clean-eth-socket
 	@rm -f -r ./debug
 	@rm -f -r ./src
 	@rm -f -r ./trace_out
+	@rm -f -r ./verilated
 	@rm -f -r $(HW_DIR)/src/GeneratedUnits
 	@rm -f -r *.dot
 
@@ -128,14 +132,18 @@ test: clean
 	make validate
 
 validate:
-	cp $(SW_DIR)/python/$(SOC_OUT_BIN) $(SW_TEST_DIR)
+	cp $(SOC_OUT_BIN) $(SW_TEST_DIR)
 	make -C $(SW_TEST_DIR) validate SOC_OUT_BIN=$(SOC_OUT_BIN) TEST_VECTOR_RSP=$(TEST_VECTOR_RSP) 
 
 gen-versat: $(VERSAT_GEN)
 	cp -u versat_instance.v $(HW_DIR)/src/
 	cp -u versat_defs.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_inst.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_port.vh $(HW_DIR)/include/
+	cp -u versat_external_memory_portmap.vh $(HW_DIR)/include/
 	cp -u versat_data.inc $(FIRM_DIR)/
 	cp -u ./build/verilogWrapper.inc $(FIRM_DIR)/
+	cp -u ./build/basicWrapper.inc $(FIRM_DIR)/
 	cp -u src/* $(HW_DIR)/src/GeneratedUnits/
 
 $(VERSAT_GEN):
@@ -159,6 +167,13 @@ $(EMUL_PROFILE_LOG): $(SOC_LOG)
 	g++ $(GLOBAL_CFLAGS) -c -o ./build/$*.o $(DEFINE) $(INCLUDE) $(FIRM_DIR)/$(ALGORITHM)/$*.cpp -I $(VERSAT_SW_DIR) -I $(VERILATOR_INCLUDE) -I ./build/ 
 
 ./build/V%.h: $(HW_DIR)/src/units/%.v
+	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
+	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
+	mkdir -p ./build; mv ./obj/*.o ./build/;
+	mv ./obj/*.h ./build/
+	rm -r -f ./obj
+
+$(VERILATE_DIR)/V%.h: $(HW_DIR)/src/units/%.v
 	verilator -CFLAGS "$(VERILATE_FLAGS)" -I$(VERSAT_HW_DIR)/include --trace --cc -Mdir ./obj $<;
 	cd ./obj && VM_DEFAULT_RULES=0 make -f V$*.mk;
 	mkdir -p ./build; mv ./obj/*.o ./build/;

@@ -10,6 +10,7 @@ module xunitM #(
     input               clk,
     input               rst,
     
+    input               running,
     input               run,
     output              done,
 
@@ -84,7 +85,7 @@ begin
       latency <= 5'h11; // cycles from valid input to valid output
    end else if (|delay) begin
      delay <= delay - 1;
-   end else begin
+   end else if (running) begin
       if(|latency) begin
          latency <= latency - 1;
       end

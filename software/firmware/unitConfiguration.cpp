@@ -1,8 +1,8 @@
 #include "unitConfiguration.hpp"
 
-#include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 
-void IntSet(int* buffer,int value,int byteSize){
+void IntSet(volatile int* buffer,int value,int byteSize){
    int nInts = byteSize / 4;
 
    for(int i = 0; i < nInts; i++){
@@ -23,14 +23,14 @@ void ConfigureSimpleVRead(FUInstance* inst, int numberItems,int* memory){
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 0;
+   c->pingPong = 1;
 
    // B - versat side
    c->iterB = numberItems;
    c->incrB = 1;
    c->perB = 1;
    c->dutyB = 1;
-   c->ext_addr = (int) memory;
+   c->ext_addr = (iptr) memory;
    c->length = numberItems - 1; // AXI requires length of len - 1
 }
 
@@ -47,9 +47,9 @@ void ConfigureSimpleVWrite(FUInstance* inst, int numberItems,int* memory){
    c->dutyA = numberItems;
    c->size = 8;
    c->int_addr = 0;
-   c->pingPong = 0;
+   c->pingPong = 1;
    c->length = numberItems - 1;
-   c->ext_addr = (int) memory;
+   c->ext_addr = (iptr) memory;
 
    // Memory side
    c->iterB = numberItems;
@@ -92,7 +92,7 @@ void ConfigureRightSideMatrix(FUInstance* inst, int iterations){
    config->incr2A = 0;
 }
 
-void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
+void ConfigureMemoryLinear(FUInstance* inst, int amountOfData, int start){
    IntSet(inst->config,0,sizeof(MemConfig));
    volatile MemConfig* config = (volatile MemConfig*) inst->config;
 
@@ -100,6 +100,7 @@ void ConfigureMemoryLinear(FUInstance* inst, int amountOfData){
    config->perA = amountOfData;
    config->dutyA = amountOfData;
    config->incrA = 1;
+   config->startA = start;
 }
 
 void ConfigureMemoryLinearOut(FUInstance* inst, int amountOfData){

@@ -137,14 +137,14 @@ void Full_McEliece_Test(Versat* versat) {
                 PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES);
     }
 
-#ifdef SIM
+// #ifdef SIM
     // Send message digests via uart
     char output_file_name[] = "soc-out.bin";
     uart_sendfile(output_file_name, dout_size, (char *) dout_fp);
-#else
-    // Send message digests via ethernet
-    eth_send_variable_file((char *) dout_fp, dout_size);
-#endif
+// #else
+//     // Send message digests via ethernet
+//     eth_send_variable_file((char *) dout_fp, dout_size);
+// #endif
     
     MemPool_Alloc(dout_size);
     MemPool_Alloc(PQCLEAN_MCELIECE348864_CLEAN_CRYPTO_SECRETKEYBYTES*sizeof(uint8_t));

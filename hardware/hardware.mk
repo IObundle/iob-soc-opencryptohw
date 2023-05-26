@@ -62,6 +62,7 @@ INCLUDE+=$(incdir). $(incdir)$(INC_DIR) $(incdir)$(LIB_DIR)/hardware/include
 VHDR+=$(INC_DIR)/system.vh $(LIB_DIR)/hardware/include/iob_intercon.vh
 VHDR+=$(INC_DIR)/sram_port.vh $(INC_DIR)/sram_portmap.vh
 VHDR+=$(INC_DIR)/bootrom_port.vh $(INC_DIR)/bootrom_portmap.vh
+VHDR+=$(INC_DIR)/versat_external_memory_port.vh $(INC_DIR)/versat_external_memory_portmap.vh
 VHDR+=versat_defs.vh
 
 #axi wires to connect cache to external memory in system top
@@ -108,6 +109,7 @@ firmware.hex: $(FIRM_DIR)/firmware.bin
 #clean general hardware files
 hw-clean: gen-clean
 	@rm -f *.v *.vh *.hex *.bin $(SRC_DIR)/system.v $(TB_DIR)/system_tb.v *.inc	$(SRC_DIR)/GeneratedUnits/*.v $(SRC_DIR)/versat_instance.v $(INC_DIR)/versat_defs.vh
+	@rm -f $(HW_DIR)/include/versat_external_memory*.vh
 	@make -C $(ROOT_DIR) pc-emul-clean
 
 gen-spinal-sources: $(XUNITM_VSRC) $(XUNITF_VSRC)

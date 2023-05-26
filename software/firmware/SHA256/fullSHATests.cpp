@@ -84,9 +84,9 @@ void Full_SHA_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("SHA"));
+    FUDeclaration* type = GetTypeByName(versat,STRING("SHA"));
     Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    FUInstance* inst = CreateFUInstance(accel,type,STRING("Test"));
     SetSHAAccelerator(accel,inst);
     InitVersatSHA(versat,true);
 
@@ -128,14 +128,14 @@ void Full_SHA_Test(Versat* versat) {
         dout_ptr += save_msg(&(dout_fp[dout_ptr]), digest, HASH_SIZE);
     }
 
-#ifdef SIM
+// #ifdef SIM
     // Send message digests via uart
     char output_file_name[] = "soc-out.bin";
     uart_sendfile(output_file_name, dout_size, dout_fp);
-#else
-    // Send message digests via ethernet
-    eth_send_variable_file(dout_fp, dout_size);
-#endif
+// #else
+//     // Send message digests via ethernet
+//     eth_send_variable_file(dout_fp, dout_size);
+// #endif
     
     return;
 }

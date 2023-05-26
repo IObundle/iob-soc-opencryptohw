@@ -4,6 +4,7 @@
 #include "versat.hpp"
 #include "unitConfiguration.hpp"
 #include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 
 extern "C" {
 // #ifndef PC
@@ -29,10 +30,10 @@ void VersatInit(Versat* versat) {
         accel = CreateAccelerator(versat);
     }
     if (type == NULL) {
-        type = GetTypeByName(versat,MakeSizedString("VectorLikeOperation"));
+        type = GetTypeByName(versat,STRING("VectorLikeOperation"));
     }
     if (McElieceInstance == NULL) {
-        McElieceInstance = CreateFUInstance(accel,type,MakeSizedString("Test"));
+        McElieceInstance = CreateFUInstance(accel,type,STRING("Test"));
     }
     return;
 }

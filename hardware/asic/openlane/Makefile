@@ -26,6 +26,9 @@ uniq = $(if $1,$(firstword $1) $(call uniq,$(filter-out $(firstword $1),$1)))
 UNIQ_VSRC = $(call uniq, $(VSRC))
 UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 
+# Special external port define
+DEFINE+=$(defmacro)VERSAT_EXTERNAL_MEMORY
+
 all: run
 
 setup: gen-versat
@@ -65,4 +68,5 @@ clean:
 	make -C $(PC_DIR) clean
 	make -C $(ROOT_DIR) fw-clean
 	rm -rf *.v *.vh *.hex
+	rm -rf $(INC_DIR)/versat_external_memory*.vh
 	# make -C $(OPENLANE_TOOL_DIR) clean_runs

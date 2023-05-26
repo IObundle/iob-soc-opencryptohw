@@ -3,6 +3,7 @@
 #include "versat.hpp"
 #include "unitConfiguration.hpp"
 #include "verilogWrapper.inc"
+#include "basicWrapper.inc"
 
 static uint initialStateValues[] = {0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19};
 static uint kConstants0[] = {0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174};
@@ -26,24 +27,24 @@ void SetSHAAccelerator(Accelerator* accel_,FUInstance* shaInstance_){
 
 static void InstantiateSHA(Versat* versat){
    if(shaInstance){
-      FUInstance* read = GetInstanceByName(shaInstance,"MemRead");
+      FUInstance* read = GetInstanceByName(accel,"Test", "MemRead");
       readConfig = (volatile VReadConfig*) read->config;
 
       ConfigureSimpleVRead(read,16,nullptr); // read address is configured before accelerator run
 
       for(int i = 0; i < 8; i++){
-         registers[i] = GetInstanceByName(shaInstance,"State","s%d",i,"reg");
+         registers[i] = GetInstanceByName(accel,"Test", "State","s%d",i,"reg");
       }
 
       for(int i = 0; i < 4; i++){
-         FUInstance* mem = GetInstanceByName(shaInstance,"cMem%d",i,"mem");
+         FUInstance* mem = GetInstanceByName(accel,"Test", "cMem%d",i,"mem");
 
          for(int ii = 0; ii < 16; ii++){
             VersatUnitWrite(mem,ii,kConstants[i][ii]);
          }
       }
 
-      FUInstance* swap = GetInstanceByName(shaInstance,"Swap");
+      FUInstance* swap = GetInstanceByName(accel,"Test", "Swap");
       swap->config[0] = 1;
    } else { // Assume that accel is a flatten instance of SHA
       FUInstance* read = GetInstanceByName(accel,"Test","MemRead");
@@ -166,7 +167,7 @@ void InitVersatSHA(Versat* versat,bool outputVersatSource){
 
    // Gera o versat.
    if(outputVersatSource){
-      OutputVersatSource(versat,accel,"versat_instance.v","versat_defs.vh","versat_data.inc");
+      OutputVersatSource(versat,accel,".");
    }
 }
 

@@ -87,9 +87,8 @@ void Full_AES_Test(Versat* versat) {
     eth_init(ETHERNET_BASE);
 
     // instantiate Versat
-    FUDeclaration* type = GetTypeByName(versat,MakeSizedString("ReadWriteAES"));
-    Accelerator* accel = CreateAccelerator(versat);
-    FUInstance* inst = CreateFUInstance(accel,type,MakeSizedString("Test"));
+    SimpleAccelerator test = {};
+    InitSimpleAccelerator(&test,versat,"AES256WithIterative");
 
     // Receive Input Data
     int din_ptr = 0, din_size = 0;
@@ -97,14 +96,14 @@ void Full_AES_Test(Versat* versat) {
     int dout_ptr = 0, dout_size = 0;
     uint8_t *dout_fp;
 
-#ifdef SIM
+// #ifdef SIM
     // Receive input data from uart 
     char input_file_name[] = "soc-in.bin";
     din_size = uart_recvfile(input_file_name, (char *) din_fp);    
-#else
-    // Receive input data from ethernet
-    din_size = eth_rcv_variable_file((char *) din_fp);
-#endif
+// #else
+//     // Receive input data from ethernet
+//     din_size = eth_rcv_variable_file((char *) din_fp);
+// #endif
     printf("Received file with %d bytes\n", din_size);
 
     // Calculate output size and allocate output memory
@@ -114,7 +113,7 @@ void Full_AES_Test(Versat* versat) {
     dout_fp = din_fp + din_size;
 
     // Initialize VersatAES
-    Versat_init_AES(accel);
+    Versat_init_AES(test.accel);
 
     // Message test loop
     int i=0;
@@ -124,21 +123,21 @@ void Full_AES_Test(Versat* versat) {
         din_ptr += get_ptext_key_pair(&(din_fp[din_ptr]), &plaintext, &key);
         printf("\ttest vector #%d/%d...", i+1, num_msgs);
 
-        VersatAES(versat, accel, ciphertext, plaintext, key);
+        VersatAES(&test, ciphertext, plaintext, key);
         printf("done!\n");
 
         // Save to memory
         dout_ptr += save_msg(&(dout_fp[dout_ptr]), ciphertext, AES_BLK_SIZE);
     }
 
-#ifdef SIM
+// #ifdef SIM
     // Send message digests via uart
     char output_file_name[] = "soc-out.bin";
     uart_sendfile(output_file_name, dout_size, (char *) dout_fp);
-#else
-    // Send message digests via ethernet
-    eth_send_variable_file((char *) dout_fp, dout_size);
-#endif
+// #else
+//     // Send message digests via ethernet
+//     eth_send_variable_file((char *) dout_fp, dout_size);
+// #endif
     
     return;
 }

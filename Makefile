@@ -158,10 +158,10 @@ test-pc-emul: pc-emul-test
 test-pc-emul-clean: pc-emul-clean
 
 test-sim:
-	make sim-test SIMULATOR=verilator
+	make sim-test #SIMULATOR=verilator
 
 test-sim-clean:
-	make sim-clean SIMULATOR=verilator
+	make sim-clean #SIMULATOR=verilator
 
 test-fpga:
 	make fpga-test BOARD=AES-KU040-DB-G

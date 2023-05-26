@@ -135,7 +135,10 @@ filesets:
       - submodules/VERSAT/hardware/src/MyAddressGen.v
       - submodules/VERSAT/hardware/src/PipelineRegister.v
       - submodules/VERSAT/hardware/src/Reg.v
+      - submodules/VERSAT/hardware/src/StridedMerge.v
       - submodules/VERSAT/hardware/src/SwapEndian.v
+      - submodules/VERSAT/hardware/src/TestConst.v
+      - submodules/VERSAT/hardware/src/TimedMux.v
       - submodules/VERSAT/hardware/src/VRead.v
       - submodules/VERSAT/hardware/src/VWrite.v
       - submodules/VERSAT/hardware/src/xaddrgen2.v
@@ -305,7 +308,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=2
+      - HARDWARE_TEST=0
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -370,7 +373,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=10
+      - HARDWARE_TEST=1
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -435,7 +438,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=13
+      - HARDWARE_TEST=2
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -489,7 +492,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=2
+      - HARDWARE_TEST=0
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -497,7 +500,7 @@ targets:
       - AXI_ADDR_W
     hooks:
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_sha256]
+      post_run: [console_fpga_hook_sha256, validate_hook_sha256]
 
   fpga-AES256:
     <<: *default
@@ -541,7 +544,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=10
+      - HARDWARE_TEST=1
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -550,7 +553,7 @@ targets:
     hooks:
       pre_build: [pre_build_fix_aes256]
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_aes256]
+      post_run: [console_fpga_hook_aes256, validate_hook_aes256]
 
   fpga-MCELIECE:
     <<: *default
@@ -594,7 +597,7 @@ targets:
       - VERSAT
       - ETHERNET
       - N_SLAVES_W
-      - HARDWARE_TEST=13
+      - HARDWARE_TEST=2
       - USE_MUL_DIV
       - USE_COMPRESSED
       - DDR_DATA_W=32
@@ -603,13 +606,17 @@ targets:
     hooks:
       pre_build: [pre_build_fix_mceliece]
       pre_run: [queue_in_hook]
-      post_run: [console_fpga_hook, validate_hook_mceliece]
+      post_run: [console_fpga_hook_mceliece, validate_hook_mceliece]
 
 scripts:
   console_sim_hook:
     cmd: [bash, console_sim_hook.sh]
-  console_fpga_hook:
-    cmd: [bash, console_fpga_hook.sh]
+  console_fpga_hook_sha256:
+    cmd: [bash, console_fpga_hook.sh, SHA256]
+  console_fpga_hook_aes256:
+    cmd: [bash, console_fpga_hook.sh, AES256]
+  console_fpga_hook_mceliece:
+    cmd: [bash, console_fpga_hook.sh, MCELIECE]
   queue_in_hook:
     cmd: [bash, pre_run_queue_hook.sh]
   validate_hook_sha256:
@@ -634,10 +641,14 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
           - software/pc-emul/src/AES.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -646,8 +657,11 @@ generate:
           - software/pc-emul/src/Convolution.v
           - software/pc-emul/src/DoRow.v
           - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
+          - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
@@ -677,6 +691,7 @@ generate:
           - software/pc-emul/src/T1.v
           - software/pc-emul/src/T2.v
           - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VectorLikeOperation.v
           - software/pc-emul/src/VReadToVWrite.v
         fileset: versat
         file_type: verilogSource
@@ -691,10 +706,18 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES256Path.v
+          - software/pc-emul/src/AES256WithIterative.v
+          - software/pc-emul/src/AESPathExample.v
           - software/pc-emul/src/AES.v
+          - software/pc-emul/src/AESWithIterative.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -702,12 +725,14 @@ generate:
           - software/pc-emul/src/ConvolutionStage.v
           - software/pc-emul/src/Convolution.v
           - software/pc-emul/src/DoRow.v
-          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/FirstLineKey.v
+          - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
           - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRoundAndKey.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
           - software/pc-emul/src/MatrixMultiplication.v
@@ -718,6 +743,7 @@ generate:
           - software/pc-emul/src/M.v
           - software/pc-emul/src/OnlyInputToOutput.v
           - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/RoundPairAndKey.v
           - software/pc-emul/src/SBox.v
           - software/pc-emul/src/SemiComplexAdder.v
           - software/pc-emul/src/ShaSingleState.v
@@ -736,6 +762,7 @@ generate:
           - software/pc-emul/src/T1.v
           - software/pc-emul/src/T2.v
           - software/pc-emul/src/T_Stage.v
+          - software/pc-emul/src/VectorLikeOperation.v
           - software/pc-emul/src/VReadToVWrite.v
         fileset: versat
         file_type: verilogSource
@@ -750,10 +777,18 @@ generate:
         files:
           - software/pc-emul/versat_instance.v
           - software/pc-emul/versat_defs.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_inst.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_portmap.vh: {is_include_file: true}
+          - software/pc-emul/versat_external_memory_port.vh: {is_include_file: true}
           - software/pc-emul/src/AddRoundKey.v
+          - software/pc-emul/src/AES256Path.v
+          - software/pc-emul/src/AES256WithIterative.v
+          - software/pc-emul/src/AESPathExample.v
           - software/pc-emul/src/AES.v
+          - software/pc-emul/src/AESWithIterative.v
           - software/pc-emul/src/CH.v
           - software/pc-emul/src/Comb_F_Stage.v
+          - software/pc-emul/src/Comb_M_Stage.v
           - software/pc-emul/src/ComplexAdder.v
           - software/pc-emul/src/ComplexMultiplier.v
           - software/pc-emul/src/ComplexShareConfig.v
@@ -765,8 +800,10 @@ generate:
           - software/pc-emul/src/FourthLineKey.v
           - software/pc-emul/src/F_Stage.v
           - software/pc-emul/src/F.v
+          - software/pc-emul/src/Iterative_SHA_F.v
           - software/pc-emul/src/KeySchedule256.v
           - software/pc-emul/src/KeySchedule.v
+          - software/pc-emul/src/MainRoundAndKey.v
           - software/pc-emul/src/MainRound.v
           - software/pc-emul/src/Maj.v
           - software/pc-emul/src/MatrixMultiplication.v
@@ -777,6 +814,7 @@ generate:
           - software/pc-emul/src/M.v
           - software/pc-emul/src/OnlyInputToOutput.v
           - software/pc-emul/src/ReadWriteAES.v
+          - software/pc-emul/src/RoundPairAndKey.v
           - software/pc-emul/src/SBox.v
           - software/pc-emul/src/SemiComplexAdder.v
           - software/pc-emul/src/ShaSingleState.v
