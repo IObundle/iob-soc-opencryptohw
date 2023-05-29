@@ -196,25 +196,26 @@ make fusesoc-fpga-run ALGORITHM={SHA256,AES256,MCELIECE}
 make fusesoc-fpga-clean ALGORITHM={SHA256,AES256,MCELIECE}
 ```
 
-# OpenLane (SHA256 currently)
+# OpenLane (SHA256, McEliece)
 IOb-SoC-OpenCryptoHW supports
 [OpenLane](https://github.com/The-OpenROAD-Project/OpenLane) flows.
 To generate `.gds` file for the system:
 ```
-make openlane-run
+make openlane-run ALGORITHM={SHA256,MCELIECE}
+make openlane-clean ALGORITHM={SHA256,MCELIECE}
 ```
-**Note**: requires 128 GB RAM and takes almost 5 days to complete
+**Note**: requires 128 GB RAM and takes about 2 days to complete
 
 To perform post-synthesis or post-layout simulation in icarus:
 ```
 # post-synthesis simulation
-make openlane-post-synth-sim
-make openlane-sim-clean
+make openlane-post-synth-sim ALGORITHM={SHA256,MCELIECE}
+make openlane-sim-clean ALGORITHM={SHA256,MCELIECE}
 # post-layout simulation
-make openlane-post-layout-sim
-make openlane-sim-clean
+make openlane-post-layout-sim ALGORITHM={SHA256,MCELIECE}
+make openlane-sim-clean ALGORITHM={SHA256,MCELIECE}
 ```
-**Note**: requires 32GB of RAM and takes about 12 hours to complete.
+**Note**: requires 32GB of RAM and takes about some hours to complete.
 
 # Acknowledgement
 This project is funded through the NGI Assure Fund, a fund established by NLnet
