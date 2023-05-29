@@ -29,12 +29,15 @@ UNIQ_VHDR = $(call uniq, $(VHDR_FILTER))
 # Special external port define
 DEFINE+=$(defmacro)VERSAT_EXTERNAL_MEMORY
 
+# OpenLane config
+CONFIG_FILE = $(OPENLANE_DESIGN)/config.json
+
 all: run
 
 setup: gen-versat
 	make setup-design
 
-setup-design: setup-openlane $(OPENLANE_SRC_DIR) $(VSRC) $(VHDR)
+setup-design: setup-openlane $(OPENLANE_SRC_DIR) $(CONFIG_FILE) $(VSRC) $(VHDR)
 	cp $(UNIQ_VSRC) $(OPENLANE_SRC_DIR)
 	cp $(UNIQ_VHDR) $(OPENLANE_SRC_DIR)
 	./scripts/include_header.py -d $(OPENLANE_SRC_DIR) -f global_defines.vh
@@ -57,6 +60,9 @@ setup-openlane:
 	@echo "Please setup OpenLane tool in $(OPENLANE_TOOL_DIR)"
 	cd $(OPENLANE_TOOL_DIR); make
 
+$(CONFIG_FILE): ./scripts/$(ALGORITHM)_config.json
+	cp $< $@
+
 global_defines.vh: 
 	./scripts/gen_defines.py -o $@ $(DEFINE)
 
@@ -65,6 +71,7 @@ verilog-fixes:
 
 clean:
 	rm -rf $(OPENLANE_SRC_DIR)
+	rm -rf $(CONFIG_FILE)
 	make -C $(PC_DIR) clean
 	make -C $(ROOT_DIR) fw-clean
 	rm -rf *.v *.vh *.hex
