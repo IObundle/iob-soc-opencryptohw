@@ -67,14 +67,14 @@ int ParseNumber(char* ptr);
 void InitializeCryptoSide(int versatAddress);
 
 /** 
- * This function does not fetch data from outside, they store internally the contents of a simple test. This makes sure that we can tests algorithms even if we do not have file transfer capabilities. Returns 0 on success, any other number on failure.
+ * This function does not fetch data from outside, it stores internally the contents of a simple test. This makes sure that we can tests algorithms even if we do not have file transfer capabilities. Returns 0 on success, any other number on failure.
  * \brief Runs Versat SHA tests for simulation KAT.
  * \return 0 if successful, any other number if error
  */
 int VersatSHASimulationTests();
 
 /** 
- * This function does not fetch data from outside, they store internally the contents of a simple test. This makes sure that we can tests algorithms even if we do not have file transfer capabilities. Returns 0 on success, any other number on failure.
+ * This function does not fetch data from outside, it stores internally the contents of a simple test. This makes sure that we can tests algorithms even if we do not have file transfer capabilities. Returns 0 on success, any other number on failure.
  * \brief Runs Versat AES tests for simulation KAT.
  * \return 0 if successful, any other number if error
  */

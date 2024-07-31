@@ -64,17 +64,29 @@ void VersatMcElieceLoop1(uint8_t *row, uint8_t mask,bool first){
 
     ConfigureSimpleVReadShallow(&vec->row, SINT, (int*) row_int);
     if(first){
+        // Disable writing to memory since in the first run the accelerator is filled with garbage data
         vec->mat.in0_wr = 0;
     } else {
+        // The following runs enable memory write and configures the mask with the saved mask value.
+        // The reason we have to use the savedMask is because the accelerator is one "run" ahead of the software.
+        // Since the accelerator needs to do a run to load data. That means that when the accelerator contains
+        // data for loop 0, this function is being called with the mask for loop 1.
+        // It is easier to store the mask and used it, it simplifies the outer code.
+
         uint32_t mask_int = (savedMask) | (savedMask << 8) | (savedMask << 8*2) | (savedMask << 8*3);
         vec->mask.constant = mask_int;
         vec->mat.in0_wr = 1;
     }
 
+    // Ends the accelerator if still running
     EndAccelerator();
+
+    // And starts it again with the configuration that we just finished writing
     StartAccelerator();
 
     savedMask = mask;
+
+    // This function ends with the accelerator still running
 }
 
 /**
@@ -89,43 +101,59 @@ void VersatMcElieceLoop1(uint8_t *row, uint8_t mask,bool first){
 void VersatMcElieceLoop2(unsigned char** mat,int timesCalled,int k,int row,uint8_t mask){
     static uint8_t savedMask = 0;
 
+    // The accelerator contains VRead and VWrite units.
+    // To simplify the configuration, is useful to divide the data based on their state
+    // data to read (next loop), data to process (current loop), data to write (result from previous loop)
+    // It is helpful to represent this in code by having a variable identify which row belongs to each state.
+
     int toRead =    k;
     int toCompute = ((toRead - 1    == row) ? toRead - 2    : toRead - 1);
     int toWrite =   ((toCompute - 1 == row) ? toCompute - 2 : toCompute - 1);
 
+    // Basically each state is processed individually.
+
+    // If toRead is inside the range
     if(toRead < PK_NROWS){
+        // configure the VRead unit to read data
         int *toRead_int = CAST_PTR(int*,mat[toRead]);
 
         vec->mat.in0_wr = 0;
 
         ConfigureSimpleVReadShallow(&vec->row, SINT,toRead_int);        
     } else {
+        // Otherwise disable it so we can save some cycles.
         vec->row.enableRead = 0;
-        toRead = -9;
     }
-    
+
+    // Same logic for toCompute
     if(timesCalled >= 1 && toCompute >= 0 && toCompute < PK_NROWS){
         uint32_t mask_int = (savedMask) | (savedMask << 8) | (savedMask << 8*2) | (savedMask << 8*3);
 
         vec->mask.constant = mask_int;
     } else {
+        // Make sure that toWrite is disabled so that we do not write garbage data to memory in the first loop
         ConfigureSimpleVWrite(&vec->writer, SINT, (int*) NULL);
         vec->writer.enableWrite = 0;
-        toCompute = -9;
     }
     
+    // And for toWrite
     if(timesCalled >= 2 && toWrite >= 0){
         int* toWrite_int = CAST_PTR(int*,mat[toWrite]);
         ConfigureSimpleVWrite(&vec->writer, SINT,toWrite_int);
     } else {
-        toWrite = -9;
+        // Need to disable write otherwise we write garbage data to memory
         vec->writer.enableWrite = 0;
     }
 
+    // Ends the accelerator if still running
     EndAccelerator();
+
+    // And starts it again with the configuration that we just finished writing
     StartAccelerator();
 
     savedMask = mask;
+
+    // This function ends with the accelerator still running
 }
 
 static crypto_uint64 uint64_is_equal_declassify(uint64_t t, uint64_t u) {
@@ -159,6 +187,8 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
     vec = (McElieceConfig*) &topConfig->eliece;
     matAddr = (void*) TOP_eliece_mat_addr;
 
+    // Both the VRead and the memories process the same amount of data everytime
+    // Might as well configure this part upfront, since it never changes.
     ConfigureSimpleVReadBare(&vec->row);
 
     vec->mat.iterA = 1;
@@ -180,8 +210,6 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
     gf* g = PushArray(globalArena,SYS_T + 1,gf);
     gf* L = PushArray(globalArena,SYS_N,gf); // support
     gf* inv = PushArray(globalArena,SYS_N,gf);
-
-    //
 
     g[ SYS_T ] = 1;
 
@@ -254,7 +282,9 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
         }
     }
 
-    // gaussian elimination
+    // This is the portion of the code that is accelerator with Versat.
+    // This part basically performs gaussian elimination with a big bit matrix.
+    // Elimination is performed using the XOR operation
     for (i = 0; i < (PK_NROWS + 7) / 8; i++) {
         for (j = 0; j < 8; j++) {
             row = i * 8 + j;
@@ -264,7 +294,7 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
             }
 
             uint32_t *out_int = CAST_PTR(uint32_t*,mat[row]);
-            EndAccelerator();
+            EndAccelerator(); // Make sure accelerator is not running
 
             // Store row to be processed inside accelerator memory
             VersatLoadRow(out_int);
@@ -275,14 +305,14 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
                 mask &= 1;
                 mask = -mask;
 
-                VersatMcElieceLoop1(mat[k],mask,first); // Process all the following rows to change the value of memory
+                VersatMcElieceLoop1(mat[k],mask,first); // Process all the following rows to change the value of the accelerator internal memory (which contains a copy of mat[row])
 
                 // We could fetch this value from the accelerator Versat, but it's easier to calculate it since it is only one.
                 mat[row][i] ^= mat[k][i] & mask;
                 first = false;
             }
 
-            // Last run, use valid data to compute last operation
+            // Last run, use valid data to compute last operation and flush valid data
             VersatMcElieceLoop1(mat[PK_NROWS - 1],0,false);
 
             EndAccelerator();
@@ -292,7 +322,7 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
                return -1;
             }
 
-            ReadRow(out_int); // Read value from memory. mat[k] is now good
+            ReadRow(out_int); // Read value from memory. mat[row] is now good
 
             int index = 0;
             for (k = 0; k < PK_NROWS; k++) {
@@ -301,11 +331,13 @@ int Versat_pk_gen(unsigned char *pk, unsigned char *sk, const uint32_t *perm, in
                     mask &= 1;
                     mask = -mask;
 
-                    VersatMcElieceLoop2(mat,index,k,row,mask); // Change the other rows based on the value of mat[k]
+                    VersatMcElieceLoop2(mat,index,k,row,mask); // Change the other rows based on the value of the accelerator internal memory (which contains a copy of mat[row])
                     index += 1;
                 }
             }
 
+            // Need to flush two times. One to flush the valid data stored inside the accelerator and the second
+            // so that the VWrite unit writes the data processed in the last run to memory.
             VersatMcElieceLoop2(mat,index++,PK_NROWS,row,0);
             VersatMcElieceLoop2(mat,index++,PK_NROWS + 1,row,0);
             vec->writer.enableWrite = 0;
@@ -348,13 +380,11 @@ void VersatMcEliece
         rp = &r[ sizeofR - 32 ];
         skp = sk;
 
-        // expanding and updating the seed
         shake(r, sizeofR, seed, 33);
         memcpy(skp, seed + 1, 32);
         skp += 32 + 8;
         memcpy(seed + 1, &r[ sizeofR - 32 ], 32);
 
-        // generating irreducible polynomial
         rp -= sizeofF;
 
         for (i = 0; i < SYS_T; i++) {
@@ -371,12 +401,14 @@ void VersatMcEliece
 
         skp += IRR_BYTES;
 
-        // generating permutation
         rp -= sizeofPerm;
 
         for (i = 0; i < (1 << GFBITS); i++) {
             perm[i] = load4(rp + i * 4);
         }
+
+        // Everything else is mostly the same, with some code changes required to run this in an embedded system
+        // The only change is this function here that implements a loop accelerated by Versat
         if (Versat_pk_gen(pk, skp - IRR_BYTES, perm, pi)) {
             continue;
         }
@@ -384,11 +416,8 @@ void VersatMcEliece
         controlbitsfrompermutation(skp, pi, GFBITS, 1 << GFBITS);
         skp += COND_BYTES;
 
-        // storing the random string s
         rp -= SYS_N / 8;
         memcpy(skp, rp, SYS_N / 8);
-
-        // storing positions of the 32 pivots
 
         store8(sk + 32, 0xFFFFFFFF);
 

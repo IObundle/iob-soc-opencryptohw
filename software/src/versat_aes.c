@@ -262,7 +262,7 @@ void FillInvMainRound(FullAESRoundsAddr addr){
 }
 
 /**
- * \brief Expands a key to 
+ * \brief Performs key expansion. One of the intial steps of AES where the given key is expanded into a number of round keys.
  * \param key buffer with the key. Must contain 16 bytes for 128 bit AES or 32 bytes for 256 bit AES
  * \param is256 wether we want AES-128 or AES-256
  */
@@ -271,11 +271,13 @@ void ExpandKey(uint8_t* key,bool is256){
 
   CryptoAlgosConfig* config = (CryptoAlgosConfig*) accelConfig;
 
+  // Start by storing in position 0 the initial key
   RegFileAddr* view = &aesAddr.aes.key_0;
   for(int i = 0; i < 16; i++){
     VersatUnitWrite(view[i].addr,0,key[i]);
   }
 
+  // If 256, store the rest of the key in position 1
   if(is256){
     for(int i = 0; i < 16; i++){
       VersatUnitWrite(view[i].addr,1,key[i+16]);
@@ -286,14 +288,21 @@ void ExpandKey(uint8_t* key,bool is256){
 
   if(is256){
     for(int i = 0; i < 13; i++){
+      // Constant defined by AES
       if(i % 2 == 1) {
         config->aes.rcon.constant = 0;
       } else {
         config->aes.rcon.constant = rcon[i / 2];
       }
+
+      // Selects keys in position i and i+1 to calculate position i+2
       config->aes.key_0.selectedOutput0 = i;
       config->aes.key_0.selectedOutput1 = i + 1;
       config->aes.key_0.selectedInput = i + 2;
+
+      // This changes which rows are processed.
+      // Needed by 256 because they differ between rounds
+      // Check the GenericLineKey unit inside the versatSpec.txt file
       config->aes.schedule.s.mux_0.sel = (i + 1) % 2;
       config->aes.schedule.s.mux_1.sel = (i + 1) % 2;
       config->aes.schedule.s.mux_2.sel = (i + 1) % 2;
@@ -303,12 +312,16 @@ void ExpandKey(uint8_t* key,bool is256){
       StartAccelerator();
     }
   } else {
+    // AES 128 does not need to change processing type
+    // It always the same
     config->aes.schedule.s.mux_0.sel = 1;
     config->aes.schedule.s.mux_1.sel = 1;
     config->aes.schedule.s.mux_2.sel = 1;
     config->aes.schedule.s.mux_3.sel = 1;
     for(int i = 0; i < 10; i++){
       config->aes.rcon.constant = rcon[i];
+
+      // AES 128 uses key in position i to produce key in position i+1
       config->aes.key_0.selectedOutput0 = i;
       config->aes.key_0.selectedOutput1 = i;
       config->aes.key_0.selectedInput = i + 1;
@@ -318,7 +331,9 @@ void ExpandKey(uint8_t* key,bool is256){
     } 
   }
 
-  EndAccelerator();   
+  EndAccelerator();
+
+  // After calculating the key, disable regfile so that following runs do not change the content of the key regfile.
   config->aes.key_0.disabled = 1;
 }
 
@@ -326,11 +341,15 @@ void ExpandKey(uint8_t* key,bool is256){
  * \brief Generic AES encrypt function
  * \param data buffer to encrypt
  * \param result buffer to store result of encryption
- * \param lastAddition buffer that a block that is added last. Needed to implement CTR
+ * \param lastAddition buffer that contains a block to be added to output. Needed when doing CTR mode, otherwise pass NULL
  * \param is256 wether we want AES-128 or AES-256
  * \param isCBC true if doing CBC mode
  */
 void Encrypt(uint8_t* data,uint8_t* result,uint8_t* lastAddition,bool is256,bool isCBC){
+  // For the most part, the AES algorithm is basically done entirely in hardware
+  // The configuration part is mostly changing the datapath from preRound -> Round -> lastRound.
+  // And making sure that the key reg is configured to produce the key values needed by that round
+
   int numberRounds = 10;
   if(is256){
     numberRounds = 14;
@@ -338,33 +357,42 @@ void Encrypt(uint8_t* data,uint8_t* result,uint8_t* lastAddition,bool is256,bool
 
   CryptoAlgosConfig* config = (CryptoAlgosConfig*) accelConfig;
 
+  // Copies input to state regs
   RegAddr* view = &aesAddr.aes.state_0;
   for(int i = 0; i < 16; i++){
     VersatUnitWrite(view[i].addr,0,data[i]);
   }
 
+  // Activate the pre-round datapath
   ActivateMergedAccelerator(MergeType_AESFirstAdd);
+
+  // Select key block 0, since it is used by the preround to perform the first addition
   config->aes.key_0.selectedOutput0 = 0;
 
-  StartAccelerator();
+  StartAccelerator(); // Process the pre-round step
 
+  // Active the round datapath
   ActivateMergedAccelerator(MergeType_AESRound);
 
+  // Process the rounds (10-1 for 128 bits and 14-1 for 256 bits). Last round has special processing
   for(int i = 0; i < (numberRounds-1); i++){
-    config->aes.key_0.selectedOutput0 = i + 1;
+    config->aes.key_0.selectedOutput0 = i + 1; // Change key blocks as they are required by the rounds.
     EndAccelerator();
     StartAccelerator();
   }
 
+  // Activate last round datapath
   ActivateMergedAccelerator(MergeType_AESLastRound);
-  config->aes.key_0.selectedOutput0 = numberRounds; 
+  config->aes.key_0.selectedOutput0 = numberRounds; // Select last key block
 
+  // For CBC mode, store the last result
   if(isCBC){
     config->aes.lastResult_0.disabled = 0;
   }
 
   EndAccelerator();
 
+  // If CTR, perform a last addition
   if(lastAddition){
     RegAddr* view = &aesAddr.aes.lastValToAdd_0;
     for(int i = 0; i < 16; i++){
@@ -374,10 +402,11 @@ void Encrypt(uint8_t* data,uint8_t* result,uint8_t* lastAddition,bool is256,bool
 
   StartAccelerator();
 
-  config->aes.lastResult_0.disabled = 1;
+  config->aes.lastResult_0.disabled = 1; // Disable lastResult so that following runs do not change contents
 
   EndAccelerator();
 
+  // Read result back into memory
   for(int ii = 0; ii < 16; ii++){
     result[ii] = VersatUnitRead(view[ii].addr,0);
   }
@@ -390,6 +419,9 @@ void Encrypt(uint8_t* data,uint8_t* result,uint8_t* lastAddition,bool is256,bool
  * \param is256 wether we want AES-128 or AES-256
  */
 void Decrypt(uint8_t* data,uint8_t* result,bool is256){
+  // Similary to encryption, except that the datapaths are different
+  // and the key block used start from the end towards the beginning.
+
   int numberRounds = 10;
   if(is256){
     numberRounds = 14;
@@ -402,6 +434,7 @@ void Decrypt(uint8_t* data,uint8_t* result,bool is256){
     VersatUnitWrite(view[i].addr,0,data[i]);
   }
 
+  // Same deal as encryption, except the decrypt units have Inv in their name
   ActivateMergedAccelerator(MergeType_AESInvFirstAdd);
   config->aes.key_0.selectedOutput0 = numberRounds;
 
@@ -409,6 +442,7 @@ void Decrypt(uint8_t* data,uint8_t* result,bool is256){
 
   ActivateMergedAccelerator(MergeType_AESInvRound);
    
+  // Key blocks selected starting from number rounds until 0.
   for(int i = (numberRounds - 1); i > 0; i--){
     config->aes.key_0.selectedOutput0 = i;
     EndAccelerator();
@@ -446,6 +480,7 @@ void InitAESEncryption(){
    FillMainRound(aesAddr.aes.round);
    CryptoAlgosConfig* config = (CryptoAlgosConfig*) accelConfig;
 
+   // Clear out lastResult and lastValToAdd
    {
       RegAddr* view = &aesAddr.aes.lastResult_0;
       for(int i = 0; i < 16; i++){
@@ -459,6 +494,7 @@ void InitAESEncryption(){
       }
    }
 
+   // Prevent lastResult from updating
    config->aes.lastResult_0.disabled = 1;
 }
 
@@ -469,6 +505,8 @@ void InitAESEncryption(){
 void InitAESDecryption(){
    CryptoAlgosConfig* config = (CryptoAlgosConfig*) accelConfig;
    FillInvMainRound(aesAddr.aes.round);
+
+   // Clear out lastResult and lastValToAdd
    {
       RegAddr* view = &aesAddr.aes.lastResult_0;
       for(int i = 0; i < 16; i++){
@@ -482,21 +520,24 @@ void InitAESDecryption(){
       }
    }
 
+   // Prevent lastResult from updating
    config->aes.lastResult_0.disabled = 1;
 }
 
 /**
- * \brief Loads initialization vector to inside the accelerator
+ * \brief Loads initialization vector to memory inside accelerator
  * \param iv buffer with the initialization vector. Must contain 16 bytes
  */
 void LoadIV(uint8_t* iv){
    CryptoAlgosConfig* config = (CryptoAlgosConfig*) accelConfig;
 
+   // Stores IV inside the lastResult reg
    RegAddr* view = &aesAddr.aes.lastResult_0;
    for(int i = 0; i < 16; i++){
       VersatUnitWrite(view[i].addr,0,iv[i]);
    }
 
+   // Prevent lastResult from updating
    config->aes.lastResult_0.disabled = 1;
 }
 
@@ -516,7 +557,9 @@ void AES_ECB256(uint8_t* key,uint8_t* plaintext,uint8_t* result){
 }
 
 /**
- * \brief AES encrypting using ECB mode
+ * Used by TestOneMode
+ * Intended to run tests
+ * \brief Test AES using ECB mode.
  * \param key buffer with the key. Must contain 16 bytes for 128 bit AES and 32 bytes for 256 bit AES.
  * \param data buffer to encrypt
  * \param encrypted buffer to store result of encryption
@@ -537,7 +580,8 @@ void ECB(uint8_t* key,uint8_t* data,uint8_t* encrypted,uint8_t* decrypted,bool i
 }
 
 /**
- * \brief AES encrypting using CBC mode
+ * Used by TestOneMode
+ * \brief Test AES using CBC mode
  * \param key buffer with the key. Must contain 16 bytes for 128 bit AES and 32 bytes for 256 bit AES.
  * \param iv initialization vector. Must contain 16 bytes
  * \param data buffer to encrypt
@@ -577,8 +621,9 @@ uint32_t Swap(uint32_t val){
 }
 
 /**
- * \brief AES encrypting using CTR mode
- * \param key buffer with the key. Must contain 16 bytes for 128 bit AES and 32 bytes for 256 bit AES.
+ * Used by TestOneMode
+ * \brief Test AES using CTR mode
+ * \param key buffer with the key. Must contain 16 bytes for 128 bit AES or 32 bytes for 256 bit AES.
  * \param counter buffer with the initial counter. Must contain 16 bytes
  * \param data buffer to encrypt
  * \param encrypted buffer to store encrypted result

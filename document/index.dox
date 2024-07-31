@@ -1,5 +1,7 @@
 /** \mainpage IOb-SoC-OpenCryptoHW
 IOb-SoC-OpenCryptoHW is a project designed to provide a System-On-Chip that uses an accelerator to speedup the SHA256, AES and McEliece crytographic algorithms.
-SHA256 and AES are fully implemented by our project. Our project also contains software only implementations taken from public domain projects to evaluate the speedup obtained. 
+SHA256 and AES are fully implemented by our project. We evaluate the speedup obtained by comparing to software only implementations taken from public domain projects. 
 McEliece is implemented by taking an implementation from the public domain and changing some of the code to call our functions. Only our functions are documented. 
+
+Navigate by either selecting the Functions tab and selecting functions individually or by using the Files tab to navigate by files.
 */

@@ -36,8 +36,11 @@ void InitVersatSHA(){
    SHAConfig* sha = &config->sha;
 
    *sha = (SHAConfig){0};
+
+   // Configure VRead unit to output 16 values (of 4 bytes. 16 * 4 bytes = 64 bytes per run)
    ConfigureSimpleVRead(&sha->MemRead,16,NULL);
 
+   // Configure the Constants memories to output 16 values
    ACCEL_Constants_mem_iterA = 1;
    ACCEL_Constants_mem_incrA = 1;
    ACCEL_Constants_mem_perA = 16;
@@ -45,6 +48,7 @@ void InitVersatSHA(){
    ACCEL_Constants_mem_startA = 0;
    ACCEL_Constants_mem_shiftA = 0;
 
+   // Loads Constants units with the constants defined by SHA
    for(int ii = 0; ii < 16; ii++){
       VersatUnitWrite(TOP_sha_cMem0_mem_addr,ii,kConstants[0][ii]);
    }
@@ -58,12 +62,13 @@ void InitVersatSHA(){
       VersatUnitWrite(TOP_sha_cMem3_mem_addr,ii,kConstants[3][ii]);
    }
 
+   // Need to swap endianess for this architecture
    ACCEL_TOP_sha_Swap_enabled = 1;
 }
 
 static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
    while (inlen >= 64) {
-      ACCEL_TOP_sha_MemRead_ext_addr = (iptr) in; // Need to change input source
+      ACCEL_TOP_sha_MemRead_ext_addr = (iptr) in; // Need to change input source every run
    
       // Loads data + performs work
       RunAccelerator(1);
@@ -72,6 +77,7 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
          runInitialized = true;
 
          // Only load state after doing the first run, since the first run is the one that loads valid data and only the following runs do the actual work.
+         // This means that the result of the first run is garbage and we only want to set the initial valid state when we gonna process actual valid data.
          VersatUnitWrite(TOP_sha_State_s_0_reg_addr,0,initialStateValues[0]);
          VersatUnitWrite(TOP_sha_State_s_1_reg_addr,0,initialStateValues[1]);
          VersatUnitWrite(TOP_sha_State_s_2_reg_addr,0,initialStateValues[2]);
@@ -86,6 +92,9 @@ static size_t versat_crypto_hashblocks_sha256(const uint8_t *in, size_t inlen) {
       inlen -= 64;
    }
 
+   // Note that at the end of this function the accelerator still needs one last run, since the accelerator contains valid data inside.
+   // We do not do the run now because it is possible that this function gets called again before ending the algorithm
+
    return inlen;
 }
 
@@ -93,7 +102,10 @@ void VersatSHA(uint8_t *out, const uint8_t *in, size_t inlen) {
    uint8_t padded[128];
    uint64_t bytes = inlen;
 
+   // This is the function that handles the majority of the input
    versat_crypto_hashblocks_sha256(in, inlen);
+
+   // The remaining code handles the padding of the last block
    in += inlen;
    inlen &= 63;
    in -= inlen;
@@ -131,7 +143,9 @@ void VersatSHA(uint8_t *out, const uint8_t *in, size_t inlen) {
       versat_crypto_hashblocks_sha256(padded, 128);
    }
 
-   RunAccelerator(1); // One last run to flush all the valid data that is still inside the accelerator.
+   // At this point the accelerator still contains valid data inside.
+   // One last run to flush all the valid data and obtain the final state.
+   RunAccelerator(1);
 
    // Read the values from the state registers. It is the output of the SHA algorithm
    store_bigendian_32(&out[0*4],(uint32_t) VersatUnitRead(TOP_sha_State_s_0_reg_addr,0));

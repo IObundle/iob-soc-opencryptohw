@@ -253,6 +253,10 @@ module GenericKeySchedule256(x[16],w[16],rcon){
 // All the AES dapath described use the same input and outputs so they can merge nicely.
 // These implementations are just simple instantiation and connection, since
 // all the AES steps are already implemented in units such as MixColumn, ShiftRows and so on.
+
+// The input x is the data being processed
+// The input k is the key block
+// The input iv is the initialization vector. Only the preround units need it but all these units must follow the same interface in order to merge nicely
 module AESFirstAdd(x[16],k[16],iv[16]){
    XorAdd addKey;
    XorAdd addKey2;
